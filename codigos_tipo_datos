@@ -1,0 +1,8 @@
+Códigos de datos:
+
+Enfermedad (Etiqueta exclusivo) - 000
+Numérico - 001
+Texto - 002
+Imagen - 003
+Etiquetas - 004
+Compuesto - 005 - Nombre de los campos
