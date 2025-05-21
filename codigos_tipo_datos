@@ -1,8 +1,9 @@
 Códigos de datos:
 
+Imagen principal - Sin código, no se puede modificar de ninguna forma y no está en la tabla de campos
 Enfermedad (Etiqueta exclusivo) - 000
 Numérico - 001
 Texto - 002
 Imagen - 003
-Etiquetas - 004
+Etiquetas - 004 - Nombre de la colección con las etiquetas
 Compuesto - 005 - Nombre de los campos

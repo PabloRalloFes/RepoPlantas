@@ -5,6 +5,8 @@ from PIL import Image
 from flask_pymongo import PyMongo
 from flask import Flask, request
 import time
+import re
+import os
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
@@ -12,11 +14,81 @@ app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/Repositorio_Plantas"
 mongo = PyMongo(app)
 
-
-@app.route("/etiquetas", methods=["GET"])
-def devolver_etiquetas():
-    res = mongo.db.Etiquetas.find()
+@app.route("/recuperar_campos", methods=["GET"])
+def recuperar_campos():
+    res = mongo.Campos.find()
     return list(res)
+
+@app.route("/recuperar_etiquetas/<nombre_coleccion>", methods=["GET"])
+def devolver_etiquetas(nombre_coleccion):
+    coleccion = mongo.db[nombre_coleccion]
+    res = coleccion.find()
+    return list(res)
+
+@app.route("/add_etiqueta", methods=["POST"])
+def add_etiqueta():
+    nombre_coleccion = request.json["nombre_coleccion"]
+    etiqueta = eval(request.json["etiqueta"]) #Se pasa como un diccionario en formato texto
+
+    coleccion = mongo.db[nombre_coleccion]
+    ultimo = coleccion.find_one(sort=[('_id', -1)])
+    nuevo_id = (ultimo['_id'] + 1) if ultimo else 0
+
+    etiqueta["_id"] = nuevo_id
+
+    coleccion.insert_one(etiqueta)
+
+    return "True"
+
+@app.route("/modificar_etiqueta", methods=["POST"])
+def modificar_etiqueta():
+    nombre_coleccion = request.json["nombre_coleccion"]
+    etiqueta = eval(request.json["etiqueta"]) #Se pasa como un diccionario en formato texto
+
+    coleccion = mongo.db[nombre_coleccion]
+
+    coleccion.replace_one({"_id": etiqueta["_id"]}, etiqueta, upsert=False)
+
+    return "True"
+
+@app.route("/devolver_campos_etiqueta/<nombre_campo>", methods=["GET"])
+def devolver_campos(nombre_campo):
+#     coleccion = mongo.db[nombre_coleccion]
+#     doc = coleccion.find_one()
+#     if doc:
+#         return list(doc.keys())
+#     else:
+#         return []
+    campos_etiqueta = mongo.db.Campos.find_one({"nombre": nombre_campo},{"campos_etiqueta": 1})["campos_etiqueta"]
+    return list(campos_etiqueta)
+
+@app.route("/add_campo", methods=["POST"])
+def add_campo():
+    nombre = request.json["nombre"]
+    cod = int(request.json["cod"])
+
+    campo = {
+        "nombre": nombre,
+        "cod": cod
+    }
+
+    if cod == 4:
+        campo["campos_etiqueta"] = request.json["campos_etiqueta"]
+
+    mongo.db.Campos.insert_one(campo)
+
+@app.route("/eliminar_campo", methods=["POST"])
+def eliminar_campo():
+    nombre = request.json["nombre"]
+    campo = mongo.db.find({"nombre": nombre})
+    cod = campo["cod"]
+
+    if cod == 0:
+        return "False"
+    elif mongo.db.Docs.find_one({nombre: {"$exists": True}}) is None:
+        if cod == 3:
+
+        
 
 @app.route("/variedades", methods=["GET"])
 def devolver_variedades():
@@ -93,8 +165,7 @@ def subir_imagen():
 
     clase = int(request.json["clase"])
 
-    # PARA LA VERSION FINAL AÑADIR %f DESPUÉS DE LOS SEGUNDOS
-    nombre_imagen = time.strftime("%H-%M-%S_%m_%d_%Y", time.localtime()) + ".png"
+    nombre_imagen = time.strftime("%H-%M-%S-%f_%m_%d_%Y", time.localtime()) + ".png"
 
     with open(f"./imagenes/{nombre_imagen}", "wb") as f:
         f.write(imagen)
@@ -108,6 +179,19 @@ def subir_imagen():
     mongo.db.Docs.insert_one(doc)
 
     return "True"
+
+@app.route("/eliminar_imagen", methods=["POST"])
+def eliminar_imagen():
+    id = request.json["id"]
+    _id = ObjectId(id)
+    archivo = mongo.Docs.find_one({"_id": _id})
+    nombre_imagen = re.search(r"[^/]+$", archivo["imagen_rgb"]).group()
+    os.remove(f"./imagenes/" + nombre_imagen)
+    mongo.db.delete_one({"_id": _id})
+
+    return "True"
+
+
 """
 @app.route("/test", methods=["GET"])
 def test():
