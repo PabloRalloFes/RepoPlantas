@@ -80,15 +80,57 @@ def add_campo():
 @app.route("/eliminar_campo", methods=["POST"])
 def eliminar_campo():
     nombre = request.json["nombre"]
-    campo = mongo.db.find({"nombre": nombre})
-    cod = campo["cod"]
+    campo = mongo.db.Campos.find_one({"nombre": nombre})
+    cod = int(campo["cod"])
 
     if cod == 0:
         return "False"
     elif mongo.db.Docs.find_one({nombre: {"$exists": True}}) is None:
-        if cod == 3:
+        mongo.db.Campos.delete_one({"nombre": nombre})
+        return "True"
+    else:
+        return "False"
+    
+@app.route("/add_dato", methods=["POST"])
+def add_dato():
+    _id = ObjectId(request.json["id"])
+    nombre_campo = request.json["nombre_campo"]
+    valor = request.json["valor"]
+    cod = int(mongo.db.Campos.find_one({"nombre": nombre_campo})["cod"])
 
-        
+    if cod != 3:
+        mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": valor}})
+        return "True"
+    if cod == 3:
+        imagen = base64.b64decode(valor)
+
+        nombre_imagen = time.strftime("%H-%M-%S-%f_%m_%d_%Y", time.localtime()) + ".png"
+
+        with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+            f.write(imagen)
+
+        uri_imagen = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
+
+        mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": uri_imagen}})
+        return "True"
+
+@app.route("/eliminar_dato", methods=["POST"])
+def eliminar_dato():
+    _id = ObjectId(request.json["id"])
+    nombre_campo = request.json["nombre_campo"]
+    cod = int(mongo.db.Campos.find_one({"nombre": nombre_campo})["cod"])
+
+    if cod != 3:
+        mongo.db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
+        return "True"
+    if cod == 3:
+        archivo = mongo.Docs.find_one({"_id": _id})
+        nombre_imagen = re.search(r"[^/]+$", archivo[f"{nombre_campo}"]).group()
+        os.remove(f"./imagenes/" + nombre_imagen)
+        mongo.db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
+
+        return "True"
+
 
 @app.route("/variedades", methods=["GET"])
 def devolver_variedades():
@@ -187,7 +229,7 @@ def eliminar_imagen():
     archivo = mongo.Docs.find_one({"_id": _id})
     nombre_imagen = re.search(r"[^/]+$", archivo["imagen_rgb"]).group()
     os.remove(f"./imagenes/" + nombre_imagen)
-    mongo.db.delete_one({"_id": _id})
+    mongo.db.Docs.delete_one({"_id": _id})
 
     return "True"
 
