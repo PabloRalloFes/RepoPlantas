@@ -3,7 +3,7 @@ import base64
 import io
 from PIL import Image
 from flask_pymongo import PyMongo
-from flask import Flask, request
+from flask import Flask, request, jsonify, abort
 import time
 import re
 import os
@@ -16,19 +16,32 @@ mongo = PyMongo(app)
 
 @app.route("/recuperar_campos", methods=["GET"])
 def recuperar_campos():
-    res = mongo.Campos.find()
-    return list(res)
+    res = mongo.db.Campos.find()
+    return jsonify(res)
 
 @app.route("/recuperar_etiquetas/<nombre_coleccion>", methods=["GET"])
 def devolver_etiquetas(nombre_coleccion):
+    if nombre_coleccion not in mongo.db.list_collection_names():
+        abort(400, description="El nombre de la coleccion no es correcto")
     coleccion = mongo.db[nombre_coleccion]
     res = coleccion.find()
-    return list(res)
+    return jsonify(res)
 
 @app.route("/add_etiqueta", methods=["POST"])
 def add_etiqueta():
     nombre_coleccion = request.json["nombre_coleccion"]
     etiqueta = eval(request.json["etiqueta"]) #Se pasa como un diccionario en formato texto
+
+    if type(etiqueta) != dict:
+        abort(400, description="El formato de la etiqueta es incorecto")
+
+    campos_etiqueta = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
+    if campos_etiqueta is None:
+        return abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_coleccion}")
+    else:
+        campos_etiqueta = campos_etiqueta["campos_etiqueta"]
+        if sorted(etiqueta.keys()) != sorted(campos_etiqueta):
+            return abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
 
     coleccion = mongo.db[nombre_coleccion]
     ultimo = coleccion.find_one(sort=[('_id', -1)])
@@ -38,29 +51,37 @@ def add_etiqueta():
 
     coleccion.insert_one(etiqueta)
 
-    return "True"
+    return jsonify(success=True)
 
 @app.route("/modificar_etiqueta", methods=["POST"])
 def modificar_etiqueta():
     nombre_coleccion = request.json["nombre_coleccion"]
     etiqueta = eval(request.json["etiqueta"]) #Se pasa como un diccionario en formato texto
 
+    if type(etiqueta) != dict:
+        abort(400, description="El formato de la etiqueta es incorecto")
+
+    campos_etiqueta = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
+    if campos_etiqueta is None:
+        return abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_coleccion}")
+    else:
+        campos_etiqueta = campos_etiqueta["campos_etiqueta"]
+        if sorted(etiqueta.keys()) != sorted(campos_etiqueta.append("_id")):
+            return abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
+
+
     coleccion = mongo.db[nombre_coleccion]
 
     coleccion.replace_one({"_id": etiqueta["_id"]}, etiqueta, upsert=False)
 
-    return "True"
+    return jsonify(success=True)
 
 @app.route("/devolver_campos_etiqueta/<nombre_campo>", methods=["GET"])
 def devolver_campos(nombre_campo):
-#     coleccion = mongo.db[nombre_coleccion]
-#     doc = coleccion.find_one()
-#     if doc:
-#         return list(doc.keys())
-#     else:
-#         return []
-    campos_etiqueta = mongo.db.Campos.find_one({"nombre": nombre_campo},{"campos_etiqueta": 1})["campos_etiqueta"]
-    return list(campos_etiqueta)
+    campos_etiqueta = mongo.db.Campos.find_one({"nombre": nombre_campo},{"campos_etiqueta": 1})
+    if campos_etiqueta is None:
+        return abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_campo}")
+    return jsonify(campos_etiqueta["campos_etiqueta"])
 
 @app.route("/add_campo", methods=["POST"])
 def add_campo():
@@ -77,6 +98,8 @@ def add_campo():
 
     mongo.db.Campos.insert_one(campo)
 
+    jsonify(success=True)
+
 @app.route("/eliminar_campo", methods=["POST"])
 def eliminar_campo():
     nombre = request.json["nombre"]
@@ -84,12 +107,12 @@ def eliminar_campo():
     cod = int(campo["cod"])
 
     if cod == 0:
-        return "False"
+        return abort(400, "No se puede eliminar este campo")
     elif mongo.db.Docs.find_one({nombre: {"$exists": True}}) is None:
         mongo.db.Campos.delete_one({"nombre": nombre})
-        return "True"
+        return jsonify(success=True)
     else:
-        return "False"
+        return abort(400, "No se puede eliminar este campo porque hay al menos una imagen que lo posee")
     
 @app.route("/add_dato", methods=["POST"])
 def add_dato():
@@ -100,7 +123,7 @@ def add_dato():
 
     if cod != 3:
         mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": valor}})
-        return "True"
+        return jsonify(success=True)
     if cod == 3:
         imagen = base64.b64decode(valor)
 
@@ -112,7 +135,7 @@ def add_dato():
         uri_imagen = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
 
         mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": uri_imagen}})
-        return "True"
+        return jsonify(success=True)
 
 @app.route("/eliminar_dato", methods=["POST"])
 def eliminar_dato():
@@ -122,20 +145,15 @@ def eliminar_dato():
 
     if cod != 3:
         mongo.db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
-        return "True"
+        return jsonify(success=True)
     if cod == 3:
         archivo = mongo.Docs.find_one({"_id": _id})
         nombre_imagen = re.search(r"[^/]+$", archivo[f"{nombre_campo}"]).group()
         os.remove(f"./imagenes/" + nombre_imagen)
         mongo.db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
 
-        return "True"
+        return jsonify(success=True)
 
-
-@app.route("/variedades", methods=["GET"])
-def devolver_variedades():
-    res = mongo.db.Variedades.find()
-    return list(res)
 
 @app.route("/docs", methods=["GET"])
 def devolver_docs():
@@ -233,7 +251,8 @@ def eliminar_imagen():
 
     return "True"
 
-
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
 """
 @app.route("/test", methods=["GET"])
 def test():
