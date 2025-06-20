@@ -17,11 +17,26 @@ mongo = PyMongo(app)
 def validar_imagen_base64(cadena_base64):
     try:
         imagen_bytes = base64.b64decode(cadena_base64)
-        imagen = Image.open(BytesIO(imagen_bytes))
-        imagen.verify()
+        with Image.open(BytesIO(imagen_bytes)) as imagen:
+            imagen.load()  # Fuerza la carga completa
         return True, imagen_bytes
     except Exception as e:
         return False, str(e)
+    
+def guardar_como_png(imagen_bytes, ruta_salida):
+    with Image.open(BytesIO(imagen_bytes)) as img:
+        img = img.convert("RGB")  # Asegura compatibilidad
+        img.save(ruta_salida, format="PNG")
+
+def comprobar_tipo(tipo_etq, tipo_esperado):
+    tipos = {
+        "str": str,
+        "bool": bool,
+        "int": int,
+        "float": float
+    }
+
+    return tipo_etq == tipos[tipo_esperado]
 
 @app.route("/recuperar_campos", methods=["GET"])
 def recuperar_campos():
@@ -38,16 +53,19 @@ def devolver_etiquetas(nombre_coleccion):
 
 @app.route("/add_etiqueta", methods=["POST"])
 def add_etiqueta():
-    nombre_coleccion = request.json["nombre_coleccion"]
+    nombre_coleccion = request.json["coleccion"]
     etiqueta = request.json.get("etiqueta")
 
-    campos_etiqueta = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
-    if campos_etiqueta is None:
-        return abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_coleccion}")
+    campo_guardado = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
+    if campo_guardado is None:
+        abort(400, description=f"No se ha encontrado ningun campo una coleccion {nombre_coleccion}")
     else:
-        campos_etiqueta = campos_etiqueta["campos_etiqueta"]
-        if sorted(etiqueta.keys()) != sorted(campos_etiqueta):
-            return abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
+        campos_etiqueta = campo_guardado["campos_etiqueta"]
+        if sorted(etiqueta.keys()) != sorted(campos_etiqueta.keys()):
+            abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
+        for campo in list(etiqueta.keys()):
+            if not comprobar_tipo(type(etiqueta[campo]), campos_etiqueta[campo]):
+                abort(400, f"El tipo del campo {campo}: {type(etiqueta[campo])} no coincide con el tipo almacenado: " + campos_etiqueta[campo])
 
     coleccion = mongo.db[nombre_coleccion]
     ultimo = coleccion.find_one(sort=[('_id', -1)])
@@ -57,7 +75,7 @@ def add_etiqueta():
 
     coleccion.insert_one(etiqueta)
 
-    return jsonify(success=True)
+    return jsonify(success=True, etiqueta=etiqueta)
 
 @app.route("/modificar_etiqueta", methods=["POST"])
 def modificar_etiqueta():
@@ -69,11 +87,11 @@ def modificar_etiqueta():
 
     campos_etiqueta = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
     if campos_etiqueta is None:
-        return abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_coleccion}")
+        abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_coleccion}")
     else:
         campos_etiqueta = campos_etiqueta["campos_etiqueta"]
         if sorted(etiqueta.keys()) != sorted(campos_etiqueta.append("_id")):
-            return abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
+            abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
 
 
     coleccion = mongo.db[nombre_coleccion]
@@ -86,7 +104,7 @@ def modificar_etiqueta():
 def devolver_campos(nombre_campo):
     campos_etiqueta = mongo.db.Campos.find_one({"nombre": nombre_campo},{"campos_etiqueta": 1})
     if campos_etiqueta is None:
-        return abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_campo}")
+        abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_campo}")
     return jsonify(campos_etiqueta["campos_etiqueta"])
 
 @app.route("/add_campo", methods=["POST"])
@@ -99,20 +117,22 @@ def add_campo():
         "cod": cod
     }
 
-    if cod == 4:
+    if cod == 4 or cod == 0:
         # Este es un diccionario que tiene como clave el nombre del campo y como valor su tipo esperado en formato texto (str, bool o int, no se admiten más)
         campos_etiqueta = request.json.get("campos_etiqueta")
+        nombre_coleccion = request.json["coleccion"]
         if campos_etiqueta is None:
             abort(400, "Falta por especificar los campos de la etiqueta")
         else:
             for nombre_campo in campos_etiqueta:
-                if campos_etiqueta[nombre_campo] not in ["str", "bool", "int"]:
+                if campos_etiqueta[nombre_campo] not in ["str", "bool", "int", "float"]:
                     abort(400, f"El campo {nombre_campo} tiene un tipo no admitido, solo se admiten valores 'str', 'bool' o 'int'")
         campo["campos_etiqueta"] = campos_etiqueta
+        campo["coleccion"] = nombre_coleccion
         
     mongo.db.Campos.insert_one(campo)
 
-    jsonify(success=True)
+    return jsonify(success=True)
 
 @app.route("/eliminar_campo", methods=["POST"])
 def eliminar_campo():
@@ -121,12 +141,12 @@ def eliminar_campo():
     cod = int(campo["cod"])
 
     if cod == 0:
-        return abort(400, "No se puede eliminar este campo")
+        abort(400, "No se puede eliminar este campo")
     elif mongo.db.Docs.find_one({nombre: {"$exists": True}}) is None:
         mongo.db.Campos.delete_one({"nombre": nombre})
         return jsonify(success=True)
     else:
-        return abort(400, "No se puede eliminar este campo porque hay al menos una imagen que lo posee")
+        abort(400, "No se puede eliminar este campo porque hay al menos una imagen que lo posee")
     
 @app.route("/add_dato", methods=["POST"])
 def add_dato():
@@ -274,18 +294,20 @@ def subir_imagen():
     correcto, res = validar_imagen_base64(request.json["imagen_b64"])
     if not correcto:
         abort(400, f"La imagen principal ha provocado la siguiente excepcion: " + res)
-    imagen = base64.b64decode(res)
+    #imagen = base64.b64decode(res)
 
     clase = int(request.json["clase"])
 
-    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, res)) + ".png"
+    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, request.json["imagen_b64"])) + ".png"
 
-    with open(f"./imagenes/{nombre_imagen}", "wb") as f:
-        f.write(imagen)
+    if os.path.isfile(f"./imagenes/{nombre_imagen}"):
+        mongo.db.Docs.delete_one({"imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"})
+
+    guardar_como_png(imagen_bytes=res, ruta_salida=f"./imagenes/{nombre_imagen}")
 
     doc = {
         "imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
-        "validada": 0,
+        "validada": False,
         "clase": clase
     }
 
@@ -307,7 +329,7 @@ def subir_imagen():
                     correcto, res = validar_imagen_base64(valor)
                     if not correcto:
                         abort(400, f"La imagen {nombre_campo} ha provocado la siguiente excepcion: " + res)
-                    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, res)) + ".png"
+                    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, valor)) + ".png"
                     imagenes_extra.append((nombre_imagen, base64.b64decode(res)))
                     campos_extra[nombre_campo] = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"
                     # Nos guardamos en una lista el nombre de la imagen y la codificación para insertarla más tarde si no hay errores
