@@ -1,3 +1,7 @@
 /.venv
 /__pycache__
 /imagenes
+*.ipynb
+*_log_*
+data.lnk
+/data

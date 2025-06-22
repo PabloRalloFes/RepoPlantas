@@ -3,11 +3,12 @@ import base64
 import io
 from PIL import Image
 from flask_pymongo import PyMongo
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import time
 import re
 import os
 from bson.objectid import ObjectId
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -202,25 +203,37 @@ def devolver_x_archivos_sin_validar():
 
 @app.route("/subir_imagen", methods=["POST"])
 def subir_imagen():
-    imagen_b64 = request.json["imagen_b64"]
-    imagen = base64.b64decode(imagen_b64)
+    try:
+        data = request.json
+        imagen_b64 = data["imagen_b64"]
+        clase = int(data["clase"])
+        etiqueta = int(data["etiqueta"])
+        formato = int(data["formato"])
 
-    clase = int(request.json["clase"])
 
-    nombre_imagen = time.strftime("%H-%M-%S-%f_%m_%d_%Y", time.localtime()) + ".png"
+        nombre_imagen = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + ".png"
 
-    with open(f"./imagenes/{nombre_imagen}", "wb") as f:
-        f.write(imagen)
+        # Decodificar imagen base64 y guardarla en disco
+        imagen = base64.b64decode(imagen_b64)
+        with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+            f.write(imagen)
 
-    doc = {
-        "imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
-        "validada": 0,
-        "clase": clase
-    }
+        # Guardar URI (ruta local simulada)
+        uri = f"./imagenes/{nombre_imagen}"
 
-    mongo.db.Docs.insert_one(doc)
+        doc = {
+            "nombre": nombre_imagen,
+            "uri": uri,
+            "clase": clase,
+            "etiqueta": etiqueta,
+            "formato": formato
+        }
 
-    return "True"
+        resultado = mongo.db.Docs.insert_one(doc)
+        return jsonify({"_id": str(resultado.inserted_id)}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 @app.route("/eliminar_imagen", methods=["POST"])
 def eliminar_imagen():
@@ -241,3 +254,6 @@ def test():
 
     return ""
 """
+
+if __name__ == "__main__":
+    app.run(debug=True)
