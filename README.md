@@ -26,11 +26,9 @@ utils/
 ├── convert_to_grayscale.py
 ├── segment_leaves.py
 ├── upload_images.py
-├── process_imported_images.py
-scripts/
-├── main.py
-├── test.py
-├── subir_imagenes_nueva_fuente.py
+main.py
+process_imported_images.py
+subir_imagenes_nueva_fuente.py
 models/
 ### modelos entrenados
 src/
