@@ -3,21 +3,32 @@ import base64
 import requests
 import sys
 import time
+import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# CONFIGURACIÓN
-formato_nombre = sys.argv[1]
+# Argumentos
+parser = argparse.ArgumentParser(description="Subida de imágenes a la base de datos")
+parser.add_argument("formato", choices=["Color", "Grayscale", "Segmented"], help="Formato de imagen")
+parser.add_argument("--fuente", default=None, help="Fuente de las imágenes (subcarpeta en data/importada)")
+parser.add_argument("--start", type=int, default=0, help="Índice de inicio del batch (por clase o carpeta)")
+parser.add_argument("--limit", type=int, default=None, help="Número máximo de imágenes a subir (por clase o carpeta)")
+args = parser.parse_args()
+
+formato_nombre = args.formato
 formato_ids = {"Color": 0, "Grayscale": 1, "Segmented": 2}
-formato_id = formato_ids.get(formato_nombre)
+formato_id = formato_ids[formato_nombre]
 
-if formato_id is None:
-    print(f"❌ Formato no válido: {formato_nombre}")
-    sys.exit(1)
+# Directorio base y log
+if args.fuente:
+    DATASET_DIR = os.path.join("data", "importada", args.fuente, formato_nombre.lower())
+    LOG_PATH = f"upload_log_{formato_nombre}_{args.fuente}.txt"
+else:
+    DATASET_DIR = f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/Data/PlantVillage/{formato_nombre}"
+    LOG_PATH = f"upload_log_{formato_nombre}_PlantVillage.txt"
 
-DATASET_DIR = f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/PlantVillage/PlantVillage-Dataset/raw/{formato_nombre}"
-BACKEND_URL = "http://localhost:5000/subir_imagen"
-LOG_PATH = f"upload_log_{formato_nombre}.txt"
+BACKEND_URL = "http://localhost:5001/subir_imagen"
 
+# Diccionario de clases para PlantVillage
 clase_id_dict = {
     'Apple___Apple_scab': 0, 'Apple___Black_rot': 1, 'Apple___Cedar_apple_rust': 2, 'Apple___healthy': 3,
     'Blueberry___healthy': 4, 'Cherry_(including_sour)___healthy': 5, 'Cherry_(including_sour)___Powdery_mildew': 6,
@@ -33,45 +44,61 @@ clase_id_dict = {
     'Tomato___Target_Spot': 35, 'Tomato___Tomato_mosaic_virus': 36, 'Tomato___Tomato_Yellow_Leaf_Curl_Virus': 37
 }
 
-# Imagenes ya subidas
+# Imágenes ya subidas
 uploaded = set()
 if os.path.exists(LOG_PATH):
     with open(LOG_PATH, "r", encoding="utf-8") as f:
         uploaded = set(f.read().splitlines())
 
-# Función de subida
-def subir_imagen(ruta_img, clase_id, formato_id):
+def subir_imagen(ruta_img, clase_id, formato_id, fuente):
     with open(ruta_img, "rb") as f:
         imagen_b64 = base64.b64encode(f.read()).decode("utf-8")
+    
     payload = {
         "imagen_b64": imagen_b64,
-        "clase": "003",
-        "etiqueta": clase_id,
-        "formato": formato_id
+        "clase": clase_id,
+        "campos_extra": {
+            "fuente": fuente,
+            "formato": formato_id,
+        }
     }
+
     try:
         res = requests.post(BACKEND_URL, json=payload)
         return ruta_img, res.status_code, res.text
     except Exception as e:
         return ruta_img, "ERROR", str(e)
 
-# Crear lista de tareas
+# Generar tareas
 tareas = []
-for clase_nombre, clase_id in clase_id_dict.items():
-    clase_dir = os.path.join(DATASET_DIR, clase_nombre)
-    if not os.path.isdir(clase_dir):
-        continue
-    archivos = [f for f in os.listdir(clase_dir) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
-    for archivo in archivos[:100]:
-        ruta_img = os.path.join(clase_dir, archivo)
-        if ruta_img in uploaded:
+start, limit = args.start, args.limit
+if args.fuente:
+    for clase_nombre, clase_id in clase_id_dict.items():
+        clase_dir = os.path.join(DATASET_DIR, clase_nombre)
+        if not os.path.isdir(clase_dir):
             continue
-        tareas.append((ruta_img, clase_id, formato_id))
+        archivos = sorted([a for a in os.listdir(clase_dir) if a.lower().endswith((".jpg", ".jpeg", ".png"))])
+        for archivo in archivos[start:(start+limit if limit else None)]:
+            ruta_img = os.path.join(clase_dir, archivo)
+            if ruta_img in uploaded:
+                continue
+            tareas.append((ruta_img, clase_id, formato_id, args.fuente))
+else:
+    for clase_nombre, clase_id in clase_id_dict.items():
+        clase_dir = os.path.join(DATASET_DIR, clase_nombre)
+        if not os.path.isdir(clase_dir):
+            continue
+        archivos = sorted([a for a in os.listdir(clase_dir) if a.lower().endswith((".jpg", ".jpeg", ".png"))])
+        for archivo in archivos[start:(start+limit if limit else None)]:
+            ruta_img = os.path.join(clase_dir, archivo)
+            if ruta_img in uploaded:
+                continue
+            tareas.append((ruta_img, clase_id, formato_id, 0))
 
+# Subida concurrente
 total = len(tareas)
 print(f"🔄 Subiendo {total} imágenes en formato '{formato_nombre}'...")
 
-# Ejecutar con progreso y ETA
 start_time = time.perf_counter()
 with ThreadPoolExecutor(max_workers=8) as executor, open(LOG_PATH, "a", encoding="utf-8") as logf:
     futures = {executor.submit(subir_imagen, *args): args[0] for args in tareas}
@@ -83,6 +110,4 @@ with ThreadPoolExecutor(max_workers=8) as executor, open(LOG_PATH, "a", encoding
         elapsed = time.perf_counter() - start_time
         avg_time = elapsed / i
         remaining = avg_time * (total - i)
-
-        #print(f"[{status}] {ruta_img} → {mensaje}")
         print(f"🕒 Progreso: {i}/{total} | Tiempo: {int(elapsed)}s | ETA: {int(remaining)}s")

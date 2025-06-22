@@ -53,6 +53,8 @@ data/importada/{nombre_fuente}/color/
 
 Donde `{nombre_fuente}` identifica la fuente (por ejemplo, `agricultura_europa2025`, `proyecto_movil`, etc.).
 
+# CAMBIAR: Deberían tener la misma estructura interna que indique las clases que PlantVillage
+
 ### 2. Procesamiento y subida automática
 
 Una vez colocadas las imágenes, puedes ejecutar todo el pipeline con un solo comando:

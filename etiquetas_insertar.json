@@ -1,5 +1,5 @@
 [
-{clasificacion: "Sin_clasificar", nombre:""}
+{clasificacion: "Sin_clasificar", nombre:""},
 {clasificacion: "Sana", nombre: ""},
 {clasificacion: "Carencia", nombre: "Boro"},
 {clasificacion: "Carencia", nombre: "Clorosis Férrica"},
@@ -20,5 +20,5 @@
 {clasificacion: "Virus", nombre: "Aclaramiento de nervios"},
 {clasificacion: "Virus", nombre: "Enrollamiento Virótico"},
 {clasificacion: "Virus", nombre: "Entrenudo Corto"},
-{clasificacion: "Virus", nombre: "Madera Rizada Madera Acorchada"},
+{clasificacion: "Virus", nombre: "Madera Rizada Madera Acorchada"}
 ]
