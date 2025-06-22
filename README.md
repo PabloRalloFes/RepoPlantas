@@ -30,7 +30,7 @@ utils/
 scripts/
 ├── main.py
 ├── test.py
-├── pipeline_importar_fuente.py
+├── subir_imagenes_nueva_fuente.py
 models/
 ### modelos entrenados
 src/
@@ -48,30 +48,39 @@ El proyecto incluye un pipeline completo para incorporar imágenes externas (rea
 El punto de partida es tener imágenes externas descargadas manualmente o por otros medios. Para integrarlas en el sistema, se deben colocar en la siguiente ruta:
 
 ```
-data/importada/{nombre_fuente}/color/
+data/Imported/{nombre_fuente}/color/
 ```
 
 Donde `{nombre_fuente}` identifica la fuente (por ejemplo, `agricultura_europa2025`, `proyecto_movil`, etc.).
 
-# CAMBIAR: Deberían tener la misma estructura interna que indique las clases que PlantVillage
+Estas imágenes deben estar organizadas por carpetas con el nombre exacto de cada clase (enfermedad), igual que en PlantVillage. Ejemplo:
+
+```
+data/Imported/mi_fuente/color/Tomato___Early_blight/
+                                        ├── img1.jpg
+                                        ├── img2.jpg
+```
+
+Esto permite que el sistema asocie automáticamente cada imagen con su clase correspondiente durante la subida.
 
 ### 2. Procesamiento y subida automática
 
 Una vez colocadas las imágenes, puedes ejecutar todo el pipeline con un solo comando:
 
 ```bash
-python importar.py --fuente nombre_fuente
+python subir_imagenes_nueva_fuente.py --fuente nombre_fuente
 ```
 
 Este script realiza automáticamente:
+- Registro de la fuente en la base de datos (si aún no existe).
 - Procesamiento de las imágenes en color para generar versiones en escala de grises (`grayscale/`) y segmentadas (`segmented/`), redimensionadas y en formato JPG.
-- Subida de ambas versiones a la base de datos.
-- Registro de las imágenes subidas para evitar duplicados.
+- Subida de los tres formatos a la base de datos, incluyendo metainformación `fuente` y `formato`.
+- Evita duplicados mediante logs por formato.
 
 > También puedes ejecutar solo el procesamiento con:
 >
 > ```bash
-> python process_imported_images.py --fuente nombre_fuente
+> python utils/process_imported_images.py --fuente nombre_fuente
 > ```
 >
 > Esto es útil si quieres revisar las imágenes procesadas antes de subirlas.
@@ -80,15 +89,15 @@ Este script realiza automáticamente:
 
 ## 🧪 Cómo añadir una nueva fuente
 
-1. Crea una nueva carpeta dentro de `data/importada/` con el nombre de la fuente.
-2. Coloca las imágenes sin procesar en `data/importada/{fuente}/color/`.
+1. Crea una nueva carpeta dentro de `data/Imported/` con el nombre de la fuente.
+2. Dentro de esa carpeta, añade las imágenes organizadas por clase en `color/`.
 3. Ejecuta:
 
 ```bash
-python importar.py --fuente {fuente}
+python subir_imagenes_nueva_fuente.py --fuente {fuente}
 ```
 
-4. Las imágenes se segmentarán, convertirán a escala de grises y se subirán a la base de datos local.
+4. Las imágenes se segmentarán, convertirán a escala de grises y se subirán a la base de datos local con toda la información asociada.
 
 ---
 
@@ -96,11 +105,17 @@ python importar.py --fuente {fuente}
 
 - Python 3.8+
 - OpenCV (`cv2`)
-- pandas, requests, tqdm
+- pandas
+- requests
+- tqdm
 
 ---
 
-## 📎 Notas finales
+## 📌 Notas finales
 
 - La segmentación implementada se inspira en el artículo original de PlantVillage, aunque no es idéntica.
 - Este repositorio está diseñado para ser extensible: se puede adaptar fácilmente para nuevas fuentes, cambios en el modelo o nuevas estrategias de evaluación.
+- El script `upload_images.py` maneja por sí solo la creación de versiones en `grayscale` y `segmented` si no existen, llamando a `process_imported_images.py` automáticamente.
+
+---
+
