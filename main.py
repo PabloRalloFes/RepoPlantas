@@ -1,35 +1,71 @@
-import numpy
 import base64
 import io
 from PIL import Image
 from flask_pymongo import PyMongo
-from flask import Flask, request, jsonify
-import time
+from flask import Flask, request, jsonify, abort
 import re
 import os
 from bson.objectid import ObjectId
-from datetime import datetime
+from io import BytesIO
+import uuid
 
 app = Flask(__name__)
 
 app.config["MONGO_URI"] = "mongodb://localhost:27017/Repositorio_Plantas"
 mongo = PyMongo(app)
 
+def validar_imagen_base64(cadena_base64):
+    try:
+        imagen_bytes = base64.b64decode(cadena_base64)
+        with Image.open(BytesIO(imagen_bytes)) as imagen:
+            imagen.load()  # Fuerza la carga completa
+        return True, imagen_bytes
+    except Exception as e:
+        return False, str(e)
+    
+def guardar_como_png(imagen_bytes, ruta_salida):
+    with Image.open(BytesIO(imagen_bytes)) as img:
+        img = img.convert("RGB")  # Asegura compatibilidad
+        img.save(ruta_salida, format="PNG")
+
+def comprobar_tipo(tipo_etq, tipo_esperado):
+    tipos = {
+        "str": str,
+        "bool": bool,
+        "int": int,
+        "float": float
+    }
+
+    return tipo_etq == tipos[tipo_esperado]
+
 @app.route("/recuperar_campos", methods=["GET"])
 def recuperar_campos():
-    res = mongo.Campos.find()
-    return list(res)
+    res = mongo.db.Campos.find()
+    return jsonify(res)
 
 @app.route("/recuperar_etiquetas/<nombre_coleccion>", methods=["GET"])
 def devolver_etiquetas(nombre_coleccion):
+    if nombre_coleccion not in mongo.db.list_collection_names():
+        abort(400, description="El nombre de la coleccion no es correcto")
     coleccion = mongo.db[nombre_coleccion]
     res = coleccion.find()
-    return list(res)
+    return jsonify(res)
 
 @app.route("/add_etiqueta", methods=["POST"])
 def add_etiqueta():
-    nombre_coleccion = request.json["nombre_coleccion"]
-    etiqueta = eval(request.json["etiqueta"]) #Se pasa como un diccionario en formato texto
+    nombre_coleccion = request.json["coleccion"]
+    etiqueta = request.json.get("etiqueta")
+
+    campo_guardado = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
+    if campo_guardado is None:
+        abort(400, description=f"No se ha encontrado ningun campo una coleccion {nombre_coleccion}")
+    else:
+        campos_etiqueta = campo_guardado["campos_etiqueta"]
+        if sorted(etiqueta.keys()) != sorted(campos_etiqueta.keys()):
+            abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
+        for campo in list(etiqueta.keys()):
+            if not comprobar_tipo(type(etiqueta[campo]), campos_etiqueta[campo]):
+                abort(400, f"El tipo del campo {campo}: {type(etiqueta[campo])} no coincide con el tipo almacenado: " + campos_etiqueta[campo])
 
     coleccion = mongo.db[nombre_coleccion]
     ultimo = coleccion.find_one(sort=[('_id', -1)])
@@ -39,29 +75,37 @@ def add_etiqueta():
 
     coleccion.insert_one(etiqueta)
 
-    return "True"
+    return jsonify(success=True, etiqueta=etiqueta)
 
 @app.route("/modificar_etiqueta", methods=["POST"])
 def modificar_etiqueta():
     nombre_coleccion = request.json["nombre_coleccion"]
-    etiqueta = eval(request.json["etiqueta"]) #Se pasa como un diccionario en formato texto
+    etiqueta = request.json.get("etiqueta")
+
+    if type(etiqueta) != dict:
+        abort(400, description="El formato de la etiqueta es incorecto")
+
+    campos_etiqueta = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
+    if campos_etiqueta is None:
+        abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_coleccion}")
+    else:
+        campos_etiqueta = campos_etiqueta["campos_etiqueta"]
+        if sorted(etiqueta.keys()) != sorted(campos_etiqueta.append("_id")):
+            abort(400, description=f"Los campos de la etiqueta proporcionada no son correctos")
+
 
     coleccion = mongo.db[nombre_coleccion]
 
     coleccion.replace_one({"_id": etiqueta["_id"]}, etiqueta, upsert=False)
 
-    return "True"
+    return jsonify(success=True)
 
 @app.route("/devolver_campos_etiqueta/<nombre_campo>", methods=["GET"])
 def devolver_campos(nombre_campo):
-#     coleccion = mongo.db[nombre_coleccion]
-#     doc = coleccion.find_one()
-#     if doc:
-#         return list(doc.keys())
-#     else:
-#         return []
-    campos_etiqueta = mongo.db.Campos.find_one({"nombre": nombre_campo},{"campos_etiqueta": 1})["campos_etiqueta"]
-    return list(campos_etiqueta)
+    campos_etiqueta = mongo.db.Campos.find_one({"nombre": nombre_campo},{"campos_etiqueta": 1})
+    if campos_etiqueta is None:
+        abort(400, description=f"No se ha encontrado ningun campo con el nombre {nombre_campo}")
+    return jsonify(campos_etiqueta["campos_etiqueta"])
 
 @app.route("/add_campo", methods=["POST"])
 def add_campo():
@@ -73,10 +117,22 @@ def add_campo():
         "cod": cod
     }
 
-    if cod == 4:
-        campo["campos_etiqueta"] = request.json["campos_etiqueta"]
-
+    if cod == 4 or cod == 0:
+        # Este es un diccionario que tiene como clave el nombre del campo y como valor su tipo esperado en formato texto (str, bool o int, no se admiten más)
+        campos_etiqueta = request.json.get("campos_etiqueta")
+        nombre_coleccion = request.json["coleccion"]
+        if campos_etiqueta is None:
+            abort(400, "Falta por especificar los campos de la etiqueta")
+        else:
+            for nombre_campo in campos_etiqueta:
+                if campos_etiqueta[nombre_campo] not in ["str", "bool", "int", "float"]:
+                    abort(400, f"El campo {nombre_campo} tiene un tipo no admitido, solo se admiten valores 'str', 'bool' o 'int'")
+        campo["campos_etiqueta"] = campos_etiqueta
+        campo["coleccion"] = nombre_coleccion
+        
     mongo.db.Campos.insert_one(campo)
+
+    return jsonify(success=True)
 
 @app.route("/eliminar_campo", methods=["POST"])
 def eliminar_campo():
@@ -85,35 +141,72 @@ def eliminar_campo():
     cod = int(campo["cod"])
 
     if cod == 0:
-        return "False"
+        abort(400, "No se puede eliminar este campo")
     elif mongo.db.Docs.find_one({nombre: {"$exists": True}}) is None:
         mongo.db.Campos.delete_one({"nombre": nombre})
-        return "True"
+        return jsonify(success=True)
     else:
-        return "False"
+        abort(400, "No se puede eliminar este campo porque hay al menos una imagen que lo posee")
     
 @app.route("/add_dato", methods=["POST"])
 def add_dato():
+    # _id = ObjectId(request.json["id"])
+    # nombre_campo = request.json["nombre_campo"]
+    # valor = request.json["valor"]
+    # cod = int(mongo.db.Campos.find_one({"nombre": nombre_campo})["cod"])
+
+    # if cod != 3:
+    #     mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": valor}})
+    #     return jsonify(success=True)
+    # if cod == 3:
+    #     imagen = base64.b64decode(valor)
+
+    #     nombre_imagen = time.strftime("%H-%M-%S-%f_%m_%d_%Y", time.localtime()) + ".png"
+
+    #     with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+    #         f.write(imagen)
+
+    #     uri_imagen = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
+
+    #     mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": uri_imagen}})
+    #     return jsonify(success=True)
     _id = ObjectId(request.json["id"])
-    nombre_campo = request.json["nombre_campo"]
-    valor = request.json["valor"]
-    cod = int(mongo.db.Campos.find_one({"nombre": nombre_campo})["cod"])
+    campos_extra = request.json.get("campos_extra")
+    if campos_extra is not None:
+        imagenes_extra = []
+        for nombre_campo in campos_extra:
+            valor = campos_extra[nombre_campo]
+            campo_almacenado = mongo.db.Campos.find_one({"nombre": nombre_campo})
+            if campo_almacenado is None:
+                abort(400, f"El campo {nombre_campo} no se encuentra en la base de datos")
+            else:
+                cod_campo = campo_almacenado["cod"]
+                if cod_campo == 1 and type(valor) is not int:
+                    abort(400, f"Tipo del campo {nombre_campo} incorrecto, se esperaba int pero se detectó {type(valor)}")
+                elif cod_campo == 2 and type(valor) is not str:
+                    abort(400, f"Tipo del campo {nombre_campo} incorrecto, se esperaba str pero se detectó {type(valor)}")
+                elif cod_campo == 3:
+                    correcto, res = validar_imagen_base64(valor)
+                    if not correcto:
+                        abort(400, f"La imagen {nombre_campo} ha provocado la siguiente excepcion: " + res)
+                    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, res)) + ".png"
+                    imagenes_extra.append((nombre_imagen, base64.b64decode(res)))
+                    campos_extra[nombre_campo] = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"
+                    # Nos guardamos en una lista el nombre de la imagen y la codificación para insertarla más tarde si no hay errores
+                elif cod_campo == 0 or cod_campo == 4:
+                    if type(valor) is not int:
+                        abort(400, f"Tipo del campo {nombre_campo} incorrecto, los identificadores de las etiquetas son int pero se detectó {type(valor)}")
+                    else:
+                        etiqueta = mongo.db[campo_almacenado["coleccion"]].find_one({"_id": valor})
+                        if etiqueta is None:
+                            abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
-    if cod != 3:
-        mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": valor}})
-        return "True"
-    if cod == 3:
-        imagen = base64.b64decode(valor)
+        for nombre_imagen, imagen in imagenes_extra:
+            with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+                f.write(imagen)
 
-        nombre_imagen = time.strftime("%H-%M-%S-%f_%m_%d_%Y", time.localtime()) + ".png"
-
-        with open(f"./imagenes/{nombre_imagen}", "wb") as f:
-            f.write(imagen)
-
-        uri_imagen = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
-
-        mongo.db.Docs.update_one({"_id": _id}, {"$set": {f"{nombre_campo}": uri_imagen}})
-        return "True"
+    mongo.db.Docs.update_one({"_id": _id}, {"$set": campos_extra})
+    return jsonify(success=True)
 
 @app.route("/eliminar_dato", methods=["POST"])
 def eliminar_dato():
@@ -123,20 +216,15 @@ def eliminar_dato():
 
     if cod != 3:
         mongo.db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
-        return "True"
+        return jsonify(success=True)
     if cod == 3:
         archivo = mongo.Docs.find_one({"_id": _id})
         nombre_imagen = re.search(r"[^/]+$", archivo[f"{nombre_campo}"]).group()
         os.remove(f"./imagenes/" + nombre_imagen)
         mongo.db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
 
-        return "True"
+        return jsonify(success=True)
 
-
-@app.route("/variedades", methods=["GET"])
-def devolver_variedades():
-    res = mongo.db.Variedades.find()
-    return list(res)
 
 @app.route("/docs", methods=["GET"])
 def devolver_docs():
@@ -203,37 +291,65 @@ def devolver_x_archivos_sin_validar():
 
 @app.route("/subir_imagen", methods=["POST"])
 def subir_imagen():
-    try:
-        data = request.json
-        imagen_b64 = data["imagen_b64"]
-        clase = int(data["clase"])
-        etiqueta = int(data["etiqueta"])
-        formato = int(data["formato"])
+    correcto, res = validar_imagen_base64(request.json["imagen_b64"])
+    if not correcto:
+        abort(400, f"La imagen principal ha provocado la siguiente excepcion: " + res)
+    #imagen = base64.b64decode(res)
 
+    clase = int(request.json["clase"])
 
-        nombre_imagen = datetime.now().strftime("%Y%m%d_%H%M%S_%f") + ".png"
+    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, request.json["imagen_b64"])) + ".png"
 
-        # Decodificar imagen base64 y guardarla en disco
-        imagen = base64.b64decode(imagen_b64)
-        with open(f"./imagenes/{nombre_imagen}", "wb") as f:
-            f.write(imagen)
+    if os.path.isfile(f"./imagenes/{nombre_imagen}"):
+        mongo.db.Docs.delete_one({"imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"})
 
-        # Guardar URI (ruta local simulada)
-        uri = f"./imagenes/{nombre_imagen}"
+    guardar_como_png(imagen_bytes=res, ruta_salida=f"./imagenes/{nombre_imagen}")
 
-        doc = {
-            "nombre": nombre_imagen,
-            "uri": uri,
-            "clase": clase,
-            "etiqueta": etiqueta,
-            "formato": formato
-        }
+    doc = {
+        "imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
+        "validada": False,
+        "clase": clase
+    }
 
-        resultado = mongo.db.Docs.insert_one(doc)
-        return jsonify({"_id": str(resultado.inserted_id)}), 200
+    campos_extra = request.json.get("campos_extra")
+    if campos_extra is not None:
+        imagenes_extra = []
+        for nombre_campo in campos_extra:
+            valor = campos_extra[nombre_campo]
+            campo_almacenado = mongo.db.Campos.find_one({"nombre": nombre_campo})
+            if campo_almacenado is None:
+                abort(400, f"El campo {nombre_campo} no se encuentra en la base de datos")
+            else:
+                cod_campo = campo_almacenado["cod"]
+                if cod_campo == 1 and type(valor) is not int:
+                    abort(400, f"Tipo del campo {nombre_campo} incorrecto, se esperaba int pero se detectó {type(valor)}")
+                elif cod_campo == 2 and type(valor) is not str:
+                    abort(400, f"Tipo del campo {nombre_campo} incorrecto, se esperaba str pero se detectó {type(valor)}")
+                elif cod_campo == 3:
+                    correcto, res = validar_imagen_base64(valor)
+                    if not correcto:
+                        abort(400, f"La imagen {nombre_campo} ha provocado la siguiente excepcion: " + res)
+                    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, valor)) + ".png"
+                    imagenes_extra.append((nombre_imagen, base64.b64decode(res)))
+                    campos_extra[nombre_campo] = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"
+                    # Nos guardamos en una lista el nombre de la imagen y la codificación para insertarla más tarde si no hay errores
+                elif cod_campo == 0 or cod_campo == 4:
+                    if type(valor) is not int:
+                        abort(400, f"Tipo del campo {nombre_campo} incorrecto, los identificadores de las etiquetas son int pero se detectó {type(valor)}")
+                    else:
+                        etiqueta = mongo.db[campo_almacenado["coleccion"]].find_one({"_id": valor})
+                        if etiqueta is None:
+                            abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        for nombre_imagen, imagen in imagenes_extra:
+            with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+                f.write(imagen)
+
+    doc.update(campos_extra)        
+
+    mongo.db.Docs.insert_one(doc)
+
+    return jsonify(success=True)
 
 @app.route("/eliminar_imagen", methods=["POST"])
 def eliminar_imagen():
@@ -246,7 +362,8 @@ def eliminar_imagen():
 
     return "True"
 
-
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001)
 """
 @app.route("/test", methods=["GET"])
 def test():
