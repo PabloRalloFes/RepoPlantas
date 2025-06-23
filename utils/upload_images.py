@@ -6,6 +6,7 @@ import time
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import subprocess
+import json
 
 def procesar_fuente_si_falta(fuente):
     base_path = os.path.join("data", "Imported", fuente)
@@ -94,26 +95,23 @@ else:
 BACKEND_URL = "http://localhost:5001/subir_imagen"
 
 # Diccionario de clases para PlantVillage
-clase_id_dict = {
-    'Apple___Apple_scab': 0, 'Apple___Black_rot': 1, 'Apple___Cedar_apple_rust': 2, 'Apple___healthy': 3,
-    'Blueberry___healthy': 4, 'Cherry_(including_sour)___healthy': 5, 'Cherry_(including_sour)___Powdery_mildew': 6,
-    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot': 7, 'Corn_(maize)___Common_rust_': 8,
-    'Corn_(maize)___healthy': 9, 'Corn_(maize)___Northern_Leaf_Blight': 10, 'Grape___Black_rot': 11,
-    'Grape___Esca_(Black_Measles)': 12, 'Grape___healthy': 13, 'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)': 14,
-    'Orange___Haunglongbing_(Citrus_greening)': 15, 'Peach___Bacterial_spot': 16, 'Peach___healthy': 17,
-    'Pepper,_bell___Bacterial_spot': 18, 'Pepper,_bell___healthy': 19, 'Potato___Early_blight': 20,
-    'Potato___healthy': 21, 'Potato___Late_blight': 22, 'Raspberry___healthy': 23, 'Soybean___healthy': 24,
-    'Squash___Powdery_mildew': 25, 'Strawberry___healthy': 26, 'Strawberry___Leaf_scorch': 27,
-    'Tomato___Bacterial_spot': 28, 'Tomato___Early_blight': 29, 'Tomato___healthy': 30, 'Tomato___Late_blight': 31,
-    'Tomato___Leaf_Mold': 32, 'Tomato___Septoria_leaf_spot': 33, 'Tomato___Spider_mites Two-spotted_spider_mite': 34,
-    'Tomato___Target_Spot': 35, 'Tomato___Tomato_mosaic_virus': 36, 'Tomato___Tomato_Yellow_Leaf_Curl_Virus': 37
-}
+with open("src/clases.json", "r", encoding="utf-8") as f:
+    clase_id_dict = json.load(f)
 
 # Imágenes ya subidas
 uploaded = set()
 if os.path.exists(LOG_PATH):
     with open(LOG_PATH, "r", encoding="utf-8") as f:
         uploaded = set(f.read().splitlines())
+
+carpetas_detectadas = os.listdir(DATASET_DIR)
+for carpeta in carpetas_detectadas:
+    if carpeta not in clase_id_dict:
+        print(f"🔍 Clase nueva detectada: {carpeta} → ejecutando add_class.py")
+        subprocess.run(["python", "utils/add_class.py", carpeta], check=True)
+
+with open("src/clases.json", "r", encoding="utf-8") as f:
+    clase_id_dict = json.load(f)
 
 # Generar tareas
 tareas = []

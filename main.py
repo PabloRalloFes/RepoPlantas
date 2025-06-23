@@ -83,7 +83,7 @@ def modificar_etiqueta():
     etiqueta = request.json.get("etiqueta")
 
     if type(etiqueta) != dict:
-        abort(400, description="El formato de la etiqueta es incorecto")
+        abort(400, description="El formato de la etiqueta es incorrecto")
 
     campos_etiqueta = mongo.db.Campos.find_one({"coleccion": nombre_coleccion})
     if campos_etiqueta is None:

@@ -63,7 +63,28 @@ Esto permite que el sistema asocie automáticamente cada imagen con su clase cor
 
 ### 2. Procesamiento y subida automática
 
-Una vez colocadas las imágenes, puedes ejecutar todo el pipeline con un solo comando:
+## 🧩 Inicialización de la base de datos
+
+Antes de empezar a trabajar con las imágenes, es necesario inicializar la base de datos local con la estructura básica de campos y etiquetas.
+
+Puedes hacerlo fácilmente ejecutando el siguiente script:
+
+```bash
+python setup_database.py
+```
+
+Esto creará automáticamente:
+
+- Las colecciones necesarias (Campos, Docs, Fuente, Formato, Clase, etc.).
+
+- Las etiquetas básicas para formato (Color, Grayscale, Segmented) y otras categorías.
+
+- Los metadatos necesarios para que el sistema pueda validar y clasificar imágenes correctamente.
+
+⚠️ Asegúrate de que el servidor MongoDB (main.py) esté en ejecución antes de lanzar el script.
+
+
+Una vez colocadas las imágenes y creada la base de datos, puedes ejecutar todo el pipeline de subida con un solo comando:
 
 ```bash
 python subir_imagenes_nueva_fuente.py --fuente nombre_fuente
@@ -88,7 +109,7 @@ Este script realiza automáticamente:
 ## 🧪 Cómo añadir una nueva fuente
 
 1. Crea una nueva carpeta dentro de `data/Imported/` con el nombre de la fuente.
-2. Dentro de esa carpeta, añade las imágenes organizadas por clase en `color/`.
+2. Dentro de esa carpeta, añade las imágenes organizadas por clase en `color/`. Si hay alguna clase nueva (que no aparezca en `clases.json`), se añadirá automáticamente durante el proceso.
 3. Ejecuta:
 
 ```bash
@@ -108,6 +129,11 @@ python subir_imagenes_nueva_fuente.py --fuente {fuente}
 - tqdm
 
 ---
+
+> 📌 Nota sobre la terminología:
+> - Un **campo** es un atributo como `fuente`, `formato` o `clase`.
+> - Una **etiqueta** es un valor permitido dentro de un campo, definido con estructura y tipo.
+> - Una **clase** es la categoría principal de una imagen: combinación de cultivo y enfermedad. Se almacena en la colección `Clases`.
 
 ## 📌 Notas finales
 
