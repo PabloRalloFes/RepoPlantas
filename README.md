@@ -118,6 +118,24 @@ python subir_imagenes_nueva_fuente.py --fuente {fuente}
 
 4. Las imágenes se segmentarán, convertirán a escala de grises y se subirán a la base de datos local con toda la información asociada.
 
+## 🧪 Experimentos reproducibles y automatizados
+
+El sistema incorpora una estructura modular para lanzar experimentos completos de forma automatizada. Cada experimento se define en una carpeta experiments/{nombre} que incluye:
+
+- config.yaml: define las clases, fuente de imágenes, número de ejemplos por clase, hiperparámetros, etc.
+
+- run_experiment.py: ejecuta todo el pipeline (preparación de datos, entrenamiento y evaluación).
+
+- data/: CSVs con rutas a imágenes seleccionadas para train/val/test.
+
+- models/: modelos guardados (por ejemplo, best_model.pth).
+
+- results/: métricas y gráficos generados automáticamente.
+
+Esto permite comparar fácilmente distintas configuraciones (por ejemplo: cambios de arquitectura, datos, preprocesamiento, etc.), sin tocar el código base.
+
+Además, se ha separado la lógica en módulos (utils/) y scripts (scripts/) reutilizables para facilitar la escalabilidad del proyecto.
+
 ---
 
 ## 🔧 Requisitos
