@@ -1,10 +1,6 @@
 /.venv
-/__pycache__
+__pycache__
 /imagenes
-/imagenes_test
-test.py
-*.ipynb
 *_log_*
-data.lnk
 /data
 /logs

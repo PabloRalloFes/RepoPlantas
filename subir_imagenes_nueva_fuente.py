@@ -12,7 +12,7 @@ def run_subprocess(cmd):
         sys.exit(1)
 
 def check_upload_images_exists():
-    if not os.path.exists("utils/upload_images.py"):
+    if not os.path.exists("scripts/upload_images.py"):
         print("❌ No se encuentra upload_images.py en el directorio actual.")
         sys.exit(1)
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     formatos = ["Color", "Grayscale", "Segmented"]
     for formato in formatos:
         print(f"\n⬆️ Subiendo imágenes en formato {formato}...")
-        cmd = ["python", "utils/upload_images.py", formato, "--fuente", fuente]
+        cmd = ["python", "scripts/upload_images.py", formato, "--fuente", fuente]
         if start: cmd += ["--start", str(start)]
         if limit: cmd += ["--limit", str(limit)]
         run_subprocess(cmd)

@@ -26,14 +26,14 @@ if __name__ == "__main__":
 
     print("🔧 Convirtiendo a escala de grises...")
     run_subprocess([
-        "python", "utils/convert_to_grayscale.py",
+        "python", "scripts/convert_to_grayscale.py",
         "--input", color_path,
         "--output", grayscale_path
     ])
 
     print("🟢 Segmentando hojas...")
     run_subprocess([
-        "python", "utils/segment_leaves.py",
+        "python", "scripts/segment_leaves.py",
         "--input", color_path,
         "--output", segmented_path
     ])
