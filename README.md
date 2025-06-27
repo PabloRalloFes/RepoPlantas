@@ -158,6 +158,7 @@ Además, se ha separado la lógica en módulos (utils/) y scripts (scripts/) reu
 - La segmentación implementada se inspira en el artículo original de PlantVillage, aunque no es idéntica.
 - Este repositorio está diseñado para ser extensible: se puede adaptar fácilmente para nuevas fuentes, cambios en el modelo o nuevas estrategias de evaluación.
 - El script `upload_images.py` maneja por sí solo la creación de versiones en `grayscale` y `segmented` si no existen, llamando a `process_imported_images.py` automáticamente.
+- Los scripts en scripts/legacy han sido usados de manera auxiliar y el usuario final con toda seguridad no necesitará utilizarlos. dividir_clases.py solo es necesario si ya se habían insertado clases antiguas sin los campos cultivo y enfermedad y eliminar_nombre.py si hay una variable de la coleccion Clases que se quiere eliminar (en este caso nombre).
 
 ---
 

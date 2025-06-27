@@ -25,11 +25,13 @@ with open("src/clases.json", "r", encoding="utf-8") as f:
 
 for nombre_completo in sorted(clase_id_dict, key=lambda x: clase_id_dict[x]):
     cultivo = nombre_completo.split("___")[0]
+    enfermedad = nombre_completo.split("___")[1] 
     payload = {
         "coleccion": "Clases",
         "etiqueta": {
             "clasificacion": nombre_completo,
-            "nombre": cultivo
+            "cultivo": cultivo,
+            "enfermedad": enfermedad
         }
     }
     r = requests.post(f"{URL}/add_etiqueta", json=payload)
