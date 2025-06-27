@@ -36,14 +36,15 @@ def main():
     model, history = train_model(model, train_loader, val_loader, config)
 
     # 5. Evaluación en validación
-    val_loss, val_acc = evaluate(model, val_loader)
+    acc_cultivo, acc_enfermedad, acc_combinada = evaluate(model, val_loader, config, DATA_DIR)
 
     # 6. Guardar
     results = {
-        "val_loss": val_loss,
-        "val_acc": val_acc,
-        "history": history
-    }
+    "acc_cultivo": acc_cultivo,
+    "acc_enfermedad": acc_enfermedad,
+    "acc_combinada": acc_combinada,
+    "history": history
+}
 
     save_model(model, MODEL_PATH)
     save_metrics(results, METRICS_PATH)
