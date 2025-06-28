@@ -45,7 +45,7 @@ enfermedades:
 # Lista de fuentes 
 fuentes:
   - PlantVillage
-imagenes_por_clase: 100
+imagenes_por_clase: 20
 
 # Formato
 formato: Color
@@ -57,11 +57,11 @@ split:
   test: 0.1
 
 # Modelo
-pretrained: true
+weights: MobileNet_V2_Weights.DEFAULT
 fine_tune: top
 
 # Entrenamiento
 image_size: [224, 224]
 batch_size: 32
-epochs: 10
+epochs: 3
 lr: 0.001

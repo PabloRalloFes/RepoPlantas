@@ -1,5 +1,6 @@
 import torch.nn as nn
-from torchvision import models
+from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
+
 
 class MultiTaskMobileNetV2(nn.Module):
     def __init__(self, base_model, num_cultivos, num_enfermedades):
@@ -24,10 +25,10 @@ def build_model(config):
     """
     Crea una MobileNetV2 multitarea con dos cabezas de clasificación.
     """
-    pretrained = config["pretrained"]
     fine_tune = config["fine_tune"]
-
-    base_model = models.mobilenet_v2(pretrained=pretrained)
+    weights = config["weights"]
+    
+    base_model = mobilenet_v2(weights=weights)
 
     # Congelación de capas según config
     if fine_tune == "none":

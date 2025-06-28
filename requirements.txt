@@ -2,3 +2,12 @@ flask
 flask_pymongo
 pillow
 numpy
+yaml
+pandas
+scikit-learn
+matplotlib
+torch
+torchvision
+opencv-python
+tqdm
+requests
