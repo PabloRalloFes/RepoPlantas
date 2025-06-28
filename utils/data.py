@@ -31,6 +31,10 @@ def prepare_data_splits(db, config, save_dir):
         "enfermedad": {"$in": enfermedades}
     }))
 
+    if not clases_filtradas:
+        raise ValueError("❌ No se han encontrado combinaciones cultivo-enfermedad válidas con los filtros actuales del config.")
+
+
     id_to_info = {doc["_id"]: (doc["cultivo"], doc["enfermedad"]) for doc in clases_filtradas}
     clases_ids = list(id_to_info.keys())
 

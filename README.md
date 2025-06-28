@@ -13,11 +13,6 @@ data/
 │       ├── color/
 │       ├── grayscale/
 │       └── segmented/
-├── Real/
-│   └── App/
-│       ├── color/
-│       ├── grayscale/
-│       └── segmented/
 ├── PlantVillage/
 │   ├── color/
 │   ├── grayscale/
@@ -135,6 +130,11 @@ El sistema incorpora una estructura modular para lanzar experimentos completos d
 Esto permite comparar fácilmente distintas configuraciones (por ejemplo: cambios de arquitectura, datos, preprocesamiento, etc.), sin tocar el código base.
 
 Además, se ha separado la lógica en módulos (utils/) y scripts (scripts/) reutilizables para facilitar la escalabilidad del proyecto.
+
+
+
+Para los experimentos realizados, se recomienda no usar cultivos que únicamente tengan posibilidad de estado de salud. Por ejemplo, en PlantVillage los cultivos "Orange" y "Raspberry" cumplen esto y se ha decidido ignorarlos en la mayoría de experimentos de este repositorio. Esto cambiaría en el caso de que se consiguieran imágenes que añadieran clases a estos cultivos.
+
 
 ---
 
