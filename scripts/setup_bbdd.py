@@ -19,20 +19,18 @@ for e in etiquetas:
     r = requests.post(f"{URL}/add_etiqueta", json=e)
     print(r.status_code, r.json())
 
-# Clases a crear
-with open("src/clases.json", "r", encoding="utf-8") as f:
-    clase_id_dict = json.load(f)
+with open("src/clases_combinadas.json", "r", encoding="utf-8") as f:
+    clases = json.load(f)
 
-for nombre_completo in sorted(clase_id_dict, key=lambda x: clase_id_dict[x]):
-    cultivo = nombre_completo.split("___")[0]
-    enfermedad = nombre_completo.split("___")[1] 
+for clase in sorted(clases, key=lambda c: c["_id"]):
     payload = {
         "coleccion": "Clases",
         "etiqueta": {
-            "clasificacion": nombre_completo,
-            "cultivo": cultivo,
-            "enfermedad": enfermedad
+            "clasificacion": clase.get("clasificacion") or None,
+            "planta": clase["planta"],
+            "nombre_comun": clase["nombre_comun"],
+            "nombre_cientifico": clase.get("nombre_cientifico") or None,
         }
     }
     r = requests.post(f"{URL}/add_etiqueta", json=payload)
-    print(f"{nombre_completo} → {r.status_code}")
+    print(f'{clase["_id"]:>3} {clase["planta"]} - {clase["nombre_comun"]} → {r.status_code}')

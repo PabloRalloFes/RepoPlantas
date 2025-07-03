@@ -9,8 +9,10 @@
         "nombre": "clase",
         "cod": 0,
         "campos_etiqueta": {
+            "planta": "str",
             "clasificacion": "str",
-            "nombre": "str"
+            "nombre_comun": "str",
+            "nombre_cientifico": "str"
         },
         "coleccion": "Clases"
     },

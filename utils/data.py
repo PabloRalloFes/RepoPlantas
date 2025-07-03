@@ -22,20 +22,20 @@ def prepare_data_splits(db, config, save_dir):
     imagenes_por_clase = config["imagenes_por_clase"]
     split_ratios = config["split"]
     formato_nombre = config["formato"]
-    cultivos = config["cultivos"]
+    plantas = config["plantas"]
     enfermedades = config["enfermedades"]
 
-    # Obtener clases válidas con cultivo y enfermedad filtrados
+    # Obtener clases válidas con planta y enfermedad filtrados
     clases_filtradas = list(db["Clases"].find({
-        "cultivo": {"$in": cultivos},
-        "enfermedad": {"$in": enfermedades}
+        "planta": {"$in": plantas},
+        "nombre_comun": {"$in": enfermedades}
     }))
 
     if not clases_filtradas:
-        raise ValueError("❌ No se han encontrado combinaciones cultivo-enfermedad válidas con los filtros actuales del config.")
+        raise ValueError("❌ No se han encontrado combinaciones planta-enfermedad válidas con los filtros actuales del config.")
 
 
-    id_to_info = {doc["_id"]: (doc["cultivo"], doc["enfermedad"]) for doc in clases_filtradas}
+    id_to_info = {doc["_id"]: (doc["planta"], doc["nombre_comun"]) for doc in clases_filtradas}
     clases_ids = list(id_to_info.keys())
 
     # Formato y fuentes
@@ -90,12 +90,12 @@ def prepare_data_splits(db, config, save_dir):
 
             nombre_archivo = doc["imagen_rgb"].split("/")[-1]
             ruta_local = os.path.join(IMAGENES_DIR, nombre_archivo)
-            cultivo, enfermedad = id_to_info[clase_id]
+            planta, enfermedad = id_to_info[clase_id]
 
             split_data.append({
                 "imagen_rgb": ruta_local,
-                "cultivo": cultivo,
-                "enfermedad": enfermedad,
+                "planta": planta,
+                "nombre_comun": enfermedad,
                 "clase_id": clase_id,  # para trazabilidad
                 "subset": subset
             })
@@ -111,14 +111,14 @@ def prepare_data_splits(db, config, save_dir):
 
 
 class PlantDataset(Dataset):
-    def __init__(self, csv_path, cultivos, enfermedades, transform=None):
+    def __init__(self, csv_path, plantas, enfermedades, transform=None):
         self.data = pd.read_csv(csv_path)
         self.transform = transform
 
-        self.cultivo_to_idx = {c: i for i, c in enumerate(cultivos)}
+        self.planta_to_idx = {c: i for i, c in enumerate(plantas)}
         self.enfermedad_to_idx = {e: i for i, e in enumerate(enfermedades)}
 
-        self.idx_to_cultivo = {i: c for c, i in self.cultivo_to_idx.items()}
+        self.idx_to_planta = {i: c for c, i in self.planta_to_idx.items()}
         self.idx_to_enfermedad = {i: e for e, i in self.enfermedad_to_idx.items()}
 
     def __len__(self):
@@ -127,14 +127,14 @@ class PlantDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
         image_path = row["imagen_rgb"]
-        cultivo = self.cultivo_to_idx[row["cultivo"]]  # NUEVO
+        planta = self.planta_to_idx[row["planta"]]  # NUEVO
         enfermedad = self.enfermedad_to_idx[row["enfermedad"]]  # NUEVO
         image = Image.open(image_path).convert("RGB")
 
         if self.transform:
             image = self.transform(image)
 
-        return image, (cultivo, enfermedad)
+        return image, (planta, enfermedad)
 
 def get_dataloader_from_csv(csv_path, config):
     image_size = tuple(config["image_size"])
@@ -146,12 +146,12 @@ def get_dataloader_from_csv(csv_path, config):
                             std=[0.229, 0.224, 0.225])
     ])
 
-    cultivos = config["cultivos"]
+    plantas = config["plantas"]
     enfermedades = config["enfermedades"]
 
-    train_ds = PlantDataset(os.path.join(csv_path, "train.csv"), cultivos, enfermedades, transform=transform)
-    val_ds = PlantDataset(os.path.join(csv_path, "val.csv"), cultivos, enfermedades, transform=transform)
-    test_ds = PlantDataset(os.path.join(csv_path, "test.csv"), cultivos, enfermedades, transform=transform)
+    train_ds = PlantDataset(os.path.join(csv_path, "train.csv"), plantas, enfermedades, transform=transform)
+    val_ds = PlantDataset(os.path.join(csv_path, "val.csv"), plantas, enfermedades, transform=transform)
+    test_ds = PlantDataset(os.path.join(csv_path, "test.csv"), plantas, enfermedades, transform=transform)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size)

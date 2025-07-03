@@ -34,7 +34,7 @@ src/
 
 ## ⚙️ Descripción del pipeline
 
-El proyecto incluye un pipeline completo para incorporar imágenes externas (reales o de otras fuentes) al sistema:
+El proyecto incluye un pipeline completo para incorporar imágenes de otras fuentes al sistema:
 
 ### 1. Preparación manual de las imágenes
 
@@ -65,7 +65,7 @@ Antes de empezar a trabajar con las imágenes, es necesario inicializar la base 
 Puedes hacerlo fácilmente ejecutando el siguiente script:
 
 ```bash
-python setup_database.py
+python scripts/setup_bbdd.py
 ```
 
 Esto creará automáticamente:
@@ -82,7 +82,7 @@ Esto creará automáticamente:
 Una vez colocadas las imágenes y creada la base de datos, puedes ejecutar todo el pipeline de subida con un solo comando:
 
 ```bash
-python subir_imagenes_nueva_fuente.py --fuente nombre_fuente
+python scripts/subir_imagenes_nueva_fuente.py --fuente nombre_fuente
 ```
 
 Este script realiza automáticamente:
@@ -108,7 +108,7 @@ Este script realiza automáticamente:
 3. Ejecuta:
 
 ```bash
-python subir_imagenes_nueva_fuente.py --fuente {fuente}
+python scripts/subir_imagenes_nueva_fuente.py --fuente {fuente}
 ```
 
 4. Las imágenes se segmentarán, convertirán a escala de grises y se subirán a la base de datos local con toda la información asociada.

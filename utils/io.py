@@ -21,9 +21,9 @@ def plot_history(history, path):
 
     plt.figure(figsize=(10, 6))
 
-    if "train_loss_cultivo" in history and "val_loss_cultivo" in history:
-        plt.plot(history["train_loss_cultivo"], label="Train Loss - Cultivo")
-        plt.plot(history["val_loss_cultivo"], label="Val Loss - Cultivo")
+    if "train_loss_planta" in history and "val_loss_planta" in history:
+        plt.plot(history["train_loss_planta"], label="Train Loss - planta")
+        plt.plot(history["val_loss_planta"], label="Val Loss - planta")
 
     if "train_loss_enfermedad" in history and "val_loss_enfermedad" in history:
         plt.plot(history["train_loss_enfermedad"], label="Train Loss - Enfermedad")

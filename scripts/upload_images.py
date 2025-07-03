@@ -7,6 +7,10 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import subprocess
 import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT))
 
 def procesar_fuente_si_falta(fuente):
     base_path = os.path.join("data", "Imported", fuente)
@@ -86,10 +90,10 @@ if args.fuente:
 
 # Directorio base y log
 if args.fuente:
-    DATASET_DIR = os.path.join("data", "Imported", args.fuente, formato_nombre.lower())
-    LOG_PATH = f"logs/upload_log_{formato_nombre}_{args.fuente}.txt"
+    DATASET_DIR = os.path.join(ROOT ,"data", "Imported", args.fuente, formato_nombre.lower())
+    LOG_PATH = os.path.join(ROOT, f"logs/upload_log_{formato_nombre}_{args.fuente}.txt")
 else:
-    DATASET_DIR = f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/Data/PlantVillage/{formato_nombre.lower()}"
+    DATASET_DIR = os.path.join(ROOT, f"data", "PlantVillage", formato_nombre.lower())
     LOG_PATH = f"logs/upload_log_{formato_nombre}_PlantVillage.txt"
 
 BACKEND_URL = "http://localhost:5001/subir_imagen"
