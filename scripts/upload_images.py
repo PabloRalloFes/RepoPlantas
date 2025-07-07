@@ -75,7 +75,7 @@ def subir_imagen(ruta_img, clase_id, formato_id, fuente):
 # Argumentos
 parser = argparse.ArgumentParser(description="Subida de imágenes a la base de datos")
 parser.add_argument("formato", choices=["Color", "Grayscale", "Segmented"], help="Formato de imagen")
-parser.add_argument("--fuente", default=None, help="Fuente de las imágenes (subcarpeta en data/Imported)")
+parser.add_argument("--fuente", default=None, help="Fuente de las imágenes (opcional, por defecto 'PlantVillage')")
 parser.add_argument("--start", type=int, default=0, help="Índice de inicio del batch (por clase o carpeta)")
 parser.add_argument("--limit", type=int, default=None, help="Número máximo de imágenes a subir (por clase o carpeta)")
 args = parser.parse_args()

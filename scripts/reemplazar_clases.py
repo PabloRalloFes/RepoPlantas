@@ -6,11 +6,12 @@ from pathlib import Path
 from bson import ObjectId
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
 json_path = os.path.join(ROOT, "src", "clases_combinadas.json")
 backup_path = os.path.join(ROOT, "src", "clases_backup.json")
+os.makedirs(os.path.dirname(backup_path), exist_ok=True)
 
 # Conexión a MongoDB
 client = MongoClient("mongodb://localhost:27017/")

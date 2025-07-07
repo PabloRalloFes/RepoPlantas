@@ -24,21 +24,21 @@
     "_id": 3,
     "planta": "Apple",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
     "_id": 4,
     "planta": "Blueberry",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
     "_id": 5,
     "planta": "Cherry_(including_sour)",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -66,7 +66,7 @@
     "_id": 9,
     "planta": "Corn_(maize)",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -94,7 +94,7 @@
     "_id": 13,
     "planta": "Grape",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -122,7 +122,7 @@
     "_id": 17,
     "planta": "Peach",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -136,7 +136,7 @@
     "_id": 19,
     "planta": "Pepper,_bell",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -150,7 +150,7 @@
     "_id": 21,
     "planta": "Potato",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -164,14 +164,14 @@
     "_id": 23,
     "planta": "Raspberry",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
     "_id": 24,
     "planta": "Soybean",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -185,7 +185,7 @@
     "_id": 26,
     "planta": "Strawberry",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -213,7 +213,7 @@
     "_id": 30,
     "planta": "Tomato",
     "clasificacion": "",
-    "nombre_comun": "healthy",
+    "nombre_comun": "Healthy",
     "nombre_cientifico": ""
   },
   {
@@ -275,7 +275,7 @@
   {
     "_id": 39,
     "planta": "Vid",
-    "clasificacion": "healthy",
+    "clasificacion": "Sana",
     "nombre_comun": "",
     "nombre_cientifico": ""
   },

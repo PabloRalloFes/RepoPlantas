@@ -17,123 +17,167 @@ data/
 │   ├── color/
 │   ├── grayscale/
 │   └── segmented/
-utils/
-├── convert_to_grayscale.py
-├── segment_leaves.py
-├── upload_images.py
-main.py
-process_imported_images.py
-subir_imagenes_nueva_fuente.py
+experiments/
+├── BASE
+│   ├── data/
+│   ├── models/
+│   ├── results/
+│   ├── config.yaml
+│   └── run_experiment.py
+...
 models/
 ### modelos entrenados
+notebooks/
+├── legacy/
+└── EDA.ipynb
+scripts/
+├── legacy/
+├── add_class.py
+├── convert_to_grayscale.py
+├── editar_clases.py
+├── predict_image.py
+├── process_imported_images.py
+├── reemplazar_clases.py
+├── segment_leaves.py
+├── setup_bbdd.py
+├── subir_imagenes_nueva_fuente.py
+└── upload_images.py
 src/
-### archivos auxiliares, mirar de cambiar
+├── campos.json
+├── clases_combinadas.json
+├── clases.json
+└── etiquetas.json
+utils/
+├── data.py
+├── database.py
+├── io.py
+├── model.py
+└── train.py
+main.py
+requirements.txt
 ```
 
 ---
 
 ## ⚙️ Descripción del pipeline
 
-El proyecto incluye un pipeline completo para incorporar imágenes de otras fuentes al sistema:
+El proyecto incluye un pipeline completo para crear y gestionar la base de datos de imágenes:
 
-### 1. Preparación manual de las imágenes
+### 1. Inicialización de la base de datos
 
-El punto de partida es tener imágenes externas descargadas manualmente o por otros medios. Para integrarlas en el sistema, se deben colocar en la siguiente ruta:
+Antes de trabajar con las imágenes, es necesario crear en MongoDB la estructura básica de colecciones y etiquetas.
+
+Puedes hacerlo fácilmente ejecutando el siguiente script:
+
+```
+python scripts/setup_bbdd.py
+```
+
+
+Esto creará automáticamente:
+
+- Las colecciones necesarias (`Clases`, `Docs`, `Formato`, `Fuente`, etc.).
+- Las etiquetas básicas como `Color`, `Grayscale` y `Segmented`.
+- El registro de todas las clases disponibles en PlantVillage a partir de `clases.json`.
+
+⚠️ Asegúrate de que el servidor de MongoDB (`main.py`) esté en ejecución antes de lanzar este paso.
+
+---
+
+### 2. Subida de imágenes de PlantVillage
+
+Una vez creada la base de datos, puedes subir todas las imágenes del dataset PlantVillage en los tres formatos disponibles ejecutando:
+
+```
+python scripts/upload_images.py Color
+python scripts/upload_images.py Grayscale
+python scripts/upload_images.py Segmented
+```
+
+
+Este script:
+- Procesa las imágenes si no están generadas (escala de grises y segmentadas).
+- Sube las imágenes a la base de datos local.
+- Registra en logs las imágenes ya subidas para evitar duplicados en futuras ejecuciones.
+
+---
+
+### 3. Preparación manual de imágenes externas
+
+Si quieres añadir imágenes reales (por ejemplo, tomadas con una app móvil o recopiladas manualmente), debes colocarlas manualmente en la siguiente ruta:
 
 ```
 data/Imported/{nombre_fuente}/color/
 ```
 
-Donde `{nombre_fuente}` identifica la fuente (por ejemplo, `agricultura_europa2025`, `proyecto_movil`, etc.).
+Donde `{nombre_fuente}` identifica la fuente (por ejemplo, `proyecto_movil`, `agricultura_europa2025`, etc.).
 
 Estas imágenes deben estar organizadas por carpetas con el nombre exacto de cada clase (enfermedad), igual que en PlantVillage. Ejemplo:
 
 ```
 data/Imported/mi_fuente/color/Tomato___Early_blight/
-                                        ├── img1.jpg
-                                        ├── img2.jpg
+├── img1.jpg
+├── img2.jpg
 ```
 
 Esto permite que el sistema asocie automáticamente cada imagen con su clase correspondiente durante la subida.
 
-### 2. Procesamiento y subida automática
+---
 
-## 🧩 Inicialización de la base de datos
+### 4. Procesamiento y subida automática de nuevas fuentes
 
-Antes de empezar a trabajar con las imágenes, es necesario inicializar la base de datos local con la estructura básica de campos y etiquetas.
+Una vez colocadas las imágenes, puedes ejecutar todo el pipeline de procesamiento y subida con un solo comando:
 
-Puedes hacerlo fácilmente ejecutando el siguiente script:
-
-```bash
-python scripts/setup_bbdd.py
 ```
-
-Esto creará automáticamente:
-
-- Las colecciones necesarias (Campos, Docs, Fuente, Formato, Clase, etc.).
-
-- Las etiquetas básicas para formato (Color, Grayscale, Segmented) y otras categorías.
-
-- Los metadatos necesarios para que el sistema pueda validar y clasificar imágenes correctamente.
-
-⚠️ Asegúrate de que el servidor MongoDB (main.py) esté en ejecución antes de lanzar el script.
-
-
-Una vez colocadas las imágenes y creada la base de datos, puedes ejecutar todo el pipeline de subida con un solo comando:
-
-```bash
 python scripts/subir_imagenes_nueva_fuente.py --fuente nombre_fuente
 ```
 
 Este script realiza automáticamente:
 - Registro de la fuente en la base de datos (si aún no existe).
-- Procesamiento de las imágenes en color para generar versiones en escala de grises (`grayscale/`) y segmentadas (`segmented/`), redimensionadas y en formato JPG.
-- Subida de los tres formatos a la base de datos, incluyendo metainformación `fuente` y `formato`.
-- Evita duplicados mediante logs por formato.
+- Procesamiento de las imágenes en color para generar versiones `grayscale/` y `segmented/`.
+- Redimensionado y conversión a JPG.
+- Subida de los tres formatos (`color`, `grayscale`, `segmented`) con la metainformación correspondiente (`fuente`, `formato`).
+- Control de duplicados mediante logs por formato.
 
-> También puedes ejecutar solo el procesamiento con:
+> También puedes ejecutar solo el procesamiento (sin subir) con:
 >
-> ```bash
+> ```
 > python utils/process_imported_images.py --fuente nombre_fuente
 > ```
 >
 > Esto es útil si quieres revisar las imágenes procesadas antes de subirlas.
 
----
-
-## 🧪 Cómo añadir una nueva fuente
-
-1. Crea una nueva carpeta dentro de `data/Imported/` con el nombre de la fuente.
-2. Dentro de esa carpeta, añade las imágenes organizadas por clase en `color/`. Si hay alguna clase nueva (que no aparezca en `clases.json`), se añadirá automáticamente durante el proceso.
-3. Ejecuta:
-
-```bash
-python scripts/subir_imagenes_nueva_fuente.py --fuente {fuente}
-```
-
-4. Las imágenes se segmentarán, convertirán a escala de grises y se subirán a la base de datos local con toda la información asociada.
 
 ## 🧪 Experimentos reproducibles y automatizados
 
-El sistema incorpora una estructura modular para lanzar experimentos completos de forma automatizada. Cada experimento se define en una carpeta experiments/{nombre} que incluye:
+El proyecto permite lanzar experimentos completos de forma modular y automatizada. Cada experimento se define dentro de una carpeta:
 
-- config.yaml: define las clases, fuente de imágenes, número de ejemplos por clase, hiperparámetros, etc.
+```
+experiments/{nombre_experimento}/
+```
 
-- run_experiment.py: ejecuta todo el pipeline (preparación de datos, entrenamiento y evaluación).
+Esta carpeta debe contener:
 
-- data/: CSVs con rutas a imágenes seleccionadas para train/val/test.
+- `config.yaml`: configuración del experimento, incluyendo clases seleccionadas, fuentes de datos, formato, número de imágenes por clase, hiperparámetros del modelo, etc.
+- `run_experiment.py`: script que ejecuta todo el pipeline (preparación de datos, entrenamiento y evaluación).
 
-- models/: modelos guardados (por ejemplo, best_model.pth).
+Con estos 2 ficheros es suficiente para ejecutar un experimento, que generaría lo siguiente: 
 
-- results/: métricas y gráficos generados automáticamente.
+- `data/`: CSVs generados automáticamente con las rutas a imágenes para entrenamiento, validación y test.
+- `models/`: carpeta donde se guarda el modelo entrenado (`best_model.pth`).
+- `results/`: métricas, gráficas, matrices de confusión y logs de evaluación.
 
-Esto permite comparar fácilmente distintas configuraciones (por ejemplo: cambios de arquitectura, datos, preprocesamiento, etc.), sin tocar el código base.
+Esto permite comparar fácilmente diferentes configuraciones (por ejemplo, cambios en los datos, preprocesamiento, arquitectura, entrenamiento...), sin modificar el código base del proyecto.
 
-Además, se ha separado la lógica en módulos (utils/) y scripts (scripts/) reutilizables para facilitar la escalabilidad del proyecto.
+Toda la lógica del pipeline está dividida en módulos reutilizables dentro de `utils/` y `scripts/`, lo que facilita su mantenimiento y escalabilidad.
 
+---
 
+### ⚠️ Consideraciones para la selección de clases
 
-Para los experimentos realizados, se recomienda no usar cultivos que únicamente tengan posibilidad de estado de salud. Por ejemplo, en PlantVillage los cultivos "Orange" y "Raspberry" cumplen esto y se ha decidido ignorarlos en la mayoría de experimentos de este repositorio. Esto cambiaría en el caso de que se consiguieran imágenes que añadieran clases a estos cultivos.
+En algunos cultivos del dataset PlantVillage (como `Orange` o `Raspberry`) solo hay una clase disponible (por ejemplo, solo hojas sanas). Por este motivo, se recomienda excluir esos cultivos en los experimentos, ya que no permiten aprender a distinguir entre clases.
+
+Este criterio puede cambiar si en el futuro se incorporan imágenes reales que amplíen el número de clases posibles para esos cultivos.
 
 
 ---

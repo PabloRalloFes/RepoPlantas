@@ -11,3 +11,4 @@ torchvision
 opencv-python
 tqdm
 requests
+seaborn

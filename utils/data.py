@@ -65,6 +65,11 @@ def prepare_data_splits(db, config, save_dir):
 
     print(f"Se han encontrado {len(docs_por_clase)} clases con imágenes en formato {formato_nombre}.")
 
+    clases_con_imagenes = [id_to_info[clase_id] for clase_id in docs_por_clase]
+    plantas_filtradas = sorted(set(p for p, _ in clases_con_imagenes))
+    enfermedades_filtradas = sorted(set(e for _, e in clases_con_imagenes))
+
+
     CURRENT_FILE = Path(__file__).resolve()
     REPO_ROOT = CURRENT_FILE.parents[1]
     IMAGENES_DIR = REPO_ROOT / "imagenes"
@@ -100,6 +105,11 @@ def prepare_data_splits(db, config, save_dir):
                 "subset": subset
             })
 
+
+    config["plantas"] = plantas_filtradas
+    config["enfermedades"] = enfermedades_filtradas
+
+
     df = pd.DataFrame(split_data)
     os.makedirs(save_dir, exist_ok=True)
 
@@ -108,6 +118,8 @@ def prepare_data_splits(db, config, save_dir):
 
     print("✅ CSVs guardados en la carpeta data/:")
     print(df["subset"].value_counts())
+
+    return config
 
 
 class PlantDataset(Dataset):
@@ -127,8 +139,8 @@ class PlantDataset(Dataset):
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
         image_path = row["imagen_rgb"]
-        planta = self.planta_to_idx[row["planta"]]  # NUEVO
-        enfermedad = self.enfermedad_to_idx[row["enfermedad"]]  # NUEVO
+        planta = self.planta_to_idx[row["planta"]]
+        enfermedad = self.enfermedad_to_idx[row["nombre_comun"]]
         image = Image.open(image_path).convert("RGB")
 
         if self.transform:

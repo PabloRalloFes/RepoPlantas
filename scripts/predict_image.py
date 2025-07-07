@@ -5,6 +5,8 @@ from torchvision import transforms
 from PIL import Image
 import sys
 from pathlib import Path
+import pandas as pd
+import os
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
@@ -12,11 +14,16 @@ sys.path.append(str(ROOT))
 from utils.model import build_model
 from utils.database import load_yaml_config, connect_to_database
 
-def predict(image_path, config_path, modelo_path, known_planta=None):
+def predict(image_path, experiment_path, known_planta=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    config_path = os.path.join(experiment_path, "config_final.yaml")
+    modelo_path = os.path.join(experiment_path, "models/best_model.pth")
+    data_path = os.path.join(experiment_path, "data")
 
     # Cargar configuración y modelo
     config = load_yaml_config(config_path)
+    
 
     if config["plantas"] == "all":
         db = connect_to_database()
@@ -41,7 +48,7 @@ def predict(image_path, config_path, modelo_path, known_planta=None):
     ])
 
     # Índices
-    cultivo_to_idx = {c: i for i, c in enumerate(config["cultivos"])}
+    cultivo_to_idx = {c: i for i, c in enumerate(config["plantas"])}
     enfermedad_to_idx = {e: i for i, e in enumerate(config["enfermedades"])}
     idx_to_cultivo = {i: c for c, i in cultivo_to_idx.items()}
     idx_to_enfermedad = {i: e for e, i in enfermedad_to_idx.items()}
@@ -58,7 +65,7 @@ def predict(image_path, config_path, modelo_path, known_planta=None):
 
         if known_planta:
             if known_planta not in cultivo_to_idx:
-                raise ValueError(f"Cultivo '{known_planta}' no está en el config.")
+                raise ValueError(f"La planta '{known_planta}' no está en el config.")
             idx_cultivo = cultivo_to_idx[known_planta]
         else:
             idx_cultivo = probs_c.argmax().item()
@@ -66,8 +73,21 @@ def predict(image_path, config_path, modelo_path, known_planta=None):
         cultivo_pred = idx_to_cultivo[idx_cultivo]
 
         # Filtrar enfermedades válidas para ese cultivo
-        combinaciones_validas = [(c, e) for c, e in zip(config["plantas"], config["enfermedades"])]
-        enfermedades_validas = [e for c, e in combinaciones_validas if c == cultivo_pred]
+        train_csv_path = Path(data_path) / "train.csv"
+        if not train_csv_path.exists():
+            raise FileNotFoundError(f"No se encuentra el archivo de combinaciones válidas: {train_csv_path}")
+
+        df_train = pd.read_csv(train_csv_path)
+        combinaciones_validas = set(zip(df_train["planta"], df_train["nombre_comun"]))
+
+        # Filtrar enfermedades válidas para el cultivo predicho
+        enfermedades_validas = [e for (p, e) in combinaciones_validas if p == cultivo_pred]
+
+        if not enfermedades_validas:
+            raise ValueError(f"No hay enfermedades válidas para el cultivo predicho: {cultivo_pred}")
+
+        probs_filtradas = {e: probs_e[enfermedad_to_idx[e]].item() for e in enfermedades_validas}
+        enfermedad_pred = max(probs_filtradas, key=probs_filtradas.get)
 
         if not enfermedades_validas:
             raise ValueError(f"No hay enfermedades válidas para el cultivo predicho: {cultivo_pred}")
@@ -79,13 +99,12 @@ def predict(image_path, config_path, modelo_path, known_planta=None):
     print(f"🦠 Nombre común enfermedad predicha: {enfermedad_pred}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print("Uso: python predict_image.py <imagen.jpg> <config.yaml> <modelo.pth> [<planta>]")
+    if len(sys.argv) < 3:
+        print("Uso: python predict_image.py <imagen.jpg> <ruta experimento> [<planta>]")
         sys.exit(1)
 
     image_path = sys.argv[1]
-    config_path = sys.argv[2]
-    modelo_path = sys.argv[3]
-    known_planta = sys.argv[4] if len(sys.argv) == 5 else None
+    experiment_path = sys.argv[2]
+    known_planta = sys.argv[3] if len(sys.argv) == 4 else None
 
-    predict(image_path, config_path, modelo_path, known_planta)
+    predict(image_path, experiment_path, known_planta)
