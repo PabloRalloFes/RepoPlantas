@@ -59,7 +59,7 @@
     "_id": 8,
     "planta": "Corn_(maize)",
     "clasificacion": "",
-    "nombre_comun": "Common_rust_",
+    "nombre_comun": "Common_rust",
     "nombre_cientifico": ""
   },
   {
@@ -127,14 +127,14 @@
   },
   {
     "_id": 18,
-    "planta": "Pepper,_bell",
+    "planta": "Pepper_bell",
     "clasificacion": "",
     "nombre_comun": "Bacterial_spot",
     "nombre_cientifico": ""
   },
   {
     "_id": 19,
-    "planta": "Pepper,_bell",
+    "planta": "Pepper_bell",
     "clasificacion": "",
     "nombre_comun": "healthy",
     "nombre_cientifico": ""
@@ -290,7 +290,7 @@
     "_id": 41,
     "planta": "Vid",
     "clasificacion": "Carencia",
-    "nombre_comun": "Clorosis Férrica",
+    "nombre_comun": "Clorosis_Férrica",
     "nombre_cientifico": ""
   },
   {
@@ -339,7 +339,7 @@
     "_id": 48,
     "planta": "Vid",
     "clasificacion": "Enfermedades",
-    "nombre_comun": "Podredumbre Ácida",
+    "nombre_comun": "Podredumbre_Ácida",
     "nombre_cientifico": ""
   },
   {
@@ -395,28 +395,28 @@
     "_id": 56,
     "planta": "Vid",
     "clasificacion": "Virus",
-    "nombre_comun": "Aclaramiento de nervios",
+    "nombre_comun": "Aclaramiento_de_nervios",
     "nombre_cientifico": ""
   },
   {
     "_id": 57,
     "planta": "Vid",
     "clasificacion": "Virus",
-    "nombre_comun": "Enrollamiento Virótico",
+    "nombre_comun": "Enrollamiento_Virótico",
     "nombre_cientifico": ""
   },
   {
     "_id": 58,
     "planta": "Vid",
     "clasificacion": "Virus",
-    "nombre_comun": "Entrenudo Corto",
+    "nombre_comun": "Entrenudo_Corto",
     "nombre_cientifico": ""
   },
   {
     "_id": 59,
     "planta": "Vid",
     "clasificacion": "Virus",
-    "nombre_comun": "Madera Rizada Madera Acorchada",
+    "nombre_comun": "Madera_Rizada_Madera_Acorchada",
     "nombre_cientifico": ""
   }
 ]

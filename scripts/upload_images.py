@@ -39,7 +39,7 @@ def obtener_o_crear_id_fuente(nombre):
             if etq["fuente"] == nombre:
                 return etq["_id"]
         
-        # No existe → la creamos
+        # No existe, así que la creamos
         payload = {
             "coleccion": "Fuente",
             "etiqueta": {"fuente": nombre}

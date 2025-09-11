@@ -6,6 +6,7 @@ import os
 from utils.io import save_confusion_matrix
 from sklearn.metrics import precision_score, recall_score, f1_score
 from collections import Counter
+import json  # Importar json para guardar el archivo de imágenes mal clasificadas
 
 def train_model(model, train_loader, val_loader, config, data_dir):
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -21,10 +22,9 @@ def train_model(model, train_loader, val_loader, config, data_dir):
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     else:
         raise ValueError(f"❌ Optimizador no soportado: {opt_name}")
-    
-    wp = config.get("loss_weights", {}).get("planta", 1.0)
-    we = config.get("loss_weights", {}).get("enfermedad", 1.0)
 
+    wp = config["peso_planta"]
+    we = config["peso_enfermedad"]
 
     # PARA LOS CRITERIOS DE PÉRDIDA USAMOS PESOS INVERSOS POR CLASE PARA CONTRARRESTAR EL DESBALANCEO
     df = pd.read_csv(os.path.join(data_dir, "train.csv"))
@@ -159,6 +159,8 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
     all_labels_planta = []
     all_labels_enfermedad = []
 
+    misclassified = []  # Lista para almacenar imágenes mal clasificadas
+
     with torch.no_grad():
         for images, (labels_planta, labels_enfermedad) in dataloader:
             images = images.to(device)
@@ -201,6 +203,19 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
                 all_labels_planta.append(labels_planta[i].item())
                 all_labels_enfermedad.append(labels_enfermedad[i].item())
 
+                if pred_c != labels_planta[i].item() or pred_e != labels_enfermedad[i].item():
+                    misclassified.append({
+                        "filename": dataloader.dataset.data.iloc[i]["imagen_rgb"],  # Ruta de la imagen
+                        "predicted": {
+                            "planta": planta_str,
+                            "enfermedad": enfermedad_str
+                        },
+                        "actual": {
+                            "planta": idx_to_planta[labels_planta[i].item()],
+                            "enfermedad": idx_to_enfermedad[labels_enfermedad[i].item()]
+                        }
+                    })
+
     acc_planta = correct_planta / total
     acc_enfermedad = correct_enfermedad / total
     acc_combinada = correct_comb / total
@@ -228,6 +243,13 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
                             f"Matriz de confusión - Enfermedad ({split_name})",
                             os.path.join(results_dir, f"confusion_enfermedad.png"))
 
+
+    # Guardar imágenes mal clasificadas
+    if misclassified:
+        misclassified_path = os.path.join(results_dir, "misclassified.json")
+        with open(misclassified_path, "w") as f:
+            json.dump(misclassified, f, indent=4)
+        print(f"💾 Archivo 'misclassified.json' guardado en {misclassified_path}")
 
     print(f"🎯 {split_name.upper()} — Accuracy: planta={acc_planta:.4f}, enfermedad={acc_enfermedad:.4f}, combinada={acc_combinada:.4f}")
     return metrics
