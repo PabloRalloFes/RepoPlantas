@@ -290,7 +290,7 @@
     "_id": 41,
     "planta": "Vid",
     "clasificacion": "Carencia",
-    "nombre_comun": "Clorosis_Férrica",
+    "nombre_comun": "Clorosis_Ferrica",
     "nombre_cientifico": ""
   },
   {
@@ -332,14 +332,14 @@
     "_id": 47,
     "planta": "Vid",
     "clasificacion": "Enfermedades",
-    "nombre_comun": "Oídio",
+    "nombre_comun": "Oidio",
     "nombre_cientifico": ""
   },
   {
     "_id": 48,
     "planta": "Vid",
     "clasificacion": "Enfermedades",
-    "nombre_comun": "Podredumbre_Ácida",
+    "nombre_comun": "Podredumbre_Acida",
     "nombre_cientifico": ""
   },
   {
@@ -402,7 +402,7 @@
     "_id": 57,
     "planta": "Vid",
     "clasificacion": "Virus",
-    "nombre_comun": "Enrollamiento_Virótico",
+    "nombre_comun": "Enrollamiento_Virotico",
     "nombre_cientifico": ""
   },
   {

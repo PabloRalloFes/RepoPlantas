@@ -23,7 +23,7 @@ def procesar_fuente_si_falta(fuente):
     if faltan:
         print(f"⚙️ Procesando imágenes para la fuente '{fuente}'...")
         try:
-            subprocess.run(["python", "process_imported_images.py", "--fuente", fuente], check=True)
+            subprocess.run(["python", "scripts/process_imported_images.py", "--fuente", fuente], check=True)
             print("✅ Procesamiento de imágenes completado.")
         except subprocess.CalledProcessError as e:
             print(f"❌ Error al procesar imágenes: {e}")

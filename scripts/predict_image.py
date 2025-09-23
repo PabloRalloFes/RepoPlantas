@@ -100,7 +100,7 @@ def predict(image_path, experiment_path, known_planta=None):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Uso: python predict_image.py <imagen.jpg> <ruta experimento> [<planta>]")
+        print("Uso: python scripts/predict_image.py <ruta imagen> <ruta experimento> [<planta>]")
         sys.exit(1)
 
     image_path = sys.argv[1]

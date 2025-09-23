@@ -112,7 +112,7 @@ data/Imported/{nombre_fuente}/color/
 
 Donde `{nombre_fuente}` identifica la fuente (por ejemplo, `proyecto_movil`, `agricultura_europa2025`, etc.).
 
-Estas imágenes deben estar organizadas por carpetas con el nombre exacto de cada clase (enfermedad), igual que en PlantVillage. Ejemplo:
+Estas imágenes deben estar organizadas por carpetas con el nombre exacto de cada clase (enfermedad), igual que en PlantVillage: {planta}___{nombre_comun}. Ejemplo:
 
 ```
 data/Imported/mi_fuente/color/Tomato___Early_blight/
@@ -142,7 +142,7 @@ Este script realiza automáticamente:
 > También puedes ejecutar solo el procesamiento (sin subir) con:
 >
 > ```
-> python utils/process_imported_images.py --fuente nombre_fuente
+> python scripts/process_imported_images.py --fuente nombre_fuente
 > ```
 >
 > Esto es útil si quieres revisar las imágenes procesadas antes de subirlas.
@@ -167,15 +167,23 @@ Con estos 2 ficheros es suficiente para ejecutar un experimento, que generaría 
 - `models/`: carpeta donde se guarda el modelo entrenado (`best_model.pth`).
 - `results/`: métricas, gráficas, matrices de confusión y logs de evaluación.
 
-Esto permite comparar fácilmente diferentes configuraciones (por ejemplo, cambios en los datos, preprocesamiento, arquitectura, entrenamiento...), sin modificar el código base del proyecto.
+Esto permite comparar fácilmente diferentes configuraciones (por ejemplo, cambios en los datos, preprocesamiento, arquitectura, entrenamiento...), sin modificar el código base del proyecto. En la carpeta experiments/BASE se encuentran plantillas de los 2 únicos ficheros necesarios.
 
 Toda la lógica del pipeline está dividida en módulos reutilizables dentro de `utils/` y `scripts/`, lo que facilita su mantenimiento y escalabilidad.
+
+
+## 📓 Scripts/Notebooks auxiliares
+
+- **analyze_experiments.py**: Script para comparar métricas entre varios experimentos. Permite analizar y visualizar resultados de diferentes configuraciones de entrenamiento. *Quiero mejorar los gráficos para una visualización más clara y comparativa.*
+- **notebook o script para mostrar imágenes mal clasificadas y top-k predicciones**: Herramienta para analizar visualmente los errores del modelo y consultar las top-k predicciones para una imagen concreta. Útil para depuración y análisis cualitativo de los resultados.
+
+Estos recursos se encuentran en la carpeta `scripts/` o `notebooks/` y sirven de apoyo para el análisis y la interpretación de los experimentos realizados.
 
 ---
 
 ### ⚠️ Consideraciones para la selección de clases
 
-En algunos cultivos del dataset PlantVillage (como `Orange` o `Raspberry`) solo hay una clase disponible (por ejemplo, solo hojas sanas). Por este motivo, se recomienda excluir esos cultivos en los experimentos, ya que no permiten aprender a distinguir entre clases.
+En algunos cultivos del dataset PlantVillage (`Blueberry`, `Orange`, `Raspberry`, `Soybean` y `Squash`) solo hay una clase disponible (por ejemplo, solo hojas sanas). Por este motivo, se recomienda excluir esos cultivos en los experimentos, ya que no permiten aprender a distinguir entre clases.
 
 Este criterio puede cambiar si en el futuro se incorporan imágenes reales que amplíen el número de clases posibles para esos cultivos.
 
@@ -202,8 +210,9 @@ Este criterio puede cambiar si en el futuro se incorporan imágenes reales que a
 - La segmentación implementada se inspira en el artículo original de PlantVillage, aunque no es idéntica.
 - Este repositorio está diseñado para ser extensible: se puede adaptar fácilmente para nuevas fuentes, cambios en el modelo o nuevas estrategias de evaluación.
 - El script `upload_images.py` maneja por sí solo la creación de versiones en `grayscale` y `segmented` si no existen, llamando a `process_imported_images.py` automáticamente.
-- Los scripts en scripts/legacy han sido usados de manera auxiliar y el usuario final con toda seguridad no necesitará utilizarlos. dividir_clases.py solo es necesario si ya se habían insertado clases antiguas sin los campos cultivo y enfermedad y eliminar_nombre.py si hay una variable de la coleccion Clases que se quiere eliminar (en este caso nombre).
+- Los scripts en scripts/legacy han sido usados de manera auxiliar y el usuario final con toda seguridad no necesitará utilizarlos. Por ejemplo, dividir_clases.py solo es necesario si ya se habían insertado clases antiguas sin los campos cultivo y enfermedad y eliminar_nombre.py si hay una variable de la coleccion Clases que se quiere eliminar (en este caso nombre).
 - Si se dispone de una GPU compatible, se recomienda instalar PyTorch con soporte CUDA desde https://pytorch.org/get-started/locally para acelerar el entrenamiento.
+- Las imágenes se almacenan físicamente en una carpeta local del proyecto (`data/`, `imagenes/`, etc.), mientras que en la base de datos solo se guardan los campos asociados y las rutas relativas a las imágenes. Esto optimiza el almacenamiento y facilita la gestión de grandes volúmenes de datos.
 
 ---
 

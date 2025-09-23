@@ -23,8 +23,8 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     else:
         raise ValueError(f"❌ Optimizador no soportado: {opt_name}")
 
-    wp = config["peso_planta"]
-    we = config["peso_enfermedad"]
+    wp = config.get("peso_planta", 1.0)
+    we = config.get("peso_enfermedad", 1.0)
 
     # PARA LOS CRITERIOS DE PÉRDIDA USAMOS PESOS INVERSOS POR CLASE PARA CONTRARRESTAR EL DESBALANCEO
     df = pd.read_csv(os.path.join(data_dir, "train.csv"))
@@ -137,7 +137,7 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     return model, history
 
 
-def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val", device="cuda"):
+def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="test", device="cuda"):
     model = model.to(device)
     model.eval()
 
@@ -162,6 +162,7 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
     misclassified = []  # Lista para almacenar imágenes mal clasificadas
 
     with torch.no_grad():
+        global_idx = 0
         for images, (labels_planta, labels_enfermedad) in dataloader:
             images = images.to(device)
             labels_planta = labels_planta.to(device)
@@ -203,9 +204,11 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
                 all_labels_planta.append(labels_planta[i].item())
                 all_labels_enfermedad.append(labels_enfermedad[i].item())
 
+                # Usar el índice global real en el dataset
+                real_idx = global_idx + i
                 if pred_c != labels_planta[i].item() or pred_e != labels_enfermedad[i].item():
                     misclassified.append({
-                        "filename": dataloader.dataset.data.iloc[i]["imagen_rgb"],  # Ruta de la imagen
+                        "filename": dataloader.dataset.data.iloc[real_idx]["imagen_rgb"],
                         "predicted": {
                             "planta": planta_str,
                             "enfermedad": enfermedad_str
@@ -215,6 +218,7 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
                             "enfermedad": idx_to_enfermedad[labels_enfermedad[i].item()]
                         }
                     })
+            global_idx += batch_size
 
     acc_planta = correct_planta / total
     acc_enfermedad = correct_enfermedad / total
@@ -246,10 +250,10 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="val",
 
     # Guardar imágenes mal clasificadas
     if misclassified:
-        misclassified_path = os.path.join(results_dir, "misclassified.json")
+        misclassified_path = os.path.join(results_dir, f"misclassified_{split_name}.json")
         with open(misclassified_path, "w") as f:
             json.dump(misclassified, f, indent=4)
-        print(f"💾 Archivo 'misclassified.json' guardado en {misclassified_path}")
+        print(f"💾 Archivo 'misclassified_{split_name}.json' guardado en {misclassified_path}")
 
     print(f"🎯 {split_name.upper()} — Accuracy: planta={acc_planta:.4f}, enfermedad={acc_enfermedad:.4f}, combinada={acc_combinada:.4f}")
     return metrics

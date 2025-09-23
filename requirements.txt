@@ -2,7 +2,7 @@ flask
 flask_pymongo
 pillow
 numpy
-yaml
+pyyaml
 pandas
 scikit-learn
 matplotlib
