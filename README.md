@@ -1,6 +1,10 @@
-# Clasificación de enfermedades de plantas mediante visión por computador
+# Clasificación de enfermedades de plantas mediante visión por computador/ Sistema de recopilación y etiquetado de imágenes de hojas de plantas
 
-Este repositorio forma parte de un Trabajo de Fin de Grado (TFG) de Ciencia de Datos en la Universitat Politècnica de València. Su objetivo es entrenar y evaluar modelos de clasificación de enfermedades de plantas a partir de imágenes, combinando el dataset PlantVillage (en condiciones controladas) con imágenes tomadas en entornos reales.
+Este repositorio forma parte del Trabajo de Fin de Grado (TFG) en Ciencia de Datos en la Universitat Politècnica de València.  
+El proyecto desarrolla una aplicación completa para recopilar, almacenar y etiquetar imágenes de hojas de plantas sanas y enfermas, combinando el dataset PlantVillage con imágenes reales tomadas mediante una app propia.
+
+El sistema integra una API Flask para la gestión de imágenes y usuarios, y una aplicación de escritorio desarrollada con Flet (Python) que permite interactuar con la base de datos de manera intuitiva.
+
 
 ---
 
@@ -29,12 +33,16 @@ models/
 ### modelos entrenados
 notebooks/
 ├── legacy/
-└── EDA.ipynb
+├── comprobaciones_imagenes.ipynb
+├── EDA.ipynb
+└── misclassified_and_topk.ipynb
 scripts/
 ├── legacy/
 ├── add_class.py
+├── compare_experiments.py
 ├── convert_to_grayscale.py
 ├── editar_clases.py
+├── make_experiment.py
 ├── predict_image.py
 ├── process_imported_images.py
 ├── reemplazar_clases.py
@@ -43,6 +51,9 @@ scripts/
 ├── subir_imagenes_nueva_fuente.py
 └── upload_images.py
 src/
+├── assets/
+    ├── icon.png
+    └── logos.png
 ├── campos.json
 ├── clases_combinadas.json
 ├── clases.json
@@ -54,14 +65,137 @@ utils/
 ├── model.py
 └── train.py
 main.py
+main_app.py
+logicav3.py
+pyproject.toml
 requirements.txt
 ```
 
 ---
 
-## ⚙️ Descripción del pipeline
+## 🧩 Arquitectura general del sistema
 
-El proyecto incluye un pipeline completo para crear y gestionar la base de datos de imágenes:
+El proyecto se organiza en dos componentes principales que trabajan de forma complementaria:
+
+### 1. 🌿 Aplicación y API Flask (recopilación y gestión de datos)
+Esta parte del sistema permite recopilar y gestionar imágenes de hojas de plantas, así como los usuarios y roles que interactúan con la base de datos.  
+Está formada por tres módulos principales:
+
+- **`main.py`** → API Flask unificada que gestiona la base de datos MongoDB.  
+  - Endpoints para subir imágenes, recuperar etiquetas, clasificar hojas, y gestionar usuarios.  
+  - Funciona como servidor backend y punto de conexión con la aplicación Flet.
+
+- **`main_app.py`** → Aplicación gráfica desarrollada con [Flet](https://flet.dev/).  
+  - Permite el registro e inicio de sesión de usuarios.  
+  - Ofrece interfaces separadas para los tres roles principales:
+    - *Usuario:* subir imágenes y asignar etiquetas.
+    - *Etiquetador:* validar imágenes pendientes.
+    - *Administrador:* gestionar usuarios y roles.
+
+- **`logicav3.py`** → Módulo de conexión entre la app y la API.  
+  - Envía peticiones HTTP (`httpx`) a la API.  
+  - Codifica imágenes a base64 antes de subirlas.  
+  - Gestiona la autenticación, las búsquedas de usuarios y el flujo de datos en memoria.
+
+El flujo de funcionamiento es el siguiente:
+[Usuario / Etiquetador / Administrador]
+│
+▼
+┌────────────────────┐
+│ Aplicación Flet │
+│ (main_app.py) │
+└────────────────────┘
+│ JSON / HTTP (httpx)
+▼
+┌────────────────────┐
+│ API Flask │
+│ (main.py) │
+└────────────────────┘
+│
+▼
+┌────────────────────────┐
+│ Base de datos MongoDB │
+│ ├─ appPlantas (usuarios)
+│ └─ Repositorio_Plantas (imágenes)
+└────────────────────────┘
+│
+▼
+┌─────────────────────────────┐
+│ Módulo experimental (CNN) │
+│ ├─ Entrenamiento MobileNetV2
+│ └─ Uso del dataset PlantVillage
+└─────────────────────────────┘
+
+---
+
+### 2. 🤖 Módulo de modelo y experimentación (entrenamiento y evaluación)
+Esta parte contiene los scripts y notebooks para entrenar y evaluar modelos de clasificación, basados en arquitecturas **CNN** (principalmente MobileNetV2).  
+Utiliza tanto el dataset **PlantVillage** como las imágenes recopiladas mediante la app.
+
+Los experimentos se organizan por carpetas dentro de `experiments/` y pueden configurarse mediante ficheros `config.yaml`.  
+Esta estructura permite reproducir distintos escenarios de entrenamiento o comparar configuraciones de datos y modelos.
+
+---
+
+Ambas partes del proyecto están conectadas por su propósito común:  
+👉 **generar un sistema de clasificación de enfermedades de plantas robusto y adaptado a condiciones reales.**
+
+## 🧩 Parte A — Aplicación y API Flask
+
+Esta parte del proyecto implementa el sistema de **recopilación, almacenamiento y etiquetado de imágenes**, junto con la **gestión de usuarios y roles**.  
+Permite registrar nuevos usuarios, subir imágenes desde la app, validar etiquetas y administrar la base de datos de forma visual.
+
+---
+
+### ⚙️ Componentes principales
+
+| Archivo | Descripción |
+|----------|--------------|
+| **`main.py`** | Contiene la **API Flask unificada**, que gestiona la comunicación con la base de datos MongoDB. Incluye endpoints para el registro e inicio de sesión de usuarios, subida y consulta de imágenes, validación de etiquetas y administración de roles. |
+| **`main_app.py`** | Implementa la **interfaz gráfica** mediante el framework [Flet](https://flet.dev/). Ofrece distintas vistas según el rol del usuario (*usuario*, *etiquetador* o *administrador*). Permite interactuar directamente con la API sin necesidad de scripts manuales. |
+| **`logicav3.py`** | Define la clase `LogicaApp`, que actúa como **puente entre la app y la API Flask**. Gestiona la creación de URLs, el envío de peticiones HTTP, el tratamiento de respuestas y la conversión de imágenes a formato base64 antes de su envío. |
+
+---
+
+### 🧠 Roles de usuario
+
+| Rol | Funcionalidad principal |
+|------|---------------------------|
+| 🧑‍🌾 **Usuario** | Subir imágenes y asignar etiquetas. |
+| 🧩 **Etiquetador** | Validar y corregir imágenes pendientes. |
+| ⚙️ **Administrador** | Gestionar usuarios, roles y contraseñas. |
+
+---
+
+### 🚀 Ejecución en entorno local
+
+1. **Iniciar MongoDB**  
+   Asegúrate de tener un servidor MongoDB ejecutándose en `mongodb://localhost:27017/`.
+
+2. **Ejecutar la API Flask**  
+   En una terminal dentro del proyecto:
+   ```bash
+   python main.py
+   ```
+   Esto levantará el servidor en http://127.0.0.1:5001
+
+3. **Ejecutar la aplicación Flet**
+   En otra terminal:
+   ```bash
+   python main.py
+   ```
+   La aplicación se abrirá en una ventana de escritorio o en el navegador.
+
+### 🧩 Integración futura
+   En próximas versiones, la aplicación incluirá nuevas funcionalidades actualmente gestionadas por scripts. Además, será de acceso público mediante un entorno virtual de la universidad y tendrá versión para móviles.
+
+
+## 🤖 Parte B: Modelo predictivo y experimentación
+
+El proyecto incluye un pipeline completo para crear y gestionar la base de datos de imágenes mediante scripts de python.
+
+💡 Nota: asegúrate de ajustar la IP en logicav3.py (atributo self.url_api) al entorno donde se ejecuta la API Flask.
+Si trabajas en local, usa http://127.0.0.1:5001
 
 ### 1. Inicialización de la base de datos
 
@@ -192,11 +326,9 @@ Este criterio puede cambiar si en el futuro se incorporan imágenes reales que a
 
 ## 🔧 Requisitos
 
-- Python 3.8+
-- OpenCV (`cv2`)
-- pandas
-- requests
-- tqdm
+- Python ≥ 3.10
+- MongoDB ≥ 6.0 (servidor local o remoto)
+- Librerías en requirements.txt
 
 ---
 
@@ -207,12 +339,12 @@ Este criterio puede cambiar si en el futuro se incorporan imágenes reales que a
 
 ## 📌 Notas finales
 
-- La segmentación implementada se inspira en el artículo original de PlantVillage, aunque no es idéntica.
+- La segmentación implementada se inspira en el artículo original de PlantVillage (Mohanty et al. 2016), aunque no es idéntica.
 - Este repositorio está diseñado para ser extensible: se puede adaptar fácilmente para nuevas fuentes, cambios en el modelo o nuevas estrategias de evaluación.
 - El script `upload_images.py` maneja por sí solo la creación de versiones en `grayscale` y `segmented` si no existen, llamando a `process_imported_images.py` automáticamente.
 - Los scripts en scripts/legacy han sido usados de manera auxiliar y el usuario final con toda seguridad no necesitará utilizarlos. Por ejemplo, dividir_clases.py solo es necesario si ya se habían insertado clases antiguas sin los campos cultivo y enfermedad y eliminar_nombre.py si hay una variable de la coleccion Clases que se quiere eliminar (en este caso nombre).
 - Si se dispone de una GPU compatible, se recomienda instalar PyTorch con soporte CUDA desde https://pytorch.org/get-started/locally para acelerar el entrenamiento.
 - Las imágenes se almacenan físicamente en una carpeta local del proyecto (`data/`, `imagenes/`, etc.), mientras que en la base de datos solo se guardan los campos asociados y las rutas relativas a las imágenes. Esto optimiza el almacenamiento y facilita la gestión de grandes volúmenes de datos.
-
+- La seguridad y autenticación se implementan actualmente de forma básica (hash propio). Se recomienda migrar a bcrypt y añadir control de sesiones o JWT antes de un despliegue público.
 ---
 

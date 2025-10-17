@@ -2,6 +2,7 @@ import base64
 import io
 from PIL import Image
 from flask_pymongo import PyMongo
+from pymongo import MongoClient
 from flask import Flask, request, jsonify, abort
 import re
 import os
@@ -14,14 +15,16 @@ app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/Repositorio_Plantas"
 mongo = PyMongo(app)
 
+### IMÁGENES ###
+
 def validar_imagen_base64(cadena_base64):
     try:
         imagen_bytes = base64.b64decode(cadena_base64)
         with Image.open(BytesIO(imagen_bytes)) as imagen:
             imagen.load()  # Fuerza la carga completa
-        return True, imagen_bytes
+        return jsonify(True), imagen_bytes
     except Exception as e:
-        return False, str(e)
+        return jsonify(False), str(e)
     
 def guardar_como_png(imagen_bytes, ruta_salida):
     with Image.open(BytesIO(imagen_bytes)) as img:
@@ -42,6 +45,27 @@ def comprobar_tipo(tipo_etq, tipo_esperado):
 def recuperar_campos():
     res = mongo.db.Campos.find()
     return jsonify(res)
+
+@app.route("/etiquetas", methods=["GET"])
+def etiquetas():
+    coleccion = mongo.db["Clases"]
+    res = list(coleccion.find({}, {"_id": 1, "planta": 1, "clasificacion": 1, "nombre_comun": 1}))
+
+    etiquetas_vistas = set()
+    etiquetas = []
+
+    for r in res:
+        id = r.get("_id", "")
+        if id not in etiquetas_vistas:
+            etiquetas_vistas.add(id)
+            etiquetas.append({
+                "_id": id,
+                "planta": r.get("planta", ""),
+                "clasificacion": r.get("clasificacion", ""),
+                "nombre": r.get("nombre_comun", "")
+            })
+
+    return jsonify(etiquetas)
 
 @app.route("/recuperar_etiquetas/<nombre_coleccion>", methods=["GET"])
 def devolver_etiquetas(nombre_coleccion):
@@ -285,7 +309,7 @@ def devolver_x_archivos_sin_validar():
     if inicio == None or n_archivos == None:
         return []
     
-    res = mongo.db.Docs.find({"validada": 0},{}).skip(inicio).limit(n_archivos)
+    res = mongo.db.Docs.find({"validada": False},{}).skip(inicio).limit(n_archivos)
 
     return list(res)
 
@@ -300,13 +324,13 @@ def subir_imagen():
 
     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, request.json["imagen_b64"])) + ".png"
 
-    if os.path.isfile(f"./imagenes/{nombre_imagen}"):
-        mongo.db.Docs.delete_one({"imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"})
+    if os.path.isfile(f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/imagenes/{nombre_imagen}"):
+        mongo.db.Docs.delete_one({"imagen_rgb": f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}"})
 
-    guardar_como_png(imagen_bytes=res, ruta_salida=f"./imagenes/{nombre_imagen}")
+    guardar_como_png(imagen_bytes=res, ruta_salida=f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/imagenes/{nombre_imagen}")
 
     doc = {
-        "imagen_rgb": f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}",
+        "imagen_rgb": f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}",
         "validada": False,
         "clase": clase
     }
@@ -331,7 +355,7 @@ def subir_imagen():
                         abort(400, f"La imagen {nombre_campo} ha provocado la siguiente excepcion: " + res)
                     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, valor)) + ".png"
                     imagenes_extra.append((nombre_imagen, base64.b64decode(res)))
-                    campos_extra[nombre_campo] = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"
+                    campos_extra[nombre_campo] = f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}"
                     # Nos guardamos en una lista el nombre de la imagen y la codificación para insertarla más tarde si no hay errores
                 elif cod_campo == 0 or cod_campo == 4:
                     if type(valor) is not int:
@@ -345,7 +369,7 @@ def subir_imagen():
             with open(f"./imagenes/{nombre_imagen}", "wb") as f:
                 f.write(imagen)
 
-    doc.update(campos_extra)        
+        doc.update(campos_extra)        
 
     mongo.db.Docs.insert_one(doc)
 
@@ -361,6 +385,142 @@ def eliminar_imagen():
     mongo.db.Docs.delete_one({"_id": _id})
 
     return "True"
+
+
+
+
+### USUARIOS ###
+
+cliente_usuarios = MongoClient("mongodb://localhost:27017/")
+bd_usuarios = cliente_usuarios["appPlantas"]
+col_usuarios = bd_usuarios["usuarios"]
+
+@app.route("/iniciar_sesion", methods=["POST"])
+def inicio_sesion():
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+    password = data.get("password")
+    rol = data.get("rol")
+
+    query = {"nombre": nombre, "password": password, "rol": rol}
+
+    res = list(col_usuarios.find(query))
+
+    return jsonify(True) if len(res) == 1 else False
+
+
+@app.route("/registro", methods=["POST"]) 
+def registro():
+    data = request.get_json(force=True) 
+    nombre = data.get("nombre")
+    password = data.get("password")
+
+    try:
+        col_usuarios.insert_one({"nombre": nombre, "password": password, "rol": ["usuario"], "nombres_antiguos": [], "contenido": []})
+    except mongo.errors.DuplicateKeyError as e:
+        return jsonify(False)
+    
+    return jsonify(True)
+
+@app.route("/add_rol", methods=["POST"])
+def add_rol():
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+    rol = data.get("rol")
+
+    try:
+        col_usuarios.update_one({"nombre": nombre},{ "$addToSet": {"rol": rol} })
+    except Exception as e:
+        return jsonify(False)
+
+    return jsonify(True)
+
+@app.route("/eliminar_rol", methods=["POST"])
+def eliminar_rol():
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+    rol = data.get("rol")
+
+    try:
+        col_usuarios.update_one({"nombre": nombre},{ "$pull": {"rol": rol} })
+    except Exception as e:
+        return jsonify(False)
+
+    return jsonify(True)
+
+# GET endpoint
+@app.route("/buscar_usuarios", methods=["GET"]) 
+#def buscar_usuarios(tipo_busqueda: str = None, nombre: str = None, rol: str = None):
+#    query = {}
+
+#    if tipo_busqueda and nombre:
+#        query[tipo_busqueda] = {"$regex": nombre, "$options": "i"}  
+
+def buscar_usuarios():
+    nombre = request.args.get("nombre")
+    rol = request.args.get("rol")
+    
+    query = {}
+
+    if nombre:
+        query["nombre"] = {"$regex": nombre, "$options": "i"}
+    if rol and rol.lower() != "todos":
+        query["rol"] = {"$in": [rol]}  
+
+    try:
+        res = col_usuarios.find(query, {"_id": 0, "password": 0})
+    except Exception as e:
+        return {"error": str(e)}
+
+    return list(res)
+
+@app.route("/eliminar_usuario", methods=["POST"])
+def eliminar_usuario():
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+
+    query = {"nombre": nombre}
+
+    try:
+        res = col_usuarios.delete_one(query)
+    except Exception as e:
+        return jsonify(False)
+    
+    return jsonify(True)
+
+@app.route("/cambiar_nombre_usuario", methods=["POST"]) 
+def cambiar_nombre_usuario():
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+    nuevo_nombre = data.get("nuevo_nombre")
+    password = data.get("password")
+    nueva_password = data.get("nueva_password")
+
+    res = col_usuarios.find({"nombre": nombre, "password": password})
+    if len(list(res)) != 1:
+        return (False, "Contraseña Incorrecta")
+
+    res = col_usuarios.find({"nombre": nuevo_nombre})
+    if len(list(res)) == 1:
+        return(False, "Nombre de usuario ya en uso")
+    
+    col_usuarios.update_one({"nombre": nombre},{"$set": {"nombre": nuevo_nombre, "password": nueva_password}, "$addToSet":{"nombres_antiguos": nombre}})
+    return (True, "")
+
+@app.route("/cambiar_password", methods=["POST"]) 
+def cambiar_password():
+    data = request.get_json(force=True)
+    nombre = data.get("nombre")
+    password = data.get("password")
+    nueva_password = data.get("nueva_password")
+
+    res = col_usuarios.find({"nombre": nombre, "password": password})
+    if len(list(res)) != 1:
+        return (False, "Contraseña Incorrecta")
+    
+    col_usuarios.update_one({"nombre": nombre}, {"$set": {"password": nueva_password}})
+    return (True, "")
+    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
