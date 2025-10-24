@@ -15,9 +15,12 @@ if __name__ == "__main__":
         page.dark_theme = ft.Theme(color_scheme_seed=ft.Colors.GREEN)
 
         def view_pop(view):
-            page.views.pop()
-            top_view = page.views[-1]
-            page.go(top_view.route)
+            if len(page.views) > 1:
+                page.views.pop()
+                top_view = page.views[-1]
+                page.go(top_view.route)
+            else:
+                page.go("/")
         
         alerta_cerrar_sesion = ft.AlertDialog(
             modal = True,
@@ -582,6 +585,12 @@ if __name__ == "__main__":
                 )
                 tabla_docs_no_validados.rows.append(fila)
 
+            page.update()
+
+            import time
+            time.sleep(0.3)
+            page.update()
+
         def dropdown_etiquetar_options(opcion_por_defecto=None):
             etiquetas_procesadas = logica_app.procesar_nombre_key_etiquetas()
 
@@ -622,12 +631,36 @@ if __name__ == "__main__":
                 page.open(alerta_imagen_etiquetada)
 
         def on_image_selected(e: ft.FilePickerResultEvent):
-            if e.files:
-                with open(e.files[0].path, "rb") as f:
+            if not e.files:
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Ningún archivo seleccionado"),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+
+            file = e.files[0]
+            img_bytes = None
+
+            # En web, Flet 0.28 devuelve file.content (BytesIO)
+            if hasattr(file, "content") and file.content is not None:
+                img_bytes = file.content.read()
+            elif getattr(file, "path", None):
+                with open(file.path, "rb") as f:
                     img_bytes = f.read()
-                    logica_app.procesar_foto(img_bytes)
-                    dropdown_etiquetar_options()
-                    page.go("/main_usuario/foto")
+            else:
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Error al seleccionar imagen"),
+                    content=ft.Text("No se pudo obtener el contenido del archivo."),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+
+            logica_app.procesar_foto(img_bytes)
+            dropdown_etiquetar_options()
+            page.go("/main_usuario/foto")
+
 
         file_picker = ft.FilePicker(on_result=on_image_selected)
         page.overlay.append(file_picker)

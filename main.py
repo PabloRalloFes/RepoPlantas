@@ -406,7 +406,7 @@ def inicio_sesion():
 
     res = list(col_usuarios.find(query))
 
-    return jsonify(True) if len(res) == 1 else False
+    return jsonify(True) if len(res) == 1 else jsonify(False)
 
 
 @app.route("/registro", methods=["POST"]) 

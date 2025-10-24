@@ -18,5 +18,3 @@ product = "Plantas"
 company = "My Company"
 copyright = "Copyright (C) 2025 by My Company"
 
-[tool.flet.app]
-path = "src"

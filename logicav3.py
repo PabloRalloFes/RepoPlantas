@@ -39,7 +39,7 @@ class LogicaApp:
 
         respuesta = httpx.post(url_inciar_sesion, json=params, headers=self.headers)
        
-        inicio_correcto = eval(respuesta.content.capitalize()) # La respuesta de la api es en formato b"true"/b"false"
+        inicio_correcto = respuesta.json()
 
         if inicio_correcto:
             self.usuario["nombre"] = nombre
@@ -55,8 +55,7 @@ class LogicaApp:
 
         respuesta = httpx.post(url_registro, json=params, headers=self.headers)
 
-        return eval(respuesta.content.capitalize())
-
+        return respuesta.json()  
 
     def add_rol(self, nombre: str, rol: str):
 
@@ -65,7 +64,7 @@ class LogicaApp:
 
         respuesta = httpx.post(url_add_rol, json=params, headers=self.headers)
 
-        operacion_correcta = eval(respuesta.content.capitalize())
+        operacion_correcta = respuesta.json()
 
         if operacion_correcta:
             self.usuario_seleccionado[f"rol_{rol}"] = 1
@@ -80,7 +79,7 @@ class LogicaApp:
 
         respuesta = httpx.post(url_eliminar_rol, json=params, headers=self.headers)
 
-        operacion_correcta = eval(respuesta.content.capitalize())
+        operacion_correcta = respuesta.json()
 
         if operacion_correcta:
             self.usuario_seleccionado[f"rol_{rol}"] = 0
@@ -101,7 +100,7 @@ class LogicaApp:
 
         respuesta = httpx.get(url_lista_usuarios, params=params, headers=self.headers)
 
-        self.lista_usuarios = eval(respuesta.content)
+        self.lista_usuarios = respuesta.json()
         return True
         
     def seleccionar_usuario(self, nombre: str):
@@ -110,7 +109,7 @@ class LogicaApp:
 
         respuesta = httpx.post(url_seleccionar_usuario, json=params, headers=self.headers)
 
-        self.usuario_seleccionado = eval(respuesta.content)[0]
+        self.usuario_seleccionado = respuesta.json()[0]
         return True
     
     def eliminar_usuario(self, usuario: dict):
@@ -121,7 +120,7 @@ class LogicaApp:
 
         respuesta = httpx.post(url_eliminar_usuario, json=params, headers=self.headers)
 
-        return eval(respuesta.content.capitalize())
+        return respuesta.json()
     
     def cambiar_nombre_usuario(self, nuevo_nombre: str, password: str):
         if nuevo_nombre == "" or password == "":
@@ -168,7 +167,7 @@ class LogicaApp:
 
         respuesta = httpx.get(url_recuperar_etiquetas)
 
-        return eval(respuesta.content)
+        return respuesta.json()
     
     def recuperar_docs(self, clasificacion = "", nombre = ""):
 
@@ -182,9 +181,9 @@ class LogicaApp:
 
 
         respuesta = httpx.get(url_recuperar_docs, params=params)
-        
-        return eval(respuesta.content)
-    
+
+        return respuesta.json()
+
     def recuperar_imagen_base64(self, url_imagen):
 
         res = httpx.get(url_imagen)
@@ -252,7 +251,7 @@ class LogicaApp:
 
         res = httpx.post(url_etiquetar_imagen, json={"etiqueta": id_etiqueta, "doc": self.archivo_seleccionado["_id"]})
 
-        return eval(res.content.capitalize())
+        return res.json()
     
     def procesar_foto(self, img):
         base64_image = base64.b64encode(img).decode("utf-8")
@@ -287,7 +286,7 @@ class LogicaApp:
         # Usar https:// para produccion
         #self.url_usuarios = "http://127.0.0.1:8000"
         #self.url_repo = "http://127.0.0.1:5001"
-        self.url_api = "http://10.236.48.171:5001"
+        self.url_api = "http://10.236.50.53:5001"
 
         self.api_key = "9ZQtYqJV/sevWZ+qL7pQMlur0NoXQK3ZQ9UT46ycxIE="
         self.headers = {"Authorization": "Bearer " + self.api_key}
