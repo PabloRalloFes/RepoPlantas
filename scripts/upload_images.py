@@ -12,6 +12,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
+def carpeta_vacia_o_incompleta(path):
+    if not os.path.isdir(path):
+        return True
+    for root, _, files in os.walk(path):
+        if any(f.lower().endswith((".jpg", ".jpeg", ".png")) for f in files):
+            return False  # hay al menos una imagen
+    return True  # no se encontró ninguna
+
 def procesar_fuente_si_falta(fuente):
     base_path = os.path.join("data", "Imported", fuente)
     rutas = {
@@ -19,14 +27,19 @@ def procesar_fuente_si_falta(fuente):
         "grayscale": os.path.join(base_path, "grayscale"),
         "segmented": os.path.join(base_path, "segmented")
     }
-    faltan = not (os.path.isdir(rutas["grayscale"]) and os.path.isdir(rutas["segmented"]))
+
+    faltan = (
+        carpeta_vacia_o_incompleta(rutas["grayscale"])
+        or carpeta_vacia_o_incompleta(rutas["segmented"])
+    )
+
     if faltan:
-        print(f"⚙️ Procesando imágenes para la fuente '{fuente}'...")
+        print(f"Procesando imágenes para la fuente '{fuente}'...")
         try:
             subprocess.run(["python", "scripts/process_imported_images.py", "--fuente", fuente], check=True)
-            print("✅ Procesamiento de imágenes completado.")
+            print("Procesamiento de imágenes completado.")
         except subprocess.CalledProcessError as e:
-            print(f"❌ Error al procesar imágenes: {e}")
+            print(f"Error al procesar imágenes: {e}")
             sys.exit(1)
 
 # Función para obtener el ID de la fuente o crearla si no existe
@@ -48,7 +61,7 @@ def obtener_o_crear_id_fuente(nombre):
         res.raise_for_status()
         return res.json()["etiqueta"]["_id"]
     except Exception as e:
-        print("❌ Error al registrar o recuperar la fuente:", e)
+        print("Error al registrar o recuperar la fuente:", e)
         sys.exit(1)
 
 
@@ -78,13 +91,15 @@ parser.add_argument("formato", choices=["Color", "Grayscale", "Segmented"], help
 parser.add_argument("--fuente", default=None, help="Fuente de las imágenes (opcional, por defecto 'PlantVillage')")
 parser.add_argument("--start", type=int, default=0, help="Índice de inicio del batch (por clase o carpeta)")
 parser.add_argument("--limit", type=int, default=None, help="Número máximo de imágenes a subir (por clase o carpeta)")
+parser.add_argument("--no_auto_process", action="store_true", help="No procesar automáticamente si faltan carpetas")
 args = parser.parse_args()
 
 formato_nombre = args.formato
 formato_ids = {"Color": 0, "Grayscale": 1, "Segmented": 2}
 formato_id = formato_ids[formato_nombre]
 if args.fuente:
-    procesar_fuente_si_falta(args.fuente)
+    if not args.no_auto_process:
+        procesar_fuente_si_falta(args.fuente)
     fuente_id = obtener_o_crear_id_fuente(args.fuente)
 
 
@@ -111,7 +126,7 @@ if os.path.exists(LOG_PATH):
 carpetas_detectadas = os.listdir(DATASET_DIR)
 for carpeta in carpetas_detectadas:
     if carpeta not in clase_id_dict:
-        print(f"🔍 Clase nueva detectada: {carpeta} → ejecutando add_class.py")
+        print(f"Clase nueva detectada: {carpeta}. Ejecutando add_class.py")
         subprocess.run(["python", "scripts/add_class.py", carpeta], check=True)
 
 with open("src/clases.json", "r", encoding="utf-8") as f:
@@ -145,7 +160,7 @@ else:
 
 # Subida concurrente
 total = len(tareas)
-print(f"🔄 Subiendo {total} imágenes en formato '{formato_nombre}'...")
+print(f"Subiendo {total} imágenes en formato '{formato_nombre}'...")
 
 start_time = time.perf_counter()
 with ThreadPoolExecutor(max_workers=8) as executor, open(LOG_PATH, "a", encoding="utf-8") as logf:
@@ -158,4 +173,4 @@ with ThreadPoolExecutor(max_workers=8) as executor, open(LOG_PATH, "a", encoding
         elapsed = time.perf_counter() - start_time
         avg_time = elapsed / i
         remaining = avg_time * (total - i)
-        print(f"🕒 Progreso: {i}/{total} | Tiempo: {int(elapsed)}s | ETA: {int(remaining)}s")
+        print(f"Progreso: {i}/{total} | Tiempo: {int(elapsed)}s | ETA: {int(remaining)}s")

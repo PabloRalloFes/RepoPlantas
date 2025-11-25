@@ -346,5 +346,7 @@ Este criterio puede cambiar si en el futuro se incorporan imágenes reales que a
 - Si se dispone de una GPU compatible, se recomienda instalar PyTorch con soporte CUDA desde https://pytorch.org/get-started/locally para acelerar el entrenamiento.
 - Las imágenes se almacenan físicamente en una carpeta local del proyecto (`data/`, `imagenes/`, etc.), mientras que en la base de datos solo se guardan los campos asociados y las rutas relativas a las imágenes. Esto optimiza el almacenamiento y facilita la gestión de grandes volúmenes de datos.
 - La seguridad y autenticación se implementan actualmente de forma básica (hash propio). Se recomienda migrar a bcrypt y añadir control de sesiones o JWT antes de un despliegue público.
+- CUIDADO CON LOS LOGS AL REPETIR SUBIDAS MASIVAS. En los logs se guardan las rutas originales de las imagenes que ya has subido masivamente. Si quisieras volver a subir una o varias imágenes que ya has subido masivamente, tendrías que eliminarla de la base de datos y borrar los logs. 
+- Si has subido masivamente sin procesar y después quieres subir las imágenes procesadas también, simplemente vuelve utilizar la funcion de subir masivamente para esa fuente pero esta vez activando el switch.
 ---
 

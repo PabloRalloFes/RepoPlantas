@@ -20,7 +20,7 @@ for doc in docs:
         continue
 
     if "___" not in clasificacion:
-        print(f"⚠️ Formato no válido: {clasificacion}")
+        print(f"️ Formato no válido: {clasificacion}")
         continue
 
     cultivo, enfermedad = clasificacion.split("___", 1)
@@ -35,4 +35,4 @@ for doc in docs:
         coleccion.update_one({"_id": doc["_id"]}, {"$set": update_fields})
         actualizados += 1
 
-print(f"✅ {actualizados} documentos actualizados.")
+print(f" {actualizados} documentos actualizados.")

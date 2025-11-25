@@ -2,10 +2,170 @@ import urllib.parse
 import httpx
 import urllib
 import base64
+import os
+from dotenv import load_dotenv
 import json
+import requests
+
+load_dotenv()
 
 class LogicaApp:
     
+    ### NUEVOS ###
+
+    def predecir_imagen(self, modelo_seleccionado):
+        url_predict = self.crear_url("/predict_image", self.url_api)
+        payload = {
+            "imagen": self.foto_b64, 
+            "modelo": modelo_seleccionado 
+        }
+        res = httpx.post(url_predict, json=payload)
+        return res.json()
+    
+    def validar_imagen(self, id_doc):
+        if isinstance(id_doc, dict) and "$oid" in id_doc:
+            id_doc = id_doc["$oid"]
+
+        url_validar = self.crear_url("/validar_imagen", self.url_api)
+        res = httpx.post(url_validar, json={"id_doc": str(id_doc)})
+
+        try:
+            return res.json()
+        except Exception:
+            return {"success": False, "error": f"Respuesta no válida: {res.text}"}
+
+    def obtener_opciones_plantas(self):
+        url = self.crear_url("/opciones_plantas", self.url_api)
+        res = httpx.get(url)
+        return res.json()
+
+    def obtener_opciones_enfermedades(self):
+        url = self.crear_url("/opciones_enfermedades", self.url_api)
+        res = httpx.get(url)
+        return res.json()
+
+    def obtener_opciones_formatos(self):
+        url = self.crear_url("/opciones_formatos", self.url_api)
+        res = httpx.get(url)
+        return res.json()
+
+    def obtener_opciones_fuentes(self):
+        url = self.crear_url("/opciones_fuentes", self.url_api)
+        res = httpx.get(url)
+        return res.json()
+    
+    def set_url_api(self, nueva_url: str):
+        if not nueva_url.startswith("http://") and not nueva_url.startswith("https://"):
+            nueva_url = "http://" + nueva_url
+        self.url_api = nueva_url.rstrip("/")
+        return {"success": True, "message": f"URL de la API actualizada a {self.url_api}"}
+    
+    def set_url_bbdd(self, nueva_url: str):
+        if not nueva_url.startswith("mongodb://") and not nueva_url.startswith("mongodb+srv://"):
+            nueva_url = "mongodb://" + nueva_url
+        self.url_bbdd = nueva_url.rstrip("/")
+        return {"success": True, "message": f"URL de la base de datos actualizada a {self.url_bbdd}"}
+
+    def obtener_clases(self):
+        url = self.crear_url("/editar_clases", self.url_api)
+        res = httpx.get(url)
+        return res.json()
+
+    def reemplazar_clases(self, clases_modificadas):
+        url = self.crear_url("/reemplazar_clases", self.url_api)
+        res = httpx.post(url, json={"clases": clases_modificadas})
+        return res.json()
+    
+    def agregar_clase(self, clase_dict):
+        url = self.crear_url("/add_class", self.url_api)
+        res = httpx.post(url, json=clase_dict)
+        return res.json()
+
+
+    def crear_experimento(self, experiment_name, config_variables):
+        """
+        Llama al backend para crear un nuevo experimento.
+        """
+        url = self.crear_url("/crear_experimento", self.url_api)
+        payload = {
+            "experiment_name": experiment_name,
+            "config_variables": config_variables,
+        }
+        response = httpx.post(url, json=payload)
+        return response.json()
+
+    def obtener_experimentos(self):
+        """
+        Llama al backend para obtener la lista de experimentos actuales.
+        """
+        url = self.crear_url("/obtener_experimentos", self.url_api)
+        response = httpx.get(url)
+        return response.json().get("experimentos", [])
+
+    def obtener_resultados_experimento(self, nombre_experimento):
+        """
+        Llama al backend para obtener los resultados de un experimento.
+        """
+        url = self.crear_url(f"/resultados_experimento/{nombre_experimento}", self.url_api)
+        response = httpx.get(url)
+        return response.json()
+    
+    def solicitar_entrenamiento(self, nombre_experimento):
+        """
+        Envía una solicitud al backend para registrar la petición de entrenamiento de un modelo.
+        """
+        url = self.crear_url("/solicitar_entrenamiento", self.url_api)
+        payload = {"nombre": nombre_experimento}
+        response = httpx.post(url, json=payload)
+        return response.json()
+    
+    def obtener_solicitudes_entrenamiento(self):
+        """
+        Llama al backend para obtener la lista de solicitudes de entrenamiento.
+        """
+        url = self.crear_url("/obtener_solicitudes_entrenamiento", self.url_api)
+        response = httpx.get(url)
+        return response.json().get("solicitudes", [])
+    
+    def entrenar_modelo(self, nombre_experimento):
+        """
+        Llama al backend para ejecutar el entrenamiento de un modelo.
+        """
+        url = self.crear_url("/entrenar_modelo", self.url_api)
+        payload = {"nombre": nombre_experimento}
+        response = httpx.post(url, json=payload, timeout=3600)
+        return response.json()
+    
+    def obtener_modelos(self):
+        """
+        Llama al backend para obtener la lista de modelos disponibles.
+        """
+        url = self.crear_url("/obtener_modelos", self.url_api)
+        response = httpx.get(url)
+        if response.status_code == 200:
+            return response.json().get("modelos", [])
+        else:
+            return []
+        
+    def cambiar_url_bbdd(self):
+        """
+        Llama al backend para cambiar la URL de la base de datos.
+        """
+        url = self.crear_url("/cambiar_url_bbdd", self.url_api)
+        payload = {"url_bbdd": self.url_bbdd}
+        try:
+            response = httpx.post(url, json=payload)
+            if response.status_code == 200:
+                return {"success": True, "message": "URL de la base de datos actualizada correctamente en el backend"}
+            else:
+                return {"success": False, "message": response.json().get("message", "Error desconocido")}
+        except Exception as e:
+            return {"success": False, "message": f"Error al conectar con el backend: {str(e)}"}
+        
+
+    
+    ### FIN NUEVOS ###
+
 
     def crear_url(self, path, url, params={}):
 
@@ -53,9 +213,12 @@ class LogicaApp:
         params = {"nombre": nombre, "password": self.hash_func(nombre, password)}
         url_registro = self.crear_url("/registro", self.url_api)
 
-        respuesta = httpx.post(url_registro, json=params, headers=self.headers)
-
-        return respuesta.json()  
+        try:
+            respuesta = httpx.post(url_registro, json=params, headers=self.headers)
+            data = respuesta.json()
+            return data
+        except Exception:
+            return {"success": False, "error": f"Error en la conexión ({respuesta.status_code})"}
 
     def add_rol(self, nombre: str, rol: str):
 
@@ -109,7 +272,12 @@ class LogicaApp:
 
         respuesta = httpx.post(url_seleccionar_usuario, json=params, headers=self.headers)
 
-        self.usuario_seleccionado = respuesta.json()[0]
+        try:
+            data = respuesta.json()
+        except Exception:
+            self.usuario_seleccionado = {}
+        else:
+            self.usuario_seleccionado = data.get("usuario", {})
         return True
     
     def eliminar_usuario(self, usuario: dict):
@@ -188,7 +356,12 @@ class LogicaApp:
 
         res = httpx.get(url_imagen)
 
-        return str(res.content)[2:-1]
+        data = res.json()
+        if "imagen_b64" in data:
+            return data["imagen_b64"]
+        else:
+            # Si el backend aún devuelve texto plano, usar res.text
+            return res.text
     
     def avanzar_puntero_repo(self, reverso=False):
 
@@ -203,14 +376,20 @@ class LogicaApp:
         return False
 
 
-    def recuperar_n_archivos(self):
-
+    def recuperar_n_archivos(self, planta=None, enfermedad=None, formato=None, fuente=None):
         url_recuperar_n_img = self.crear_url("/servir_n_archivos_sin_validar", self.url_api)
 
-        res = httpx.get(url_recuperar_n_img, params={"inicio": self.puntero_repo, "n_archivos": self.max_archivos})
+        params = {
+            "inicio": self.puntero_repo,
+            "n_archivos": self.max_archivos
+        }
+        if planta: params["planta"] = planta
+        if enfermedad: params["enfermedad"] = enfermedad
+        if formato: params["formato"] = formato
+        if fuente: params["fuente"] = fuente
 
-        archivos = json.loads(res.content)
-
+        res = httpx.get(url_recuperar_n_img, params=params)
+        archivos = res.json()
         self.batch_archivos = archivos
 
         return True
@@ -248,9 +427,7 @@ class LogicaApp:
     def etiquetar_imagen(self, id_etiqueta: int):
 
         url_etiquetar_imagen = self.crear_url("/clasificar", self.url_api)
-
         res = httpx.post(url_etiquetar_imagen, json={"etiqueta": id_etiqueta, "doc": self.archivo_seleccionado["_id"]})
-
         return res.json()
     
     def procesar_foto(self, img):
@@ -284,14 +461,16 @@ class LogicaApp:
         self.archivo_seleccionado = {}
 
         # Usar https:// para produccion
-        #self.url_usuarios = "http://127.0.0.1:8000"
-        #self.url_repo = "http://127.0.0.1:5001"
-        self.url_api = "http://10.236.50.53:5001"
+        self.url_api = os.getenv("URL_API")
+        self.url_bbdd = os.getenv("URL_BBDD")
 
         self.api_key = "9ZQtYqJV/sevWZ+qL7pQMlur0NoXQK3ZQ9UT46ycxIE="
         self.headers = {"Authorization": "Bearer " + self.api_key}
 
         self.foto_b64 = ""
+
+        self.evitar_recarga = False
+        self.cargando_datos = False
 
 #test = LogicaApp()
 #print(test.registro("prueba1", "prueba1"))

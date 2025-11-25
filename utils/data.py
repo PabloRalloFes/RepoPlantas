@@ -32,7 +32,7 @@ def prepare_data_splits(db, config, save_dir):
     }))
 
     if not clases_filtradas:
-        raise ValueError("❌ No se han encontrado combinaciones planta-enfermedad válidas con los filtros actuales del config.")
+        raise ValueError(" No se han encontrado combinaciones planta-enfermedad válidas con los filtros actuales del config.")
 
 
     id_to_info = {doc["_id"]: (doc["planta"], doc["nombre_comun"]) for doc in clases_filtradas}
@@ -47,7 +47,7 @@ def prepare_data_splits(db, config, save_dir):
     # Avisos de fuentes no encontradas
     no_encontradas = [fuente for fuente in fuentes if fuente not in fuentes_dict]
     if no_encontradas:
-        print(f"⚠️ Fuentes no encontradas en la base de datos: {no_encontradas}")
+        print(f"️Fuentes no encontradas en la base de datos: {no_encontradas}")
 
     # Obtener documentos válidos
     docs = list(db["Docs"].find({
@@ -116,7 +116,7 @@ def prepare_data_splits(db, config, save_dir):
     for subset in ["train", "val", "test"]:
         df[df["subset"] == subset].to_csv(os.path.join(save_dir, f"{subset}.csv"), index=False)
 
-    print("✅ CSVs guardados en la carpeta data/:")
+    print("CSVs guardados en la carpeta data/:")
     print(df["subset"].value_counts())
 
     return config

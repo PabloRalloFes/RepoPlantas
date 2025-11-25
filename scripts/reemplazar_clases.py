@@ -28,7 +28,7 @@ if backup_serializable:
     with open(backup_path, "w", encoding="utf-8") as f:
         json.dump(backup_serializable, f, indent=2, ensure_ascii=False)
 else:
-    print("⚠️ La colección 'Clases' estaba vacía. No se hizo backup.")
+    print("️La colección 'Clases' estaba vacía. No se hizo backup.")
 
 # Cargar nuevas clases desde archivo
 if not os.path.exists(json_path):
@@ -40,4 +40,4 @@ with open(json_path, "r", encoding="utf-8") as f:
 # Reemplazar colección
 coleccion.drop()
 coleccion.insert_many(nuevas_clases)
-print(f"✅ Colección 'Clases' actualizada con {len(nuevas_clases)} nuevos documentos.")
+print(f"Colección 'Clases' actualizada con {len(nuevas_clases)} nuevos documentos.")

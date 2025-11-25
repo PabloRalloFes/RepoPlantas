@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 import pandas as pd
 import os
+import argparse
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
@@ -95,16 +97,17 @@ def predict(image_path, experiment_path, known_planta=None):
         probs_filtradas = {e: probs_e[enfermedad_to_idx[e]].item() for e in enfermedades_validas}
         enfermedad_pred = max(probs_filtradas, key=probs_filtradas.get)
 
-    print(f"🌿 Cultivo predicho: {cultivo_pred}")
-    print(f"🦠 Nombre común enfermedad predicha: {enfermedad_pred}")
+    print(f"Cultivo predicho: {cultivo_pred}")
+    print(f"Nombre común enfermedad predicha: {enfermedad_pred}")
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Uso: python scripts/predict_image.py <ruta imagen> <ruta experimento> [<planta>]")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Predecir planta/enfermedad para una imagen")
+    parser.add_argument("image_path", help="Ruta a la imagen")
+    parser.add_argument("-e", "--experiment", dest="experiment_path",
+                        default=os.path.join(str(ROOT), "experiments", "enteroColor"),
+                        help="Ruta al experimento (carpeta). Por defecto: experiments/enteroColor")
+    parser.add_argument("-p", "--planta", dest="known_planta", default=None,
+                        help="Nombre de la planta conocido (opcional), para forzar la predicción de enfermedad")
+    args = parser.parse_args()
 
-    image_path = sys.argv[1]
-    experiment_path = sys.argv[2]
-    known_planta = sys.argv[3] if len(sys.argv) == 4 else None
-
-    predict(image_path, experiment_path, known_planta)
+    predict(args.image_path, args.experiment_path, args.known_planta)

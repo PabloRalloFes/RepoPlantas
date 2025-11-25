@@ -37,14 +37,14 @@ with open(ID_DICT_PATH, "r", encoding="utf-8") as f:
 existe = next((c for c in clases_combinadas if c["planta"] == planta and c["nombre_comun"] == nombre_comun), None)
 
 if existe:
-    print(f"⚠️  La clase '{nombre_clase}' ya existe en clases_combinadas.json con ID {existe['_id']}")
+    print(f"La clase '{nombre_clase}' ya existe en clases_combinadas.json con ID {existe['_id']}")
     if not existe.get("clasificacion") or not existe.get("nombre_cientifico"):
-        print("⚠️  Esta clase tiene información incompleta. Ejecuta 'editar_clases.py' para completarla.")
+        print(f"Esta clase tiene información incompleta. Ejecuta 'editar_clases.py' o utiliza la apppara completarla.")
     if not coleccion.find_one({"_id": existe["_id"]}):
         coleccion.insert_one(existe)
-        print(f"✅ Insertada en MongoDB con ID {existe['_id']}")
+        print(f"Insertada en MongoDB con ID {existe['_id']}")
     else:
-        print("ℹ️  Ya estaba presente en la base de datos.")
+        print("Ya estaba presente en la base de datos.")
     exit(0)
 
 # Si no existe, crear nuevo _id
@@ -73,6 +73,6 @@ with open(ID_DICT_PATH, "w", encoding="utf-8") as f:
 coleccion.insert_one(nueva_clase)
 
 # Mensaje final
-print(f"✅ Clase '{nombre_clase}' añadida con ID {nuevo_id}")
-print("⚠️  Esta clase se ha guardado con campos vacíos. Si deseas completarlos, ejecuta:")
+print(f"Clase '{nombre_clase}' añadida con ID {nuevo_id}")
+print("️Esta clase se ha guardado con campos vacíos. Si deseas completarlos, hazlo desde la app o ejecuta:")
 print("    python editar_clases.py")

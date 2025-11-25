@@ -40,14 +40,14 @@
   "Vid___": 38,
   "Vid___healthy": 39,
   "Vid___Boro": 40,
-  "Vid___Clorosis_Férrica": 41,
+  "Vid___Clorosis_Ferrica": 41,
   "Vid___Magnesio": 42,
   "Vid___Potasio": 43,
   "Vid___Botritis": 44,
   "Vid___Eutipiosis": 45,
   "Vid___Mildiu": 46,
-  "Vid___Oídio": 47,
-  "Vid___Podredumbre_Ácida": 48,
+  "Vid___Oidio": 47,
+  "Vid___Podredumbre_Acida": 48,
   "Vid___Tuberculosis": 49,
   "Vid___Xylella": 50,
   "Vid___Yesca": 51,
@@ -56,8 +56,7 @@
   "Vid___Filoxera": 54,
   "Vid___Trips": 55,
   "Vid___Aclaramiento_de_nervios": 56,
-  "Vid___Enrollamiento_Virótico": 57,
+  "Vid___Enrollamiento_Virotico": 57,
   "Vid___Entrenudo_Corto": 58,
-  "Vid___Madera_Rizada_Madera_Acorchada": 59,
-  "Vid___Erionosis": 60
+  "Vid___Madera_Rizada_Madera_Acorchada": 59
 }

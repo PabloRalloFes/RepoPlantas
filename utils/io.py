@@ -10,14 +10,14 @@ def save_model(model, path):
     """Guarda el modelo PyTorch en disco."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     torch.save(model.state_dict(), path)
-    print(f"📦 Modelo guardado en {path}")
+    print(f"Modelo guardado en {path}")
 
 def save_metrics(metrics_dict, path):
     """Guarda las métricas en un archivo JSON."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(metrics_dict, f, indent=2)
-    print(f"📄 Métricas guardadas en {path}")
+    print(f"Métricas guardadas en {path}")
 
 def plot_history(history, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -41,7 +41,7 @@ def plot_history(history, path):
     plt.savefig(path)
     plt.close()
 
-    print(f"📈 Gráfica de entrenamiento guardada en {path}")
+    print(f"Gráfica de entrenamiento guardada en {path}")
 
 def save_confusion_matrix(y_true, y_pred, labels, title, path):
     """
@@ -57,14 +57,14 @@ def save_confusion_matrix(y_true, y_pred, labels, title, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     plt.savefig(path)
     plt.close()
-    print(f"📊 Matriz de confusión guardada en {path}")
+    print(f"Matriz de confusión guardada en {path}")
 
 def plot_test_metrics_bar(metrics: dict, path: str):
     csv_dir = os.path.dirname(path)
     csv_path = os.path.join(csv_dir, "test_metrics.csv")
     df = pd.DataFrame.from_dict(metrics, orient='index', columns=["score"])
     df.to_csv(csv_path)
-    print(f"📄 Métricas guardadas como CSV en {csv_path}")
+    print(f"Métricas guardadas como CSV en {csv_path}")
 
     keys = [k for k in metrics.keys() if k.startswith(("accuracy", "f1", "precision", "recall"))]
     values = [metrics[k] for k in keys]
@@ -86,4 +86,4 @@ def plot_test_metrics_bar(metrics: dict, path: str):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     plt.savefig(path)
     plt.close()
-    print(f"📊 Gráfico de métricas de test guardado en {path}")
+    print(f"Gráfico de métricas de test guardado en {path}")

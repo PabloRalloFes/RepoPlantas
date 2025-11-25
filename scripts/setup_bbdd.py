@@ -1,7 +1,11 @@
 import requests
 import json
+from dotenv import load_dotenv
+import os
 
-URL = "http://localhost:5001"
+load_dotenv()
+
+URL = os.getenv("URL_API")
 
 # Campos a crear
 with open("src/campos.json", "r", encoding="utf-8") as f:
@@ -26,10 +30,10 @@ for clase in sorted(clases, key=lambda c: c["_id"]):
     payload = {
         "coleccion": "Clases",
         "etiqueta": {
-            "clasificacion": clase.get("clasificacion") or None,
+            "clasificacion": clase.get("clasificacion",""),
             "planta": clase["planta"],
             "nombre_comun": clase["nombre_comun"],
-            "nombre_cientifico": clase.get("nombre_cientifico") or None,
+            "nombre_cientifico": clase.get("nombre_cientifico",""),
         }
     }
     r = requests.post(f"{URL}/add_etiqueta", json=payload)

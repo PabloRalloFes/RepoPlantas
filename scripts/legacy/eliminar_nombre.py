@@ -11,4 +11,4 @@ coleccion = db[CLASE_COLECCION]
 # Eliminar el campo "nombre" de todos los documentos
 result = coleccion.update_many({}, {"$unset": {"nombre": ""}})
 
-print(f"✅ Campo 'nombre' eliminado en {result.modified_count} documentos.")
+print(f" Campo 'nombre' eliminado en {result.modified_count} documentos.")

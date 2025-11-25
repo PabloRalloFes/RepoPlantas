@@ -7,7 +7,7 @@ def load_metrics(experiment_path):
     """Carga las métricas desde un archivo JSON en la carpeta del experimento."""
     metrics_file = os.path.join(experiment_path, "results", "metrics.json")
     if not os.path.exists(metrics_file):
-        print(f"⚠️ No se encontró el archivo de métricas en: {metrics_file}")
+        print(f"️No se encontró el archivo de métricas en: {metrics_file}")
         return None
 
     with open(metrics_file, "r") as f:
@@ -25,7 +25,7 @@ def compare_experiments(experiments):
             all_metrics[experiment] = metrics
 
     if not all_metrics:
-        print("❌ No se encontraron métricas para comparar.")
+        print("No se encontraron métricas para comparar.")
         return
 
     # Crear carpeta para guardar los gráficos
@@ -100,7 +100,7 @@ def compare_experiments(experiments):
     plt.savefig(os.path.join(comparison_folder, "comparison_history.png"))
     plt.close()
 
-    print("✅ Comparación completada. Gráficos guardados en la carpeta:", comparison_folder)
+    print("Comparación completada. Gráficos guardados en la carpeta:", comparison_folder)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Comparar métricas entre varios experimentos.")

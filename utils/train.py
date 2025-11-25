@@ -10,6 +10,7 @@ import json  # Importar json para guardar el archivo de imágenes mal clasificad
 
 def train_model(model, train_loader, val_loader, config, data_dir):
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    #device = "cpu"
     model = model.to(device)
 
     epochs = config["epochs"]
@@ -21,7 +22,7 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     elif opt_name == "sgd":
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     else:
-        raise ValueError(f"❌ Optimizador no soportado: {opt_name}")
+        raise ValueError(f" Optimizador no soportado: {opt_name}")
 
     wp = config.get("peso_planta", 1.0)
     we = config.get("peso_enfermedad", 1.0)
@@ -40,14 +41,14 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     # Avisos si hay clases con muy pocas muestras
     for p in plantas:
         if conteo_plantas.get(p, 0) < min_samples:
-            print(f"⚠️ Clase planta '{p}' tiene solo {conteo_plantas[p]} imágenes.")
+            print(f"️Clase planta '{p}' tiene solo {conteo_plantas[p]} imágenes.")
     for e in enfermedades:
         if conteo_enfermedades.get(e, 0) < min_samples:
-            print(f"⚠️ Clase enfermedad '{e}' tiene solo {conteo_enfermedades[e]} imágenes.")
+            print(f"️Clase enfermedad '{e}' tiene solo {conteo_enfermedades[e]} imágenes.")
 
     # Crear funciones de pérdida
     if use_weights:
-        print("🧮 Usando ponderación automática por frecuencia de clase.")
+        print("Usando ponderación automática por frecuencia de clase.")
 
         # Pesos inversos normalizados
         pesos_planta = [1.0 / conteo_plantas.get(p, 1) for p in plantas]
@@ -253,8 +254,8 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="test"
         misclassified_path = os.path.join(results_dir, f"misclassified_{split_name}.json")
         with open(misclassified_path, "w") as f:
             json.dump(misclassified, f, indent=4)
-        print(f"💾 Archivo 'misclassified_{split_name}.json' guardado en {misclassified_path}")
+        print(f"Archivo 'misclassified_{split_name}.json' guardado en {misclassified_path}")
 
-    print(f"🎯 {split_name.upper()} — Accuracy: planta={acc_planta:.4f}, enfermedad={acc_enfermedad:.4f}, combinada={acc_combinada:.4f}")
+    print(f"{split_name.upper()} — Accuracy: planta={acc_planta:.4f}, enfermedad={acc_enfermedad:.4f}, combinada={acc_combinada:.4f}")
     return metrics
 

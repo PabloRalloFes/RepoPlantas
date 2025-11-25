@@ -7,7 +7,7 @@ def run_subprocess(cmd):
     try:
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error ejecutando: {' '.join(cmd)}")
+        print(f"Error ejecutando: {' '.join(cmd)}")
         print(e)
         sys.exit(1)
 
@@ -26,18 +26,18 @@ if __name__ == "__main__":
     os.makedirs(grayscale_path, exist_ok=True)
     os.makedirs(segmented_path, exist_ok=True)
 
-    print("🔧 Convirtiendo a escala de grises...")
+    print("Convirtiendo a escala de grises...")
     run_subprocess([
         "python", os.path.join(ROOT, "scripts", "convert_to_grayscale.py"),
         "--input", color_path,
         "--output", grayscale_path
     ])
 
-    print("🟢 Segmentando hojas...")
+    print("Segmentando hojas...")
     run_subprocess([
         "python", os.path.join(ROOT, "scripts", "segment_leaves.py"),
         "--input", color_path,
         "--output", segmented_path
     ])
 
-    print("✅ Procesamiento completado.")
+    print("Procesamiento completado.")
