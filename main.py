@@ -21,9 +21,16 @@ from pymongo.errors import DuplicateKeyError
 from pymongo.cursor import Cursor
 from decimal import Decimal
 import subprocess
+import matplotlib
+from flask import send_file
+import mimetypes
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 app = Flask(__name__)
 db = connect_to_database(db_name="Repositorio_Plantas")  # por defecto usa "Repositorio_Plantas"
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
 
 def ensure_backup_ttl(db, days=None):
     if days is None:
@@ -184,7 +191,6 @@ def predict_image():
         image_b64 = data.get("imagen")
         modelo_seleccionado = data.get("modelo", None)
         known_planta = data.get("planta", None)
-        
 
         if not image_b64 or not modelo_seleccionado:
             return jsonify({"success": False, "error": "Faltan datos para la predicción"}), 400
@@ -242,11 +248,15 @@ def predict_image():
             idx_to_enfermedad = {i: e for e, i in enfermedad_to_idx.items()}
 
             if known_planta:
-                idx_cultivo = cultivo_to_idx.get(known_planta, probs_c.argmax().item())
+                if known_planta not in cultivo_to_idx:
+                    return jsonify({"success": False, "error": f"La planta '{known_planta}' no está en el config."}), 400
+                idx_cultivo = cultivo_to_idx[known_planta]
+                cultivo_pred = known_planta
+                prob_planta = 1.0  # La planta es conocida, por lo que su probabilidad es 100%
             else:
                 idx_cultivo = probs_c.argmax().item()
-
-            cultivo_pred = idx_to_cultivo[idx_cultivo]
+                cultivo_pred = idx_to_cultivo[idx_cultivo]
+                prob_planta = probs_c[idx_cultivo].item()
 
             # Filtrar enfermedades válidas para ese cultivo
             df_train = pd.read_csv(Path(data_path) / "train.csv")
@@ -255,13 +265,16 @@ def predict_image():
 
             probs_filtradas = {e: probs_e[enfermedad_to_idx[e]].item() for e in enfermedades_validas}
             enfermedad_pred = max(probs_filtradas, key=probs_filtradas.get)
-            prob = float(probs_filtradas[enfermedad_pred])
+            prob_enfermedad = probs_filtradas[enfermedad_pred]
+
+            # Calcular probabilidad conjunta si se proporciona known_planta
+            probabilidad_final = prob_enfermedad * prob_planta if not known_planta else prob_enfermedad
 
         return jsonify({
             "success": True,
             "planta_predicha": cultivo_pred,
             "enfermedad_predicha": enfermedad_pred,
-            "probabilidad": prob
+            "probabilidad": probabilidad_final
         })
 
     except Exception as e:
@@ -295,12 +308,12 @@ def opciones_enfermedades():
 
 @app.route("/opciones_formatos", methods=["GET"])
 def opciones_formatos():
-    formatos = list(db.Formato.find({}, {"_id": 1, "formato": 1}))
+    formatos = list(db.Formato.distinct("formato"))
     return jsonify_serialized(formatos)
 
 @app.route("/opciones_fuentes", methods=["GET"])
 def opciones_fuentes():
-    fuentes = list(db.Fuente.find({}, {"_id": 1, "fuente": 1}))
+    fuentes = list(db.Fuente.distinct("fuente"))
     return jsonify_serialized(fuentes)
 
 @app.route("/subida_masiva", methods=["POST"])
@@ -312,7 +325,6 @@ def subida_masiva():
     if not fuente:
         return jsonify({"success": False, "error": "Falta el nombre de la fuente"}), 400
 
-    ROOT = os.path.dirname(os.path.abspath(__file__))
     script_path = os.path.join(ROOT, "scripts", "subida_masiva_app.py")
 
     cmd = ["python", script_path, "--fuente", fuente]
@@ -327,7 +339,6 @@ def subida_masiva():
             check=True
         )
 
-        # Guardar la salida detallada para debug (opcional)
         log_dir = os.path.join(ROOT, "logs")
         os.makedirs(log_dir, exist_ok=True)
         log_path = os.path.join(log_dir, f"subida_{fuente}.log")
@@ -336,7 +347,6 @@ def subida_masiva():
             if result.stderr:
                 f.write("\n[STDERR]\n" + result.stderr)
 
-        # Mostrar mensaje corto al usuario
         return jsonify({
             "success": True,
             "message": f"Subida completada correctamente para '{fuente}'. Se guardó el log en '{log_path}'."
@@ -474,6 +484,13 @@ def crear_experimento():
 
         if not experiment_name:
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
+        
+        if config_variables.get("imagenes_por_clase") == "all":
+            clases = db["Clases"].distinct("planta")
+            total_imagenes = {}
+            for clase in clases:
+                total_imagenes[clase] = db["Docs"].count_documents({"clase": clase})
+            config_variables["imagenes_por_clase"] = max(total_imagenes.values())
 
         script_path = os.path.join(os.path.dirname(__file__), "scripts", "make_experiment.py")
         cmd = ["python", script_path, experiment_name]
@@ -495,45 +512,30 @@ def crear_experimento():
 @app.route("/obtener_experimentos", methods=["GET"])
 def obtener_experimentos():
     """
-    Devuelve la lista de experimentos actuales.
+    Devuelve la lista de experimentos actuales, incluyendo config y metrics.
     """
     try:
         base_path = "./experiments"
-        experimentos = [
-            {"nombre": nombre}
-            for nombre in os.listdir(base_path)
-            if os.path.isdir(os.path.join(base_path, nombre))
-        ]
+        experimentos = []
+        for nombre in os.listdir(base_path):
+            if not os.path.isdir(os.path.join(base_path, nombre)) or nombre == "comparison":
+                continue
+
+            exp_info = {"nombre": nombre, "config": None, "metrics": None}
+
+            exp_info["config"] = load_yaml_config(os.path.join(base_path, nombre, "config.yaml"))
+
+            metrics_path = os.path.join(base_path, nombre, "results", "metrics.json")
+            if os.path.exists(metrics_path):
+                try:
+                    with open(metrics_path, "r", encoding="utf-8") as f:
+                        exp_info["metrics"] = json.load(f)
+                except Exception as e:
+                    exp_info["metrics"] = {"error": f"No se pudo leer metrics.json: {str(e)}"}
+
+            experimentos.append(exp_info)
+
         return jsonify({"success": True, "experimentos": experimentos})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-    
-@app.route("/resultados_experimento/<nombre_experimento>", methods=["GET"])
-def resultados_experimento(nombre_experimento):
-    """
-    Devuelve los resultados del experimento seleccionado.
-    """
-    try:
-        base_path = "./experiments"
-        experiment_path = os.path.join(base_path, nombre_experimento)
-
-        if not os.path.exists(experiment_path):
-            return jsonify({"success": False, "error": "El experimento no existe"}), 404
-
-        # Aquí puedes incluir lógica para devolver gráficos, tablas, etc.
-        # Por ejemplo, devolver una lista de archivos en la carpeta "results"
-        results_path = os.path.join(experiment_path, "results")
-        if not os.path.exists(results_path):
-            return jsonify({"success": False, "error": "No hay resultados para este experimento"}), 404
-
-        resultados = [
-            {"nombre": archivo, "ruta": os.path.join(results_path, archivo)}
-            for archivo in os.listdir(results_path)
-            if os.path.isfile(os.path.join(results_path, archivo))
-        ]
-
-        return jsonify({"success": True, "resultados": resultados})
-
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
     
@@ -596,6 +598,7 @@ def entrenar_modelo():
 
         # Ejecutar el script run_experiment.py
         script_path = os.path.join(os.path.dirname(__file__), "experiments", nombre_experimento, "run_experiment.py")
+        print("Ejecutando script de entrenamiento:", script_path)
         if not os.path.exists(script_path):
             return jsonify({"success": False, "error": "No se encontró el script de entrenamiento para este experimento"}), 404
 
@@ -607,6 +610,7 @@ def entrenar_modelo():
         )
 
         if result.returncode != 0:
+            print("Error en el entrenamiento:", result.stderr)
             return jsonify({"success": False, "error": result.stderr}), 500
 
         # Si el entrenamiento fue correcto, intentar eliminar el experimento de la colección Experimentos.
@@ -651,12 +655,185 @@ def cambiar_url_bbdd():
         return jsonify({"success": False, "message": "No se proporcionó una URL válida"}), 400
 
     try:
-        # Reconectar a la nueva base de datos
         global db
         db = connect_to_database(uri=nueva_url)
         return jsonify({"success": True, "message": f"Conectado a la nueva base de datos: {nueva_url}"})
     except Exception as e:
         return jsonify({"success": False, "message": f"Error al conectar a la base de datos: {str(e)}"}), 500
+
+@app.route("/obtener_resultados_experimento", methods=["GET"])
+def obtener_resultados_experimento():
+    try:
+        nombre_experimento = request.args.get("nombre_experimento")
+        if not nombre_experimento:
+            return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
+
+        carpeta_resultados = Path(f"./experiments/{nombre_experimento}/results")
+        if not carpeta_resultados.exists() or not carpeta_resultados.is_dir():
+            return jsonify({"success": False, "error": "No se encontraron resultados para este experimento"}), 404
+
+        archivos_resultados = [
+            archivo.name for archivo in carpeta_resultados.iterdir()
+            if archivo.suffix in [".png", ".jpg"]
+        ]
+
+        return jsonify({"success": True, "resultados": archivos_resultados})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route("/imagen_resultado", methods=["GET"])
+def imagen_resultado():
+    """
+    Sirve una imagen de resultados de un experimento.
+    Parámetros GET:
+      - experimento: nombre del experimento
+      - archivo: nombre del archivo de imagen (png/jpg)
+    """
+    experimento = request.args.get("experimento")
+    archivo = request.args.get("archivo")
+    if not experimento or not archivo:
+        return jsonify({"success": False, "error": "Faltan parámetros"}), 400
+    if "/" in archivo or ".." in archivo or "\\" in archivo:
+        return jsonify({"success": False, "error": "Nombre de archivo no permitido"}), 400
+    ruta = os.path.join("./experiments", experimento, "results", archivo)
+    if not os.path.isfile(ruta):
+        return jsonify({"success": False, "error": "Archivo no encontrado"}), 404
+    mime, _ = mimetypes.guess_type(ruta)
+    if not mime:
+        mime = "application/octet-stream"
+    return send_file(ruta, mimetype=mime)
+
+@app.route("/imagen_comparacion", methods=["GET"])
+def imagen_comparacion():
+    """
+    Sirve una imagen de comparación de experimento.
+    Parámetros GET:
+      - ruta: ruta absoluta o relativa al archivo de imagen de comparación
+    """
+    ruta = request.args.get("ruta")
+    if not ruta:
+        return jsonify({"success": False, "error": "Faltan parámetros"}), 400
+    # Normaliza la ruta y comprueba que está dentro de experiments/comparison
+    ruta_normalizada = os.path.normpath(ruta)
+    ruta_normalizada = os.path.join(".", ruta_normalizada)
+    base_dir = os.path.normpath(os.path.join(".", "experiments", "comparison"))
+    abs_ruta = os.path.abspath(ruta_normalizada)
+    abs_base = os.path.abspath(base_dir)
+
+    if not abs_ruta.startswith(abs_base):
+        print("Nombre no perimitido: Acceso denegado a la ruta:", abs_ruta)
+        return jsonify({"success": False, "error": "Nombre de archivo no permitido"}), 400
+    if not os.path.isfile(abs_ruta):
+        return jsonify({"success": False, "error": "Archivo no encontrado"}), 404
+    mime, _ = mimetypes.guess_type(abs_ruta)
+    if not mime:
+        mime = "application/octet-stream"
+    return send_file(abs_ruta, mimetype=mime)
+    
+@app.route("/comparar_experimentos", methods=["POST"])
+def comparar_experimentos():
+    try:
+        data = request.get_json(force=True)
+        experimentos = data.get("experimentos", [])
+
+        if len(experimentos) < 2:
+            return jsonify({"success": False, "error": "Debes seleccionar al menos dos experimentos para comparar."}), 400
+
+        base_path = os.path.join(ROOT, "experiments")
+        comparison_folder = os.path.join(base_path, "comparison", "_vs_".join(experimentos))
+        os.makedirs(comparison_folder, exist_ok=True)
+
+        all_metrics = {}
+        for experiment in experimentos:
+            experiment_path = os.path.join(base_path, experiment)
+            metrics_file = os.path.join(experiment_path, "results", "metrics.json")
+            if os.path.exists(metrics_file):
+                with open(metrics_file, "r") as f:
+                    all_metrics[experiment] = json.load(f)
+
+        if not all_metrics:
+            return jsonify({"success": False, "error": "No se encontraron métricas para los experimentos seleccionados."}), 404
+
+        combined_metrics = ["accuracy_planta", "accuracy_enfermedad", "accuracy_combinada"]
+        x = range(len(experimentos))
+
+        plt.figure()
+        width = 0.2
+        for i, metric in enumerate(combined_metrics):
+            values = [
+                all_metrics[experiment]["test"].get(metric, 0) for experiment in experimentos
+            ]
+            plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
+
+        plt.title("Comparación de Accuracy")
+        plt.xlabel("Experimentos")
+        plt.ylabel("Accuracy")
+        plt.xticks([pos + width for pos in x], experimentos)
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        accuracy_path = os.path.join(comparison_folder, "comparison_accuracy_combined.png")
+        plt.savefig(accuracy_path)
+        plt.close()
+
+        f1_metrics = ["f1_planta", "f1_enfermedad"]
+        plt.figure()
+        width = 0.3
+        for i, metric in enumerate(f1_metrics):
+            values = [
+                all_metrics[experiment]["test"].get(metric, 0) for experiment in experimentos
+            ]
+            plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
+
+        plt.title("Comparación de F1-Score")
+        plt.xlabel("Experimentos")
+        plt.ylabel("F1-Score")
+        plt.xticks([pos + width / 2 for pos in x], experimentos)
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        f1_path = os.path.join(comparison_folder, "comparison_f1_combined.png")
+        plt.savefig(f1_path)
+        plt.close()
+
+        return jsonify({
+            "success": True,
+            "graficos": {
+                "accuracy": str(accuracy_path),
+                "f1_score": str(f1_path),
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route("/obtener_graficos_comparacion", methods=["GET"])
+def obtener_graficos_comparacion():
+    try:
+        # Obtener los nombres de los experimentos desde los parámetros de la solicitud
+        experimentos = request.args.getlist("experimentos")
+        if len(experimentos) < 2:
+            return jsonify({"success": False, "error": "Debes proporcionar al menos dos experimentos."}), 400
+
+        # Construir la ruta de la carpeta de comparación
+        base_path = Path("./experiments/comparison")
+        comparison_folder = base_path / "_vs_".join(experimentos)
+
+        # Verificar si la carpeta existe
+        if not comparison_folder.exists() or not comparison_folder.is_dir():
+            return jsonify({"success": False, "error": "No se encontraron gráficos para la comparación solicitada."}), 404
+
+        # Obtener los archivos de gráficos en la carpeta
+        graficos = [
+            str(archivo) for archivo in comparison_folder.iterdir()
+            if archivo.suffix in [".png", ".jpg"]
+        ]
+
+        if not graficos:
+            return jsonify({"success": False, "error": "No se encontraron gráficos en la carpeta de comparación."}), 404
+
+        return jsonify({"success": True, "graficos": graficos})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 ### FIN NUEVOS ###
     
@@ -994,14 +1171,16 @@ def devolver_x_archivos_sin_validar():
 
 @app.route("/subir_imagen", methods=["POST"])
 def subir_imagen():
-    correcto, res = validar_imagen_base64(request.json["imagen_b64"])
+    data = request.get_json(force=True)
+    correcto, res = validar_imagen_base64(data["imagen_b64"])
     if not correcto:
         abort(400, f"La imagen principal ha provocado la siguiente excepcion: " + res)
     #imagen = base64.b64decode(res)
 
-    clase = int(request.json["clase"])
+    clase = int(data["clase"])
+    usuario = data.get("usuario")
 
-    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, request.json["imagen_b64"])) + ".png"
+    nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, data["imagen_b64"])) + ".png"
 
     if os.path.isfile(f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/imagenes/{nombre_imagen}"):
         db.Docs.delete_one({"imagen_rgb": f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}"})
@@ -1011,6 +1190,7 @@ def subir_imagen():
     doc = {
         "imagen_rgb": f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}",
         "validada": False,
+        "usuario": usuario,
         "clase": clase
     }
 
@@ -1236,6 +1416,26 @@ def seleccionar_usuario():
     if not usuario:
         return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
     return jsonify({"success": True, "usuario": usuario})
+
+@app.route("/verificar_rol", methods=["POST"])
+def verificar_rol():
+    try:
+        data = request.get_json(force=True)
+        usuario = data.get("usuario")
+        rol = data.get("rol")
+
+        if not usuario or not rol:
+            return jsonify({"success": False, "error": "Faltan parámetros (usuario o rol)"}), 400
+
+        # Consultar la base de datos
+        user_data = col_usuarios.find_one({"nombre": usuario})
+        if not user_data:
+            return jsonify({"success": False, "error": "Usuario no encontrado"}), 404
+
+        tiene_rol = rol in user_data.get("rol", [])
+        return jsonify({"success": True, "tiene_rol": tiene_rol})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
     
 
 if __name__ == '__main__':

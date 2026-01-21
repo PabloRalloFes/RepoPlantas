@@ -3,21 +3,21 @@ import httpx
 import urllib
 import base64
 import os
-from dotenv import load_dotenv
-import json
-import requests
+from urllib.parse import urlparse
 
-load_dotenv()
+URL_API="http://localhost:5001"
+URL_BBDD="mongodb://localhost:27017"
 
 class LogicaApp:
     
     ### NUEVOS ###
 
-    def predecir_imagen(self, modelo_seleccionado):
+    def predecir_imagen(self, modelo_seleccionado, known_planta=None):
         url_predict = self.crear_url("/predict_image", self.url_api)
         payload = {
             "imagen": self.foto_b64, 
-            "modelo": modelo_seleccionado 
+            "modelo": modelo_seleccionado,
+            "planta": known_planta,
         }
         res = httpx.post(url_predict, json=payload)
         return res.json()
@@ -91,6 +91,10 @@ class LogicaApp:
             "experiment_name": experiment_name,
             "config_variables": config_variables,
         }
+
+        if config_variables.get("imagenes_por_clase") == "Todas":
+            payload["config_variables"]["imagenes_por_clase"] = "all"
+
         response = httpx.post(url, json=payload)
         return response.json()
 
@@ -101,14 +105,6 @@ class LogicaApp:
         url = self.crear_url("/obtener_experimentos", self.url_api)
         response = httpx.get(url)
         return response.json().get("experimentos", [])
-
-    def obtener_resultados_experimento(self, nombre_experimento):
-        """
-        Llama al backend para obtener los resultados de un experimento.
-        """
-        url = self.crear_url(f"/resultados_experimento/{nombre_experimento}", self.url_api)
-        response = httpx.get(url)
-        return response.json()
     
     def solicitar_entrenamiento(self, nombre_experimento):
         """
@@ -162,7 +158,79 @@ class LogicaApp:
         except Exception as e:
             return {"success": False, "message": f"Error al conectar con el backend: {str(e)}"}
         
+    def obtener_resultados_experimento(self, nombre_experimento):
+        """
+        Llama al backend para obtener los resultados de un experimento.
+        """
+        url = self.crear_url("/obtener_resultados_experimento", self.url_api)
+        try:
+            response = httpx.get(url, params={"nombre_experimento": nombre_experimento})
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"success": False, "error": response.json().get("error", "Error desconocido")}
+        except Exception as e:
+            return {"success": False, "error": f"Error al conectar con el backend: {str(e)}"}
+        
+    def get_url_imagen_resultado(self, nombre_experimento, archivo):
+            """
+            Devuelve la URL absoluta para obtener la imagen de resultados de un experimento.
+            """
+            params = {"experimento": nombre_experimento, "archivo": archivo}
+            return self.crear_url("/imagen_resultado", self.url_api, params)
+    
+    def get_url_imagen_comparacion(self, ruta):
+            """
+            Devuelve la URL absoluta para obtener la imagen de resultados de una comparación de experimentos.
+            """
+            params = {"ruta": ruta}
+            return self.crear_url("/imagen_comparacion", self.url_api, params)
+        
+    def comparar_experimentos(self, experimentos):
+        """
+        Llama al backend para comparar experimentos y obtener los gráficos generados.
+        """
+        url = self.crear_url("/comparar_experimentos", self.url_api)
+        try:
+            response = httpx.post(url, json={"experimentos": experimentos})
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"success": False, "error": response.json().get("error", "Error desconocido")}
+        except Exception as e:
+            return {"success": False, "error": f"Error al conectar con el backend: {str(e)}"}
+    
+    def obtener_graficos_comparacion(self, experimentos):
+        """
+        Llama al backend para obtener las rutas de los gráficos comparativos de los experimentos seleccionados.
+        """
+        url = self.crear_url("/obtener_graficos_comparacion", self.url_api)
+        try:
+            response = httpx.get(url, params={"experimentos": experimentos})
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"success": False, "error": response.json().get("error", "Error desconocido")}
+        except Exception as e:
+            return {"success": False, "error": f"Error al conectar con el backend: {str(e)}"}
+        
+    def verificar_rol(self, rol):
+        """
+        Verifica si el usuario actual tiene un rol específico consultando el backend.
+        """
+        url = self.crear_url("/verificar_rol", self.url_api)
+        payload = {"usuario": self.usuario["nombre"], "rol": rol}
 
+        try:
+            response = httpx.post(url, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("tiene_rol", False)
+            else:
+                return False
+        except Exception as e:
+            print(f"Error al verificar el rol: {e}")
+            return False
     
     ### FIN NUEVOS ###
 
@@ -352,9 +420,18 @@ class LogicaApp:
 
         return respuesta.json()
 
-    def recuperar_imagen_base64(self, url_imagen):
+    def recuperar_imagen_base64(self, url_imagen):        
 
-        res = httpx.get(url_imagen)
+        # Obtener la ruta del endpoint desde la url local
+        parsed = urlparse(url_imagen)
+        # self.url_api puede tener http(s)://ip:puerto
+        base_api = self.url_api.rstrip('/')
+        # Usar solo la ruta del endpoint
+        nueva_url = base_api + parsed.path
+        if parsed.query:
+            nueva_url += '?' + parsed.query
+
+        res = httpx.get(nueva_url)
 
         data = res.json()
         if "imagen_b64" in data:
@@ -362,6 +439,8 @@ class LogicaApp:
         else:
             # Si el backend aún devuelve texto plano, usar res.text
             return res.text
+        
+
     
     def avanzar_puntero_repo(self, reverso=False):
 
@@ -443,7 +522,7 @@ class LogicaApp:
 
         url_subir_foto = self.crear_url("/subir_imagen", self.url_api)
 
-        res = httpx.post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}})
+        res = httpx.post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}, "usuario": self.usuario["nombre"]})
 
         return res.json()
 

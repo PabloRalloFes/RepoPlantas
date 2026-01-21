@@ -38,11 +38,16 @@ def prepare_data_splits(db, config, save_dir):
     id_to_info = {doc["_id"]: (doc["planta"], doc["nombre_comun"]) for doc in clases_filtradas}
     clases_ids = list(id_to_info.keys())
 
+    print(f"Se han encontrado {len(clases_ids)} clases válidas después de aplicar los filtros de planta y enfermedad.")
+
     # Formato y fuentes
     formatos = {doc["formato"]: doc["_id"] for doc in db["Formato"].find()}
     formato_id = formatos[formato_nombre]
     fuentes_dict = {doc["fuente"]: doc["_id"] for doc in db["Fuente"].find()}
     fuentes_ids = [fuentes_dict[fuente] for fuente in fuentes if fuente in fuentes_dict]
+
+    print(f"Formato seleccionado: {formato_nombre} (ID: {formato_id})")
+    print(f"Fuentes seleccionadas: {fuentes} (IDs: {fuentes_ids})")
 
     # Avisos de fuentes no encontradas
     no_encontradas = [fuente for fuente in fuentes if fuente not in fuentes_dict]
@@ -55,6 +60,8 @@ def prepare_data_splits(db, config, save_dir):
         "clase": {"$in": clases_ids},
         "fuente": {"$in": fuentes_ids}
     }))
+
+    print(f"Se han encontrado {len(docs)} documentos con el formato {formato_nombre} y las fuentes seleccionadas.")
 
     # Agrupar por clase
     docs_por_clase = {}

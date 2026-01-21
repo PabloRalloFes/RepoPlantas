@@ -14,7 +14,7 @@ dependencies = [
 
 [tool.flet]
 org = "com.mycompany"
-product = "Plantas"
+product = "Plantor"
 company = "My Company"
 copyright = "Copyright (C) 2025 by My Company"
 

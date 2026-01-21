@@ -1,7 +1,7 @@
 # Clasificación de enfermedades de plantas mediante visión por computador/ Sistema de recopilación y etiquetado de imágenes de hojas de plantas
 
 Este repositorio forma parte del Trabajo de Fin de Grado (TFG) en Ciencia de Datos en la Universitat Politècnica de València.  
-El proyecto desarrolla una aplicación completa para recopilar, almacenar y etiquetar imágenes de hojas de plantas sanas y enfermas, combinando el dataset PlantVillage con imágenes reales tomadas mediante una app propia.
+El proyecto desarrolla una aplicación completa para recopilar, almacenar y etiquetar imágenes de hojas de plantas sanas y enfermas, combinando el dataset PlantVillage con imágenes reales tomadas mediante una app propia. Además, pretende hacer un aproximamiento a lo que sería un análisis predictivo combinado usando imágenes de 3 fuentes: PlantVillage, la app y un pequeño conjunto aportado por la facultad de agrónomos.
 
 El sistema integra una API Flask para la gestión de imágenes y usuarios, y una aplicación de escritorio desarrollada con Flet (Python) que permite interactuar con la base de datos de manera intuitiva.
 
@@ -78,7 +78,7 @@ requirements.txt
 El proyecto se organiza en dos componentes principales que trabajan de forma complementaria:
 
 ### 1. 🌿 Aplicación y API Flask (recopilación y gestión de datos)
-Esta parte del sistema permite recopilar y gestionar imágenes de hojas de plantas, así como los usuarios y roles que interactúan con la base de datos.  
+Esta parte del sistema permite recopilar y gestionar imágenes de hojas de plantas, así como los usuarios y roles que interactúan con la base de datos. Además, da una app para experimentar y explorar las posibilidades del proyecto. 
 Está formada por tres módulos principales:
 
 - **`main.py`** → API Flask unificada que gestiona la base de datos MongoDB.  
@@ -130,7 +130,7 @@ El flujo de funcionamiento es el siguiente:
 
 ### 2. 🤖 Módulo de modelo y experimentación (entrenamiento y evaluación)
 Esta parte contiene los scripts y notebooks para entrenar y evaluar modelos de clasificación, basados en arquitecturas **CNN** (principalmente MobileNetV2).  
-Utiliza tanto el dataset **PlantVillage** como las imágenes recopiladas mediante la app.
+Utiliza tanto el dataset **PlantVillage** como las imágenes recopiladas mediante la app y aportadas por la facultad de agrónomos.
 
 Los experimentos se organizan por carpetas dentro de `experiments/` y pueden configurarse mediante ficheros `config.yaml`.  
 Esta estructura permite reproducir distintos escenarios de entrenamiento o comparar configuraciones de datos y modelos.
@@ -167,10 +167,14 @@ Permite registrar nuevos usuarios, subir imágenes desde la app, validar etiquet
 
 ---
 
+### Tipos de conexión
+
+El sistema permite trabajar con una base de datos propia en local o conectarse al servidor y trabajar con la base de datos y la API centralizadas. A continuación se detalla cómo inicializar y utilizar el entorno local:
+
 ### 🚀 Ejecución en entorno local
 
 1. **Iniciar MongoDB**  
-   Asegúrate de tener un servidor MongoDB ejecutándose en `mongodb://localhost:27017/`.
+   Asegúrate de tener un servidor MongoDB ejecutándose en `mongodb://localhost:27017/` o cambia en la configuración de la app la dirección.
 
 2. **Ejecutar la API Flask**  
    En una terminal dentro del proyecto:
@@ -182,20 +186,15 @@ Permite registrar nuevos usuarios, subir imágenes desde la app, validar etiquet
 3. **Ejecutar la aplicación Flet**
    En otra terminal:
    ```bash
-   python main.py
+   python main_app.py
    ```
    La aplicación se abrirá en una ventana de escritorio o en el navegador.
 
-### 🧩 Integración futura
-   En próximas versiones, la aplicación incluirá nuevas funcionalidades actualmente gestionadas por scripts. Además, será de acceso público mediante un entorno virtual de la universidad y tendrá versión para móviles.
-
-
 ## 🤖 Parte B: Modelo predictivo y experimentación
 
-El proyecto incluye un pipeline completo para crear y gestionar la base de datos de imágenes mediante scripts de python.
+El proyecto incluye un pipeline completo para crear y gestionar la base de datos de imágenes mediante scripts de python. La app incluye también un entorno preliminar para explorar y experimentar.
 
-💡 Nota: asegúrate de ajustar la IP en logicav3.py (atributo self.url_api) al entorno donde se ejecuta la API Flask.
-Si trabajas en local, usa http://127.0.0.1:5001
+💡 Nota: asegúrate de ajustar la IP (en logicav3.py o en la configuración de la app) a la del entorno donde se ejecuta la API Flask.
 
 ### 1. Inicialización de la base de datos
 
@@ -238,13 +237,15 @@ Este script:
 
 ### 3. Preparación manual de imágenes externas
 
-Si quieres añadir imágenes reales (por ejemplo, tomadas con una app móvil o recopiladas manualmente), debes colocarlas manualmente en la siguiente ruta:
+Si quieres añadir un congunto grande de imágenes reales (por ejemplo, tomadas con una app móvil o recopiladas manualmente), debes colocarlas manualmente en la siguiente ruta:
 
 ```
 data/Imported/{nombre_fuente}/color/
 ```
 
 Donde `{nombre_fuente}` identifica la fuente (por ejemplo, `proyecto_movil`, `agricultura_europa2025`, etc.).
+
+💡 Nota: si quieres implementar este conjunto de imágenes en la base de datos centralizada ponte en contacto con el desarrollador.
 
 Estas imágenes deben estar organizadas por carpetas con el nombre exacto de cada clase (enfermedad), igual que en PlantVillage: {planta}___{nombre_comun}. Ejemplo:
 
@@ -273,7 +274,7 @@ Este script realiza automáticamente:
 - Subida de los tres formatos (`color`, `grayscale`, `segmented`) con la metainformación correspondiente (`fuente`, `formato`).
 - Control de duplicados mediante logs por formato.
 
-> También puedes ejecutar solo el procesamiento (sin subir) con:
+> También puedes ejecutar solo el procesamiento (sin subir las imágenes a la base de datos) con:
 >
 > ```
 > python scripts/process_imported_images.py --fuente nombre_fuente
@@ -305,11 +306,12 @@ Esto permite comparar fácilmente diferentes configuraciones (por ejemplo, cambi
 
 Toda la lógica del pipeline está dividida en módulos reutilizables dentro de `utils/` y `scripts/`, lo que facilita su mantenimiento y escalabilidad.
 
+A través de la app se pueden visualizar los resultados y comparar experimentos de forma preliminar.
+
 
 ## 📓 Scripts/Notebooks auxiliares
-
-- **analyze_experiments.py**: Script para comparar métricas entre varios experimentos. Permite analizar y visualizar resultados de diferentes configuraciones de entrenamiento. *Quiero mejorar los gráficos para una visualización más clara y comparativa.*
-- **notebook o script para mostrar imágenes mal clasificadas y top-k predicciones**: Herramienta para analizar visualmente los errores del modelo y consultar las top-k predicciones para una imagen concreta. Útil para depuración y análisis cualitativo de los resultados.
+- **EDA.ipynb**: Análisis exploratorio inicial.
+- **misclassified_and_topk.ipynb**: Herramienta para analizar visualmente los errores del modelo y consultar las top-k predicciones para una imagen concreta. Útil para depuración y análisis cualitativo de los resultados.
 
 Estos recursos se encuentran en la carpeta `scripts/` o `notebooks/` y sirven de apoyo para el análisis y la interpretación de los experimentos realizados.
 

@@ -10,7 +10,6 @@ import json  # Importar json para guardar el archivo de imágenes mal clasificad
 
 def train_model(model, train_loader, val_loader, config, data_dir):
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    #device = "cpu"
     model = model.to(device)
 
     epochs = config["epochs"]
@@ -41,10 +40,10 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     # Avisos si hay clases con muy pocas muestras
     for p in plantas:
         if conteo_plantas.get(p, 0) < min_samples:
-            print(f"️Clase planta '{p}' tiene solo {conteo_plantas[p]} imágenes.")
+            print(f"Clase planta '{p}' tiene solo {conteo_plantas[p]} imágenes.")
     for e in enfermedades:
         if conteo_enfermedades.get(e, 0) < min_samples:
-            print(f"️Clase enfermedad '{e}' tiene solo {conteo_enfermedades[e]} imágenes.")
+            print(f"Clase enfermedad '{e}' tiene solo {conteo_enfermedades[e]} imágenes.")
 
     # Crear funciones de pérdida
     if use_weights:

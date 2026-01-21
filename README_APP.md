@@ -9,8 +9,12 @@ Esta app forma parte de un sistema diseñado para recopilar, almacenar y etiquet
 ### **Para usuarios:**
 - Subir imágenes de hojas de plantas:
   - **Subida individual**: Sube una imagen a la base de datos.
-  - **Subida masiva**: Sube múltiples imágenes organizadas en carpetas.
-- Realizar predicciones básicas utilizando modelos entrenados.
+  - **Subida masiva**: Sube múltiples imágenes organizadas en carpetas, busca las carpetas en el PC donde se está ejecutando la API. Solo para Usuarios+.
+- Realizar predicciones básicas utilizando modelos entrenados*
+- **Experimentos**:
+  - Ver resultados de experimentos existentes
+  - Comparar experimentos existentes
+  - Crear un nuevo experimento y solicitar su entrenamiento
 
 ### **Para etiquetadores:**
 - Validar imágenes subidas por los usuarios.
@@ -27,18 +31,19 @@ Esta app forma parte de un sistema diseñado para recopilar, almacenar y etiquet
 ### **Otras funcionalidades:**
 - Registro de nuevos usuarios.
 - Cambiar la IP de la API desde la app.
+- Cambiar la dirección de la base de datos
 
 ---
 
 ## **⚙️ Requisitos**
 
-### **Para usar la app conectada a la API principal:**
-- **Requisitos mínimos:**
-  - Python 3.8 o superior.
-  - Instalar las dependencias del proyecto:
-    ```bash
-    pip install -r requirements.txt
-    ```
+- Python 3.8 o superior.
+- Instalar las dependencias del proyecto:
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+## **Para usar la app conectada a la API principal:**  
 - **Uso básico:**
   - Ejecuta el archivo `main_app.py`:
     ```bash
@@ -49,7 +54,7 @@ Esta app forma parte de un sistema diseñado para recopilar, almacenar y etiquet
 
 ---
 
-### **Para usar la app con tu propia base de datos local:**
+## **Para usar la app con tu propia base de datos local:**
 Si deseas trabajar con tu propia base de datos MongoDB local, sigue estos pasos adicionales:
 
 1. **Clonar el repositorio:**
@@ -79,25 +84,10 @@ Si deseas trabajar con tu propia base de datos MongoDB local, sigue estos pasos 
   - Usa la funcionalidad de subida masiva o individual desde la app.
   - Realiza validaciones, ediciones y experimentos con tu base de datos local.
 
-## 🚀 Instalación y uso básico
-1. **Requisitos previos:**
-  - Python 3.8 o superior.
-  - MongoDB (solo si trabajas con una base de datos local).
-2. **Instalar dependencias:**
-  ```bash
-  pip install -r requirements.txt
-  ```
-3. **Ejecutar la app:**
-  ```bash
-  python main_app.py
-  ```
-4. **Conectarse a la API:**
-  - Si la API principal está disponible, la app se conectará automáticamente.
-  - Si necesitas cambiar la IP de la API, puedes hacerlo desde la configuración de la app.
-
 ## 📖 Notas importantes
  - Mientras el servidor principal no esté disponible, las funcionalidades de la app estarán limitadas.
  - Si decides trabajar con tu propia base de datos local, asegúrate de seguir los pasos descritos en la sección correspondiente.
+ - *En la predicción de imágenes, si aportas la planta correspondiente te seguirá dando la probabilidad de que la predicción sea correcta teniendo en cuenta todas las posibilidades, no solo las de esa planta.
 
 ## 🤝 Contribuciones y contacto
  - Si deseas contribuir al desarrollo de la app, por favor abre un issue o envía un pull request.
