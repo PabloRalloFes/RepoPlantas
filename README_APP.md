@@ -38,6 +38,7 @@ Esta app forma parte de un sistema diseñado para recopilar, almacenar y etiquet
 ## **⚙️ Requisitos**
 
 - Python 3.8 o superior.
+- Flutter 3.16.7 para crear la apk
 - Instalar las dependencias del proyecto:
   ```bash
   pip install -r requirements.txt
