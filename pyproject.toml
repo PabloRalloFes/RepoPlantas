@@ -1,0 +1,20 @@
+[project]
+name = "myapp"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Flet developer", email = "you@example.com" }
+]
+dependencies = [
+    "flet",
+    "httpx"
+]
+
+[tool.flet]
+org = "com.mycompany"
+product = "Plantor"
+company = "My Company"
+copyright = "Copyright (C) 2025 by My Company"
+
