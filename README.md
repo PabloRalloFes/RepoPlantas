@@ -7,7 +7,26 @@ The system integrates a Flask API for image and user management, and a desktop a
 
 ---
 
-## 📦 General Structure
+## � Documentation Structure
+
+This is the **main document** that explains the complete project architecture. Depending on what you need, consult:
+
+| Document | Content |
+|----------|----------|
+| **README.md / README_ES.md** | 📍 You are here - General overview and project architecture |
+| **[README_APP.md](README_APP.md)** | Guide for the **desktop application** (main_app.py) |
+| **[README_APP_EN.md](README_APP_EN.md)** | English guide for the **desktop application** |
+| **[server/README.md](server/README.md)** | Guide for the **backend server** (main.py) |
+| **[server/README_ES.md](server/README_ES.md)** | Spanish guide for the **backend server** |
+
+👉 **Start here if it's your first time** with a section depending on what you want to do:
+- **User**: Go to [README_APP.md](README_APP.md)
+- **Local Developer**: Go to [server/README.md](server/README.md)
+- **System Architect**: Continue in this document
+
+---
+
+## �📦 General Structure
 
 ```
 data/
@@ -97,33 +116,16 @@ It consists of three main modules:
   - Manages authentication, user searches, and in-memory data flow.
 
 The workflow is as follows:
-[User / Labeler / Administrator]
-│
-▼
-┌────────────────────┐
-│ Flet Application   │
-│ (main_app.py)      │
-└────────────────────┘
-│ JSON / HTTP (httpx)
-▼
-┌────────────────────┐
-│ Flask API          │
-│ (main.py)          │
-└────────────────────┘
-│
-▼
-┌────────────────────────┐
-│ MongoDB Database       │
-│ ├─ appPlantas (users)
-│ └─ Repositorio_Plantas (images)
-└────────────────────────┘
-│
-▼
-┌─────────────────────────────┐
-│ Experimental Module (CNN)   │
-│ ├─ MobileNetV2 Training     │
-│ └─ Use of PlantVillage data │
-└─────────────────────────────┘
+The workflow is as follows:
+1. **User / Labeler / Administrator** interacts with the system.
+2. They use the **Flet Application** (`main_app.py`).
+3. The app communicates via JSON/HTTP (`httpx`) with the **Flask API** (`main.py`).
+4. The **Flask API** manages the **MongoDB Database**:
+  - `appPlantas` (users)
+  - `Repositorio_Plantas` (images)
+5. The experimental module (CNN) uses the data for:
+  - MobileNetV2 training
+  - PlantVillage dataset usage
 
 ---
 
@@ -172,22 +174,17 @@ The system allows working with a local database or connecting to the server and 
 
 ### 🚀 Running Locally
 
-1. **Start MongoDB**
-   Make sure you have a MongoDB server running at `mongodb://localhost:27017/` or change the address in the app configuration.
+> **📌 For detailed instructions on how to run the server and app, see:**
+> - **[server/README.md](server/README.md)** - Complete backend server guide
+> - **[README_APP_EN.md](README_APP_EN.md)** - Desktop application guide
 
-2. **Run the Flask API**
-   In a terminal inside the project:
-   ```bash
-   python main.py
-   ```
-   This will start the server at http://127.0.0.1:5001
+**Quick summary:**
 
-3. **Run the Flet application**
-   In another terminal:
-   ```bash
-   python main_app.py
-   ```
-   The application will open in a desktop window or in the browser.
+1. Install MongoDB locally (or use a remote one)
+2. Start the server: `python main.py` (or use `python server/run_server.py --dev --https`)
+3. In another terminal, start the app: `python main_app.py`
+
+For more details and troubleshooting, see the documentation linked above.
 
 ## 🤖 Part B: Predictive Model and Experimentation
 

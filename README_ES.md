@@ -5,6 +5,24 @@ El proyecto desarrolla una aplicación completa para recopilar, almacenar y etiq
 
 El sistema integra una API Flask para la gestión de imágenes y usuarios, y una aplicación de escritorio desarrollada con Flet (Python) que permite interactuar con la base de datos de manera intuitiva.
 
+---
+
+## 📚 Estructura de Documentación
+
+Este es el **documento principal** que explica la arquitectura completa del proyecto. Según lo que necesites, consulta:
+
+| Documento | Contenido |
+|-----------|----------|
+| **README.md / README_ES.md** | 📍 Estás aquí - Visión general y arquitectura del proyecto |
+| **[README_APP.md](README_APP.md)** | Guía de la **aplicación de escritorio** (main_app.py) |
+| **[README_APP_EN.md](README_APP_EN.md)** | English guide for the **desktop application** |
+| **[server/README_EN.md](server/README_EN.md)** | Guide for the **backend server** (main.py) |
+| **[server/README_ES.md](server/README_ES.md)** | Guía del **servidor backend** en español |
+
+👉 **Comienza aquí si es tu primera vez** con una sección según lo que quieras hacer:
+- **Usuario**: Ve a [README_APP.md](README_APP.md)
+- **Desarrollador local**: Ve a [server/README_ES.md](server/README_ES.md)
+- **Arquitecto del sistema**: Continúa en este documento
 
 ---
 
@@ -98,33 +116,16 @@ Está formada por tres módulos principales:
   - Gestiona la autenticación, las búsquedas de usuarios y el flujo de datos en memoria.
 
 El flujo de funcionamiento es el siguiente:
-[Usuario / Etiquetador / Administrador]
-│
-▼
-┌────────────────────┐
-│ Aplicación Flet │
-│ (main_app.py) │
-└────────────────────┘
-│ JSON / HTTP (httpx)
-▼
-┌────────────────────┐
-│ API Flask │
-│ (main.py) │
-└────────────────────┘
-│
-▼
-┌────────────────────────┐
-│ Base de datos MongoDB │
-│ ├─ appPlantas (usuarios)
-│ └─ Repositorio_Plantas (imágenes)
-└────────────────────────┘
-│
-▼
-┌─────────────────────────────┐
-│ Módulo experimental (CNN) │
-│ ├─ Entrenamiento MobileNetV2
-│ └─ Uso del dataset PlantVillage
-└─────────────────────────────┘
+El flujo de funcionamiento es el siguiente:
+1. **Usuario / Etiquetador / Administrador** interactúa con el sistema.
+2. Utiliza la **Aplicación Flet** (`main_app.py`).
+3. La app se comunica vía JSON/HTTP (`httpx`) con la **API Flask** (`main.py`).
+4. La **API Flask** gestiona la **Base de datos MongoDB**:
+  - `appPlantas` (usuarios)
+  - `Repositorio_Plantas` (imágenes)
+5. El módulo experimental (CNN) utiliza los datos para:
+  - Entrenamiento MobileNetV2
+  - Uso del dataset PlantVillage
 
 ---
 
@@ -173,22 +174,17 @@ El sistema permite trabajar con una base de datos propia en local o conectarse a
 
 ### 🚀 Ejecución en entorno local
 
-1. **Iniciar MongoDB**  
-   Asegúrate de tener un servidor MongoDB ejecutándose en `mongodb://localhost:27017/` o cambia en la configuración de la app la dirección.
+> **📌 Para instrucciones detalladas de cómo ejecutar el servidor y la app, consulta:**
+> - **[server/README_ES.md](server/README_ES.md)** - Guía completa del servidor backend
+> - **[README_APP.md](README_APP.md)** - Guía de la aplicación de escritorio
 
-2. **Ejecutar la API Flask**  
-   En una terminal dentro del proyecto:
-   ```bash
-   python main.py
-   ```
-   Esto levantará el servidor en http://127.0.0.1:5001
+**Resumen rápido:**
 
-3. **Ejecutar la aplicación Flet**
-   En otra terminal:
-   ```bash
-   python main_app.py
-   ```
-   La aplicación se abrirá en una ventana de escritorio o en el navegador.
+1. Instala MongoDB localmente (o usa uno remoto)
+2. Inicia el servidor: `python main.py` (o usa `python server/run_server.py --dev --https`)
+3. En otra terminal, inicia la app: `python main_app.py`
+
+Para más detalles y solución de problemas, consulta la documentación enlazada arriba.
 
 ## 🤖 Parte B: Modelo predictivo y experimentación
 

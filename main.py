@@ -4,6 +4,7 @@ from PIL import Image
 from flask import Flask, request, jsonify, abort
 import re
 import os
+import shutil
 from bson.objectid import ObjectId
 from io import BytesIO
 import uuid
@@ -316,6 +317,11 @@ def opciones_fuentes():
     fuentes = list(db.Fuente.distinct("fuente"))
     return jsonify_serialized(fuentes)
 
+@app.route("/opciones_modelos", methods=["GET"])
+def opciones_modelos():
+    modelos = ["MobileNetV2"] # De momento solo MobileNetV2
+    return jsonify_serialized(modelos)
+
 @app.route("/subida_masiva", methods=["POST"])
 def subida_masiva():
     data = request.get_json(force=True)
@@ -492,6 +498,15 @@ def crear_experimento():
                 total_imagenes[clase] = db["Docs"].count_documents({"clase": clase})
             config_variables["imagenes_por_clase"] = max(total_imagenes.values())
 
+        mapeo_modelos = {
+            "MobileNetV2": "MobileNet_V2_Weights.DEFAULT"
+        }
+
+        # Renombrar "modelo" a "weights" si existe
+        if "modelo" in config_variables:
+            modelo = config_variables.pop("modelo")
+            config_variables["weights"] = mapeo_modelos.get(modelo, modelo)
+
         script_path = os.path.join(os.path.dirname(__file__), "scripts", "make_experiment.py")
         cmd = ["python", script_path, experiment_name]
 
@@ -547,12 +562,16 @@ def solicitar_entrenamiento():
     try:
         data = request.get_json()
         nombre_experimento = data.get("nombre")
+        usuario = data.get("usuario")
+        disponible_prediccion = data.get("disponible_prediccion", False)
 
         if not nombre_experimento:
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
 
         db["Entrenamientos"].insert_one({
             "nombre": nombre_experimento,
+            "usuario": usuario,
+            "disponible_prediccion": disponible_prediccion,
             "created_at": datetime.utcnow()
         })
 
@@ -576,10 +595,12 @@ def entrenar_modelo():
     """
     Ejecuta el entrenamiento de un modelo.
     Si el entrenamiento termina correctamente, elimina el experimento de la colección 'Experimentos'.
+    El admin decide si acepta hacer el modelo disponible para predicción mediante el parámetro aceptar_disponible_prediccion.
     """
     try:
         data = request.get_json()
         nombre_experimento = data.get("nombre")
+        aceptar_disponible_prediccion = data.get("aceptar_disponible_prediccion", False)
 
         if not nombre_experimento:
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
@@ -613,8 +634,28 @@ def entrenar_modelo():
             print("Error en el entrenamiento:", result.stderr)
             return jsonify({"success": False, "error": result.stderr}), 500
 
-        # Si el entrenamiento fue correcto, intentar eliminar el experimento de la colección Experimentos.
+        # Si el entrenamiento fue correcto, verificar si el admin acepta disponibilidad para predicción
         try:
+            solicitud = db["Entrenamientos"].find_one({"nombre": nombre_experimento})
+            
+            # Si el admin acepta hacer el modelo disponible para predicción, copiarlo a models/
+            # Nota: El usuario puede haber solicitado disponibilidad (solicitud.get("disponible_prediccion")),
+            # pero la decisión final es del admin (aceptar_disponible_prediccion)
+            if aceptar_disponible_prediccion:
+                modelo_origen = os.path.join("experiments", nombre_experimento, "models", "best_model.pth")
+                modelo_destino = os.path.join("models", f"{nombre_experimento}.pth")
+                
+                # Crear carpeta models/ si no existe
+                os.makedirs("models", exist_ok=True)
+                
+                # Copiar el modelo
+                if os.path.exists(modelo_origen):
+                    shutil.copy2(modelo_origen, modelo_destino)
+                    print(f"Modelo copiado a {modelo_destino} (aprobado por admin)")
+                else:
+                    print(f"Advertencia: No se encontró el modelo en {modelo_origen}")
+            
+            # Eliminar el documento de Entrenamientos
             delete_res = db["Entrenamientos"].delete_one({"nombre": nombre_experimento})
             lista = []
             for doc in db["Entrenamientos"].find():
@@ -1437,16 +1478,24 @@ def verificar_rol():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
     
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
-"""
-@app.route("/test", methods=["GET"])
-def test():
-    print(db.Etiquetas.find_one({"clasificacion": "Sin_clasificar"}, {"_id": 1})["_id"])
-
-    return ""
-"""
-
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route("/logos", methods=["GET"])
+def logos():
+    try:
+        ruta_logos = "./src/assets/logos.png"
+        
+        if not os.path.exists(ruta_logos):
+            return jsonify({"success": False, "error": "Archivo de logos no encontrado"}), 404
+        
+        with open(ruta_logos, "rb") as f:
+            imagen_bytes = f.read()
+        
+        imagen_b64 = base64.b64encode(imagen_bytes).decode("utf-8")
+        
+        return jsonify({"success": True, "imagen_b64": imagen_b64})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+# Usar run_server.py para ejecutar este servidor
+# python run_server.py              # HTTP simple
+# python run_server.py --https      # HTTPS (recomendado)
+# python run_server.py --https --port 8000  # HTTPS en puerto 8000

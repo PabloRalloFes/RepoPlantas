@@ -184,6 +184,48 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-
-
+# Información local del usuario
 comentarios.txt
+
+# ==========================================
+# PROYECTO ESPECÍFICO - Seguridad y Sensibles
+# ==========================================
+
+# Certificados SSL y claves privadas (CRÍTICO - No subir nunca)
+ssl_certs/
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+
+# Variables de entorno y configuraciones locales
+.env.local
+.env.*.local
+.env.production.local
+
+# Almacenamiento temporal y datos temporales
+storage/temp/
+storage/data/
+*.tmp
+
+# IDE y Editores (configuraciones personales)
+.vscode/
+.vscode-settings.json
+.idea/
+*.sublime-project
+*.sublime-workspace
+.vim/
+
+# Sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de configuración local que pueden contener rutas/credenciales
+local_config.py
+config.local.yaml

@@ -5,7 +5,7 @@ import base64
 import os
 from urllib.parse import urlparse
 
-URL_API="http://localhost:5001"
+URL_API="https://localhost:5001"
 URL_BBDD="mongodb://localhost:27017"
 
 class LogicaApp:
@@ -19,7 +19,7 @@ class LogicaApp:
             "modelo": modelo_seleccionado,
             "planta": known_planta,
         }
-        res = httpx.post(url_predict, json=payload)
+        res = httpx.post(url_predict, json=payload, verify=False, timeout=10.0)
         return res.json()
     
     def validar_imagen(self, id_doc):
@@ -27,7 +27,7 @@ class LogicaApp:
             id_doc = id_doc["$oid"]
 
         url_validar = self.crear_url("/validar_imagen", self.url_api)
-        res = httpx.post(url_validar, json={"id_doc": str(id_doc)})
+        res = httpx.post(url_validar, json={"id_doc": str(id_doc)}, verify=False, timeout=10.0)
 
         try:
             return res.json()
@@ -36,27 +36,32 @@ class LogicaApp:
 
     def obtener_opciones_plantas(self):
         url = self.crear_url("/opciones_plantas", self.url_api)
-        res = httpx.get(url)
+        res = httpx.get(url, verify=False, timeout=10.0)
         return res.json()
 
     def obtener_opciones_enfermedades(self):
         url = self.crear_url("/opciones_enfermedades", self.url_api)
-        res = httpx.get(url)
+        res = httpx.get(url, verify=False, timeout=10.0)
         return res.json()
 
     def obtener_opciones_formatos(self):
         url = self.crear_url("/opciones_formatos", self.url_api)
-        res = httpx.get(url)
+        res = httpx.get(url, verify=False, timeout=10.0)
         return res.json()
 
     def obtener_opciones_fuentes(self):
         url = self.crear_url("/opciones_fuentes", self.url_api)
-        res = httpx.get(url)
+        res = httpx.get(url, verify=False, timeout=10.0)
+        return res.json()
+    
+    def obtener_opciones_modelos(self):
+        url = self.crear_url("/opciones_modelos", self.url_api)
+        res = httpx.get(url, verify=False, timeout=10.0)
         return res.json()
     
     def set_url_api(self, nueva_url: str):
         if not nueva_url.startswith("http://") and not nueva_url.startswith("https://"):
-            nueva_url = "http://" + nueva_url
+            nueva_url = "https://" + nueva_url
         self.url_api = nueva_url.rstrip("/")
         return {"success": True, "message": f"URL de la API actualizada a {self.url_api}"}
     
@@ -68,17 +73,17 @@ class LogicaApp:
 
     def obtener_clases(self):
         url = self.crear_url("/editar_clases", self.url_api)
-        res = httpx.get(url)
+        res = httpx.get(url, verify=False, timeout=10.0)
         return res.json()
 
     def reemplazar_clases(self, clases_modificadas):
         url = self.crear_url("/reemplazar_clases", self.url_api)
-        res = httpx.post(url, json={"clases": clases_modificadas})
+        res = httpx.post(url, json={"clases": clases_modificadas}, verify=False, timeout=10.0)
         return res.json()
     
     def agregar_clase(self, clase_dict):
         url = self.crear_url("/add_class", self.url_api)
-        res = httpx.post(url, json=clase_dict)
+        res = httpx.post(url, json=clase_dict, verify=False, timeout=10.0)
         return res.json()
 
 
@@ -95,7 +100,7 @@ class LogicaApp:
         if config_variables.get("imagenes_por_clase") == "Todas":
             payload["config_variables"]["imagenes_por_clase"] = "all"
 
-        response = httpx.post(url, json=payload)
+        response = httpx.post(url, json=payload, verify=False, timeout=10.0)
         return response.json()
 
     def obtener_experimentos(self):
@@ -103,16 +108,20 @@ class LogicaApp:
         Llama al backend para obtener la lista de experimentos actuales.
         """
         url = self.crear_url("/obtener_experimentos", self.url_api)
-        response = httpx.get(url)
+        response = httpx.get(url, verify=False, timeout=10.0)
         return response.json().get("experimentos", [])
     
-    def solicitar_entrenamiento(self, nombre_experimento):
+    def solicitar_entrenamiento(self, nombre_experimento, disponible_prediccion=False):
         """
         Envía una solicitud al backend para registrar la petición de entrenamiento de un modelo.
         """
         url = self.crear_url("/solicitar_entrenamiento", self.url_api)
-        payload = {"nombre": nombre_experimento}
-        response = httpx.post(url, json=payload)
+        payload = {
+            "nombre": nombre_experimento,
+            "usuario": self.usuario.get("nombre", ""),
+            "disponible_prediccion": disponible_prediccion
+        }
+        response = httpx.post(url, json=payload, verify=False, timeout=10.0)
         return response.json()
     
     def obtener_solicitudes_entrenamiento(self):
@@ -120,16 +129,20 @@ class LogicaApp:
         Llama al backend para obtener la lista de solicitudes de entrenamiento.
         """
         url = self.crear_url("/obtener_solicitudes_entrenamiento", self.url_api)
-        response = httpx.get(url)
+        response = httpx.get(url, verify=False, timeout=10.0)
         return response.json().get("solicitudes", [])
     
-    def entrenar_modelo(self, nombre_experimento):
+    def entrenar_modelo(self, nombre_experimento, aceptar_disponible_prediccion=False):
         """
         Llama al backend para ejecutar el entrenamiento de un modelo.
+        El parámetro aceptar_disponible_prediccion indica si el admin acepta hacer el modelo disponible para predicción.
         """
         url = self.crear_url("/entrenar_modelo", self.url_api)
-        payload = {"nombre": nombre_experimento}
-        response = httpx.post(url, json=payload, timeout=3600)
+        payload = {
+            "nombre": nombre_experimento,
+            "aceptar_disponible_prediccion": aceptar_disponible_prediccion
+        }
+        response = httpx.post(url, json=payload, timeout=3600, verify=False)
         return response.json()
     
     def obtener_modelos(self):
@@ -137,7 +150,7 @@ class LogicaApp:
         Llama al backend para obtener la lista de modelos disponibles.
         """
         url = self.crear_url("/obtener_modelos", self.url_api)
-        response = httpx.get(url)
+        response = httpx.get(url, verify=False, timeout=10.0)
         if response.status_code == 200:
             return response.json().get("modelos", [])
         else:
@@ -150,7 +163,7 @@ class LogicaApp:
         url = self.crear_url("/cambiar_url_bbdd", self.url_api)
         payload = {"url_bbdd": self.url_bbdd}
         try:
-            response = httpx.post(url, json=payload)
+            response = httpx.post(url, json=payload, verify=False, timeout=10.0)
             if response.status_code == 200:
                 return {"success": True, "message": "URL de la base de datos actualizada correctamente en el backend"}
             else:
@@ -164,7 +177,7 @@ class LogicaApp:
         """
         url = self.crear_url("/obtener_resultados_experimento", self.url_api)
         try:
-            response = httpx.get(url, params={"nombre_experimento": nombre_experimento})
+            response = httpx.get(url, params={"nombre_experimento": nombre_experimento}, verify=False, timeout=10.0)
             if response.status_code == 200:
                 return response.json()
             else:
@@ -192,7 +205,7 @@ class LogicaApp:
         """
         url = self.crear_url("/comparar_experimentos", self.url_api)
         try:
-            response = httpx.post(url, json={"experimentos": experimentos})
+            response = httpx.post(url, json={"experimentos": experimentos}, verify=False, timeout=10.0)
             if response.status_code == 200:
                 return response.json()
             else:
@@ -206,7 +219,7 @@ class LogicaApp:
         """
         url = self.crear_url("/obtener_graficos_comparacion", self.url_api)
         try:
-            response = httpx.get(url, params={"experimentos": experimentos})
+            response = httpx.get(url, params={"experimentos": experimentos}, verify=False, timeout=10.0)
             if response.status_code == 200:
                 return response.json()
             else:
@@ -222,7 +235,7 @@ class LogicaApp:
         payload = {"usuario": self.usuario["nombre"], "rol": rol}
 
         try:
-            response = httpx.post(url, json=payload)
+            response = httpx.post(url, json=payload, verify=False, timeout=10.0)
             if response.status_code == 200:
                 data = response.json()
                 return data.get("tiene_rol", False)
@@ -265,7 +278,7 @@ class LogicaApp:
         params = {"nombre": nombre, "password": self.hash_func(nombre, password), "rol": rol}
         url_inciar_sesion = self.crear_url("/iniciar_sesion", self.url_api)
 
-        respuesta = httpx.post(url_inciar_sesion, json=params, headers=self.headers)
+        respuesta = httpx.post(url_inciar_sesion, json=params, headers=self.headers, verify=False, timeout=10.0)
        
         inicio_correcto = respuesta.json()
 
@@ -282,7 +295,7 @@ class LogicaApp:
         url_registro = self.crear_url("/registro", self.url_api)
 
         try:
-            respuesta = httpx.post(url_registro, json=params, headers=self.headers)
+            respuesta = httpx.post(url_registro, json=params, headers=self.headers, verify=False, timeout=10.0)
             data = respuesta.json()
             return data
         except Exception:
@@ -293,7 +306,7 @@ class LogicaApp:
         params = {"nombre": nombre, "rol": rol}
         url_add_rol = self.crear_url("/add_rol", self.url_api)
 
-        respuesta = httpx.post(url_add_rol, json=params, headers=self.headers)
+        respuesta = httpx.post(url_add_rol, json=params, headers=self.headers, verify=False, timeout=10.0)
 
         operacion_correcta = respuesta.json()
 
@@ -308,7 +321,7 @@ class LogicaApp:
         params = {"nombre": nombre, "rol": rol}
         url_eliminar_rol = self.crear_url("/eliminar_rol", self.url_api)
 
-        respuesta = httpx.post(url_eliminar_rol, json=params, headers=self.headers)
+        respuesta = httpx.post(url_eliminar_rol, json=params, headers=self.headers, verify=False, timeout=10.0)
 
         operacion_correcta = respuesta.json()
 
@@ -329,7 +342,7 @@ class LogicaApp:
         
         url_lista_usuarios = self.crear_url("/buscar_usuarios", self.url_api)
 
-        respuesta = httpx.get(url_lista_usuarios, params=params, headers=self.headers)
+        respuesta = httpx.get(url_lista_usuarios, params=params, headers=self.headers, verify=False, timeout=10.0)
 
         self.lista_usuarios = respuesta.json()
         return True
@@ -338,7 +351,7 @@ class LogicaApp:
         params = {"nombre": nombre}
         url_seleccionar_usuario = self.crear_url("/seleccionar_usuario", self.url_api)
 
-        respuesta = httpx.post(url_seleccionar_usuario, json=params, headers=self.headers)
+        respuesta = httpx.post(url_seleccionar_usuario, json=params, headers=self.headers, verify=False, timeout=10.0)
 
         try:
             data = respuesta.json()
@@ -354,7 +367,7 @@ class LogicaApp:
 
         url_eliminar_usuario = self.crear_url("/eliminar_usuario", self.url_api)
 
-        respuesta = httpx.post(url_eliminar_usuario, json=params, headers=self.headers)
+        respuesta = httpx.post(url_eliminar_usuario, json=params, headers=self.headers, verify=False, timeout=10.0)
 
         return respuesta.json()
     
@@ -366,7 +379,7 @@ class LogicaApp:
 
         url_cambiar_nombre_usuario = self.crear_url("/cambiar_nombre_usuario", self.url_api)
 
-        respuesta = httpx.post(url_cambiar_nombre_usuario, json=params, headers=self.headers)
+        respuesta = httpx.post(url_cambiar_nombre_usuario, json=params, headers=self.headers, verify=False, timeout=10.0)
         
         cambio_correcto = respuesta.json()
         
@@ -388,7 +401,7 @@ class LogicaApp:
 
         url_cambiar_password = self.crear_url("/cambiar_password", self.url_api)
 
-        respuesta = httpx.post(url_cambiar_password, json=params, headers=self.headers)
+        respuesta = httpx.post(url_cambiar_password, json=params, headers=self.headers, verify=False, timeout=10.0)
         
         cambio_correcto = respuesta.json()
 
@@ -401,7 +414,7 @@ class LogicaApp:
 
         url_recuperar_etiquetas = self.crear_url("/etiquetas", self.url_api)
 
-        respuesta = httpx.get(url_recuperar_etiquetas)
+        respuesta = httpx.get(url_recuperar_etiquetas, verify=False, timeout=10.0)
 
         return respuesta.json()
     
@@ -416,7 +429,7 @@ class LogicaApp:
                 params.update({"nombre": nombre})
 
 
-        respuesta = httpx.get(url_recuperar_docs, params=params)
+        respuesta = httpx.get(url_recuperar_docs, params=params, verify=False, timeout=10.0)
 
         return respuesta.json()
 
@@ -431,14 +444,20 @@ class LogicaApp:
         if parsed.query:
             nueva_url += '?' + parsed.query
 
-        res = httpx.get(nueva_url)
+        res = httpx.get(nueva_url, verify=False, timeout=10.0)
 
-        data = res.json()
-        if "imagen_b64" in data:
-            return data["imagen_b64"]
-        else:
-            # Si el backend aún devuelve texto plano, usar res.text
-            return res.text
+        # Intentar parsear como JSON primero
+        try:
+            data = res.json()
+            if "imagen_b64" in data:
+                return data["imagen_b64"]
+            else:
+                # Si el backend aún devuelve texto plano, usar res.text
+                return res.text
+        except:
+            # Si no es JSON, es una imagen directa (send_file)
+            # Convertir a base64
+            return base64.b64encode(res.content).decode('utf-8')
         
 
     
@@ -467,7 +486,7 @@ class LogicaApp:
         if formato: params["formato"] = formato
         if fuente: params["fuente"] = fuente
 
-        res = httpx.get(url_recuperar_n_img, params=params)
+        res = httpx.get(url_recuperar_n_img, params=params, verify=False)
         archivos = res.json()
         self.batch_archivos = archivos
 
@@ -506,7 +525,7 @@ class LogicaApp:
     def etiquetar_imagen(self, id_etiqueta: int):
 
         url_etiquetar_imagen = self.crear_url("/clasificar", self.url_api)
-        res = httpx.post(url_etiquetar_imagen, json={"etiqueta": id_etiqueta, "doc": self.archivo_seleccionado["_id"]})
+        res = httpx.post(url_etiquetar_imagen, json={"etiqueta": id_etiqueta, "doc": self.archivo_seleccionado["_id"]}, verify=False)
         return res.json()
     
     def procesar_foto(self, img):
@@ -522,9 +541,19 @@ class LogicaApp:
 
         url_subir_foto = self.crear_url("/subir_imagen", self.url_api)
 
-        res = httpx.post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}, "usuario": self.usuario["nombre"]})
+        res = httpx.post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}, "usuario": self.usuario["nombre"]}, verify=False)
 
         return res.json()
+    
+    def logos(self):
+        url_logos = self.crear_url("/logos", self.url_api)
+        res = httpx.get(url_logos, verify=False)
+        data = res.json()
+        
+        if data.get("success"):
+            return data["imagen_b64"]
+        else:
+            return None  # o manejar el error
 
     def __init__(self):
         self.usuario = {"nombre": ""}
