@@ -14,16 +14,27 @@ if __name__ == "__main__":
 
     logica_app = logica.LogicaApp()
 
+    def _is_docker_internal_url(value: str) -> bool:
+        if not value:
+            return False
+        lowered = value.strip().lower()
+        return "://api:" in lowered or "://mongo:" in lowered
+
     def main(page: ft.Page):
         saved_url_api = page.client_storage.get("url_api")
-        if saved_url_api:
+        if saved_url_api and not _is_docker_internal_url(saved_url_api):
             logica_app.set_url_api(saved_url_api)
+        elif saved_url_api:
+            page.client_storage.remove("url_api")
 
         saved_url_bbdd = page.client_storage.get("url_bbdd")
-        if saved_url_bbdd:
-            if saved_url_bbdd != logica_app.url_bbdd:
-                logica_app.cambiar_url_bbdd()
+        if saved_url_bbdd and not _is_docker_internal_url(saved_url_bbdd):
+            previous_url_bbdd = logica_app.url_bbdd
             logica_app.set_url_bbdd(saved_url_bbdd)
+            if saved_url_bbdd != previous_url_bbdd:
+                logica_app.cambiar_url_bbdd()
+        elif saved_url_bbdd:
+            page.client_storage.remove("url_bbdd")
 
         def mostrar_cargando(page, visible=True):
             if visible:
@@ -373,6 +384,85 @@ if __name__ == "__main__":
             
             page.update()
 
+        def cargar_fuentes_dropdown(fuente_dropdown):
+            try:
+                resultado = logica_app.listar_fuentes_importadas()
+                if resultado.get("success"):
+                    fuentes = resultado.get("fuentes", [])
+                    fuente_dropdown.options = [ft.dropdown.Option(f) for f in fuentes]
+                    if fuente_dropdown.value not in fuentes:
+                        fuente_dropdown.value = None
+                else:
+                    fuente_dropdown.options = []
+            except Exception:
+                fuente_dropdown.options = []
+            page.update()
+
+        def subir_zip(page, logica_app, zip_picker, nombre_fuente_input, fuente_dropdown):
+            """Sube el ZIP al servidor y lo descomprime"""
+            if not zip_picker.result or not zip_picker.result.files:
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Error"),
+                    content=ft.Text("Selecciona un archivo ZIP."),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+            
+            nombre_fuente = nombre_fuente_input.value.strip()
+            if not nombre_fuente:
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Error"),
+                    content=ft.Text("Introduce el nombre de la fuente."),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+            
+            file_path = zip_picker.result.files[0].path
+            
+            page.open(ft.AlertDialog(
+                modal=True,
+                title=ft.Text("Subiendo ZIP..."),
+                content=ft.Text("Esto puede tardar unos minutos según el tamaño."),
+                actions=[]
+            ))
+            page.update()
+            
+            try:
+                with open(file_path, 'rb') as f:
+                    zip_bytes = f.read()
+                
+                data = logica_app.subida_masiva_zip(zip_bytes, nombre_fuente)
+                
+                if data.get("success"):
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("ZIP subido correctamente"),
+                        content=ft.Text(data.get("message")),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+                    # Limpiar campos
+                    nombre_fuente_input.value = ""
+                    # Recargar dropdown de fuentes
+                    cargar_fuentes_dropdown(fuente_dropdown)
+                else:
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Error al subir ZIP"),
+                        content=ft.Text(data.get("error", "Error desconocido")),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+            except Exception as e:
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Error de conexión"),
+                    content=ft.Text(str(e)),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+            
+            page.update()
+
         def ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch):
             fuente = fuente_input.value.strip()
             procesar = procesar_switch.value
@@ -381,7 +471,7 @@ if __name__ == "__main__":
                 page.open(ft.AlertDialog(
                     modal=True,
                     title=ft.Text("Error"),
-                    content=ft.Text("Introduce el nombre de la fuente."),
+                    content=ft.Text("Selecciona una fuente."),
                     actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
                 ))
                 return
@@ -395,12 +485,7 @@ if __name__ == "__main__":
             page.update()
 
             try:
-                res = httpx.post(
-                    logica_app.crear_url("/subida_masiva", logica_app.url_api),
-                    json={"fuente": fuente, "procesar": procesar},
-                    timeout=600
-                )
-                data = res.json()
+                data = logica_app.subida_masiva(fuente, procesar)
                 if data.get("success"):
                     page.open(ft.AlertDialog(
                         modal=True,
@@ -977,8 +1062,11 @@ if __name__ == "__main__":
             dropdown_etiquetar.options.clear()
             dropdown_etiquetar.options.append(ft.dropdown.Option(key="none", text="Sin clasificar"))
             for ep in etiquetas_procesadas:
-                dropdown_etiquetar.options.append(ft.dropdown.Option(key=ep["key"], text=ep["texto"]))
-            dropdown_etiquetar.value = opcion_por_defecto or "none"
+                dropdown_etiquetar.options.append(ft.dropdown.Option(key=str(ep["key"]), text=ep["texto"]))
+
+            valor_por_defecto = "none" if opcion_por_defecto is None else str(opcion_por_defecto)
+            claves_disponibles = {str(opt.key) for opt in dropdown_etiquetar.options}
+            dropdown_etiquetar.value = valor_por_defecto if valor_por_defecto in claves_disponibles else "none"
             dropdown_etiquetar.update()
 
         dropdown_etiquetar = ft.Dropdown(
@@ -1005,6 +1093,15 @@ if __name__ == "__main__":
         )
 
         def etiquetar_imagen():
+            if dropdown_etiquetar.value is None or dropdown_etiquetar.value == "none":
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Falta seleccionar una etiqueta"),
+                    content=ft.Text("Selecciona una etiqueta valida antes de continuar."),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+
             id_etiqueta = int(dropdown_etiquetar.value)
             res = logica_app.etiquetar_imagen(id_etiqueta)
 
@@ -1046,7 +1143,7 @@ if __name__ == "__main__":
             page.go("/main_usuario/foto")
 
         def subir_foto():
-            if not dropdown_etiquetar.value or dropdown_etiquetar.value == "none":
+            if dropdown_etiquetar.value is None or dropdown_etiquetar.value == "none":
                 page.open(ft.AlertDialog(
                     modal=True,
                     title=ft.Text("Falta seleccionar una etiqueta"),
@@ -1678,7 +1775,7 @@ if __name__ == "__main__":
                                 leading = ft.IconButton(
                                         icon = ft.Icons.ARROW_BACK,
                                         icon_color = ft.Colors.BLACK,
-                                        on_click =lambda _: page.open(alerta_cerrar_sesion)
+                                        on_click = lambda _: (setattr(page, 'route', '/main_admin'), route_change(page.route))
                                     )
                             ),
                             ft.Row(
@@ -1704,7 +1801,6 @@ if __name__ == "__main__":
                                             ft.Divider(),
                                             fila_superior,
                                             fila_indicador,
-                                            ft.Divider(height=2),
                                             ft.Container(
                                                 content=ft.Column(
                                                     controls=[tabla_usuarios],
@@ -1825,6 +1921,7 @@ if __name__ == "__main__":
                                                     ),
                                                     ft.Container(
                                                         width=450,
+                                                        height=285,
                                                         padding=25,
                                                         border_radius=15,
                                                         border=ft.border.all(2, ft.Colors.BLUE),
@@ -1932,7 +2029,7 @@ if __name__ == "__main__":
                     
                     # Checkbox para que el admin decida (decisión final)
                     checkbox_admin_prediccion = ft.Checkbox(
-                        label="✓ Hacer disponible para predicción (decisión final)",
+                        label="✓ Hacer disponible para predicción",
                         value=disponible_prediccion,  # Pre-marcado según solicitud del usuario
                         label_style=ft.TextStyle(size=12, color=ft.Colors.GREEN_300),
                     )
@@ -2137,7 +2234,6 @@ if __name__ == "__main__":
                 )
                 mostrar_cargando(page, False)
 
-            # Etiquetador - MENU PRINCIPAL
             if page.route == "/main_etiquetador":
                 page.views.append(
                     ft.View(
@@ -2704,7 +2800,7 @@ if __name__ == "__main__":
 
                 clases = res["clases"]  # Todas las clases
                 clases_modificadas = []  # Lista para almacenar los cambios realizados
-                clases_por_pagina = 7  # Número de clases por página (valor por defecto)
+                clases_por_pagina = 5  # Número de clases por página (valor por defecto)
                 pagina_actual = 0  # Índice de la página actual
                 clases_filtradas = clases  # Clases después de aplicar el filtro
 
@@ -2997,7 +3093,6 @@ if __name__ == "__main__":
                 )
                 mostrar_cargando(page, False)
 
-                
             if page.route == ("/main_usuario"):
                 file_picker = ft.FilePicker(on_result=on_image_selected)
                 page.overlay.append(file_picker)
@@ -3196,6 +3291,7 @@ if __name__ == "__main__":
                     )
                 )
                 page.update()
+
             if page.route == "/main_usuario/foto":
                     imagen_ampliada = ft.Image(width=700, height=500, fit=ft.ImageFit.CONTAIN)
 
@@ -3635,8 +3731,49 @@ if __name__ == "__main__":
                         ))
                         return
 
-                    fuente_input = ft.TextField(label="Nombre de la fuente (carpeta en data/Imported/)")
-                    procesar_switch = ft.Switch(label="Procesar imágenes (escala de grises y segmentadas)", value=False)
+                    # Texto para mostrar el archivo seleccionado
+                    archivo_seleccionado_text = ft.Text(
+                        "Sin archivo seleccionado",
+                        size=11,
+                        color=ft.Colors.GREY_400,
+                        italic=True
+                    )
+                    
+                    # Callback para cuando se selecciona un archivo
+                    def on_zip_selected(e: ft.FilePickerResultEvent):
+                        if e.files:
+                            archivo_seleccionado_text.value = f"✓ {e.files[0].name}"
+                            archivo_seleccionado_text.color = ft.Colors.GREEN
+                            archivo_seleccionado_text.italic = False
+                            archivo_seleccionado_text.weight = ft.FontWeight.BOLD
+                        else:
+                            archivo_seleccionado_text.value = "Sin archivo seleccionado"
+                            archivo_seleccionado_text.color = ft.Colors.GREY_400
+                            archivo_seleccionado_text.italic = True
+                            archivo_seleccionado_text.weight = None
+                        page.update()
+
+                    # Controles para PASO 1: Subir ZIP
+                    zip_picker = ft.FilePicker(on_result=on_zip_selected)
+                    page.overlay.append(zip_picker)
+                    
+                    nombre_fuente_input = ft.TextField(
+                        label="Nombre de la fuente",
+                        hint_text="Ej: Invernadero2024",
+                        width=350
+                    )
+                    
+                    # Controles para PASO 2: Ejecutar subida
+                    fuente_dropdown = ft.Dropdown(
+                        label="Selecciona una fuente",
+                        width=350,
+                        options=[]
+                    )
+                    
+                    procesar_switch = ft.Switch(
+                        label="Procesar imágenes (escala de grises y segmentadas)",
+                        value=False
+                    )
 
                     page.views.append(
                         ft.View(
@@ -3659,76 +3796,143 @@ if __name__ == "__main__":
                                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                     expand=True,
                                     scroll=ft.ScrollMode.AUTO,
-                                    spacing=20,
+                                    spacing=15,
                                     controls=[
                                         ft.Divider(),
-                                        ft.Text("SUBIDA MASIVA DE IMÁGENES", size=25, weight=ft.FontWeight.BOLD),
+                                        ft.Text("SUBIDA MASIVA DE IMÁGENES", size=26, weight=ft.FontWeight.BOLD),
                                         ft.Divider(),
-                                        ft.Container(
-                                            width=600,
-                                            content=ft.Text(
-                                                "Sube las imágenes de una fuente completa a la base de datos. Asegúrate de que la carpeta con las imágenes esté ubicada en data/Imported/ y de que el nombre que introduzcas corresponda exactamente con el nombre de esa carpeta.",
-                                                size=14,
-                                                color=ft.Colors.GREY_400,
-                                                text_align=ft.TextAlign.CENTER
-                                            )
-                                        ),
-                                        #ft.Container(height=10),
-                                        ft.Container(
-                                            width=500,
-                                            padding=30,
-                                            border_radius=15,
-                                            border=ft.border.all(2, ft.Colors.WHITE),
-                                            content=ft.Column(
-                                                spacing=20,
-                                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                                                controls=[
-                                                    ft.Column(
-                                                        spacing=10,
-                                                        controls=[
-                                                            fuente_input,
-                                                            ft.Text(
-                                                                "Introduce el nombre de la carpeta en data/Imported/",
-                                                                size=10,
-                                                                color=ft.Colors.GREY_500,
-                                                                italic=True
-                                                            ),
-                                                        ]
-                                                    ),
-                                                    ft.Divider(),
-                                                    ft.Column(
-                                                        spacing=10,
-                                                        controls=[
-                                                            procesar_switch,
-                                                            ft.Text(
-                                                                "Se crearán variaciones en escala de grises y segmentadas",
-                                                                size=10,
-                                                                color=ft.Colors.GREY_500,
-                                                                italic=True
-                                                            ),
-                                                        ]
-                                                    ),
-                                                ]
-                                            )
-                                        ),
-                                        #ft.Container(height=10),
+                                        
+                                        # Contenedor Row para los dos pasos lado a lado
                                         ft.Row(
                                             alignment=ft.MainAxisAlignment.CENTER,
-                                            spacing=20,
+                                            vertical_alignment=ft.CrossAxisAlignment.START,
+                                            spacing=30,
+                                            wrap=False,
                                             controls=[
-                                                ft.ElevatedButton(
-                                                    text="Ejecutar subida",
-                                                    bgcolor=ft.Colors.GREEN,
-                                                    color=ft.Colors.WHITE,
-                                                    on_click=lambda _: ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch)
+                                                # PASO 1: Subir ZIP
+                                                ft.Container(
+                                                    width=500,
+                                                    height=320,
+                                                    padding=20,
+                                                    border_radius=10,
+                                                    bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.GREEN),
+                                                    border=ft.border.all(2, ft.Colors.GREEN),
+                                                    content=ft.Column(
+                                                        spacing=15,
+                                                        controls=[
+                                                            ft.Text("PASO 1: Subir ZIP desde tu dispositivo", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN),
+                                                            ft.Text(
+                                                                "El ZIP debe contener una carpeta 'color/' con subcarpetas en formato 'Planta___Enfermedad' (ej: Vid___Clorosis)",
+                                                                size=11,
+                                                                color=ft.Colors.GREY_400
+                                                            ),
+                                                            ft.Container(
+                                                                height=185,
+                                                                padding=15,
+                                                                border_radius=8,
+                                                                border=ft.border.all(1, ft.Colors.WHITE),
+                                                                content=ft.Column(
+                                                                    spacing=12,
+                                                                    controls=[
+                                                                        ft.Column(
+                                                                            spacing=8,
+                                                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                            controls=[
+                                                                                ft.ElevatedButton(
+                                                                                    text="Seleccionar ZIP",
+                                                                                    icon=ft.Icons.FOLDER_OPEN,
+                                                                                    on_click=lambda _: zip_picker.pick_files(
+                                                                                        allowed_extensions=["zip"],
+                                                                                        dialog_title="Selecciona ZIP"
+                                                                                    )
+                                                                                ),
+                                                                                archivo_seleccionado_text,
+                                                                            ]
+                                                                        ),
+                                                                        nombre_fuente_input,
+                                                                        ft.ElevatedButton(
+                                                                            text="Subir ZIP",
+                                                                            bgcolor=ft.Colors.GREEN,
+                                                                            color=ft.Colors.WHITE,
+                                                                            width=400,
+                                                                            on_click=lambda _: subir_zip(page, logica_app, zip_picker, nombre_fuente_input, fuente_dropdown)
+                                                                        )
+                                                                    ]
+                                                                )
+                                                            ),
+                                                        ]
+                                                    )
                                                 ),
-                                                ft.ElevatedButton(
-                                                    text="Cancelar",
-                                                    bgcolor=ft.Colors.RED,
-                                                    color=ft.Colors.WHITE,
-                                                    on_click=lambda _: page.go("/main_usuario")
+                                                
+                                                # PASO 2: Configurar subida
+                                                ft.Container(
+                                                    width=500,
+                                                    height=320,
+                                                    padding=20,
+                                                    border_radius=10,
+                                                    bgcolor=ft.Colors.with_opacity(0.05, ft.Colors.BLUE),
+                                                    border=ft.border.all(2, ft.Colors.BLUE),
+                                                    content=ft.Column(
+                                                        spacing=15,
+                                                        controls=[
+                                                            ft.Text("PASO 2: Configurar subida a la base de datos", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE),
+                                                            ft.Text(
+                                                                "Selecciona una fuente y configura el procesamiento",
+                                                                size=11,
+                                                                color=ft.Colors.GREY_400
+                                                            ),
+                                                            ft.Container(
+                                                                padding=15,
+                                                                border_radius=8,
+                                                                border=ft.border.all(1, ft.Colors.WHITE),
+                                                                content=ft.Column(
+                                                                    spacing=12,
+                                                                    controls=[
+                                                                        ft.Column(
+                                                                            spacing=8,
+                                                                            controls=[
+                                                                                ft.Text("Selecciona la fuente a subir", size=10, color=ft.Colors.GREY_500),
+                                                                                fuente_dropdown
+                                                                            ]
+                                                                        ),
+                                                                        ft.Divider(),
+                                                                        ft.Column(
+                                                                            spacing=8,
+                                                                            controls=[
+                                                                                procesar_switch,
+                                                                                ft.Text(
+                                                                                    "Si activas esto, se crearán automáticamente variaciones en escala de grises y segmentadas",
+                                                                                    size=10,
+                                                                                    color=ft.Colors.GREY_500,
+                                                                                    italic=True
+                                                                                ),
+                                                                            ]
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            ),
+                                                        ]
+                                                    )
                                                 ),
                                             ]
+                                        ),
+                                        
+                                        # Botón Ejecutar Subida centrado y más grande
+                                        ft.Container(
+                                            padding=10,
+                                            content=ft.ElevatedButton(
+                                                text="EJECUTAR SUBIDA MASIVA",
+                                                icon=ft.Icons.CLOUD_UPLOAD,
+                                                bgcolor=ft.Colors.BLUE,
+                                                color=ft.Colors.WHITE,
+                                                width=350,
+                                                height=60,
+                                                style=ft.ButtonStyle(
+                                                    shape=ft.RoundedRectangleBorder(radius=10),
+                                                    text_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD),
+                                                ),
+                                                on_click=lambda _: ejecutar_subida_masiva(page, logica_app, fuente_dropdown, procesar_switch)
+                                            )
                                         ),
                                     ]
                                 ),
@@ -3752,6 +3956,10 @@ if __name__ == "__main__":
                             ]
                         )
                     )
+                    
+                    # Cargar dropdown de fuentes al abrir la vista
+                    cargar_fuentes_dropdown(fuente_dropdown)
+
             if page.route == "/main_usuario/experimentos":
                     tabla_experimentos = ft.DataTable(
                         columns=[
@@ -4043,33 +4251,47 @@ if __name__ == "__main__":
                     mostrar_cargando(page, False)
 
             if page.route == "/main_usuario/experimentos/crear":
-                plantas = ["all"] + logica_app.obtener_opciones_plantas()
-                enfermedades = ["all"] + [e for e in logica_app.obtener_opciones_enfermedades() if e != "Sin_clasificar"]
-                fuentes = ["all"] + logica_app.obtener_opciones_fuentes()
-                formatos = logica_app.obtener_opciones_formatos()
+                respuesta_filtros_docs = logica_app.obtener_opciones_filtros_docs()
+                filtros_multiseleccion = {}
+                formato_opciones = []
+                mapeos_ids = {}
+
+                if isinstance(respuesta_filtros_docs, dict) and respuesta_filtros_docs.get("success"):
+                    filtros_multiseleccion = respuesta_filtros_docs.get("filtros_multiseleccion", {})
+                    formato_opciones = respuesta_filtros_docs.get("formato_opciones", [])
+                    mapeos_ids = respuesta_filtros_docs.get("mapeos_ids", {})
+
+                # Fallback por compatibilidad si el endpoint nuevo no devuelve datos.
+                if not isinstance(filtros_multiseleccion, dict) or not filtros_multiseleccion:
+                    filtros_multiseleccion = {
+                        "planta": logica_app.obtener_opciones_plantas(),
+                        "nombre_comun": [e for e in logica_app.obtener_opciones_enfermedades() if e != "Sin_clasificar"],
+                        "fuente": logica_app.obtener_opciones_fuentes(),
+                    }
+
+                if not formato_opciones:
+                    formato_opciones = logica_app.obtener_opciones_formatos()
+
                 modelos = logica_app.obtener_opciones_modelos()
 
-                seleccion_plantas = ["all"]
-                seleccion_enfermedades = ["all"]
-                seleccion_fuentes = ["PlantVillage"]
+                # Estado de seleccion dinamica por campo de Docs.
+                selecciones_filtros = {}
+                for campo, valores in filtros_multiseleccion.items():
+                    valores_limpios = [v for v in valores if v is not None and str(v).strip() != ""]
+                    if campo == "nombre_comun":
+                        valores_limpios = [v for v in valores_limpios if str(v) != "Sin_clasificar"]
+                    filtros_multiseleccion[campo] = ["all"] + valores_limpios
+                    selecciones_filtros[campo] = ["all"]
 
-                def abrir_modal_seleccion(categoria):
-                    opciones = []
-                    titulo = ""
-                    seleccion_actual = []
+                def nombre_campo_ui(campo):
+                    if campo == "nombre_comun":
+                        return "Enfermedad"
+                    return str(campo).replace("_", " ").title()
 
-                    if categoria == "plantas":
-                        opciones = plantas
-                        titulo = "Seleccionar Plantas"
-                        seleccion_actual = seleccion_plantas
-                    elif categoria == "enfermedades":
-                        opciones = enfermedades
-                        titulo = "Seleccionar Enfermedades"
-                        seleccion_actual = seleccion_enfermedades
-                    elif categoria == "fuentes":
-                        opciones = fuentes
-                        titulo = "Seleccionar Fuentes"
-                        seleccion_actual = seleccion_fuentes
+                def abrir_modal_seleccion(campo):
+                    opciones = filtros_multiseleccion.get(campo, ["all"])
+                    titulo = f"Seleccionar {nombre_campo_ui(campo)}"
+                    seleccion_actual = selecciones_filtros.get(campo, ["all"])
 
                     # Crear checkboxes con "Todas" en lugar de "all"
                     checkboxes = []
@@ -4090,7 +4312,7 @@ if __name__ == "__main__":
                     for opcion in opciones:
                         label_mostrar = "Todas" if opcion == "all" else opcion
                         cb = ft.Checkbox(
-                            label=label_mostrar,
+                            label=str(label_mostrar),
                             value=(opcion in seleccion_actual),
                             data=opcion  # Guardar el valor real en data
                         )
@@ -4100,15 +4322,9 @@ if __name__ == "__main__":
                     def confirmar_seleccion(e):
                         # Usar el valor real (data) en lugar del label
                         seleccionadas = [cb.data for cb in checkboxes if cb.value]
-                        if categoria == "plantas":
-                            seleccion_plantas.clear()
-                            seleccion_plantas.extend(seleccionadas)
-                        elif categoria == "enfermedades":
-                            seleccion_enfermedades.clear()
-                            seleccion_enfermedades.extend(seleccionadas)
-                        elif categoria == "fuentes":
-                            seleccion_fuentes.clear()
-                            seleccion_fuentes.extend(seleccionadas)
+                        if not seleccionadas:
+                            seleccionadas = ["all"]
+                        selecciones_filtros[campo] = seleccionadas
                         actualizar_textos_seleccion()
                         page.close(modal_seleccion)
 
@@ -4123,20 +4339,36 @@ if __name__ == "__main__":
                     )
                     page.open(modal_seleccion)
 
-                texto_plantas_seleccionadas = ft.Text("Plantas seleccionadas: Todas")
-                texto_enfermedades_seleccionadas = ft.Text("Enfermedades seleccionadas: Todas")
-                texto_fuentes_seleccionadas = ft.Text("Fuentes seleccionadas: PlantVillage")
+                textos_filtros_seleccionados = {
+                    campo: ft.Text(f"{nombre_campo_ui(campo)} seleccionadas: Todas")
+                    for campo in sorted(filtros_multiseleccion.keys())
+                }
 
                 def actualizar_textos_seleccion():
-                    # Convertir "all" a "Todas" al mostrar
-                    plantas_mostrar = ["Todas" if p == "all" else p for p in seleccion_plantas]
-                    enfermedades_mostrar = ["Todas" if e == "all" else e for e in seleccion_enfermedades]
-                    fuentes_mostrar = ["Todas" if f == "all" else f for f in seleccion_fuentes]
-                    
-                    texto_plantas_seleccionadas.value = f"Plantas seleccionadas: {', '.join(plantas_mostrar) or 'Ninguna'}"
-                    texto_enfermedades_seleccionadas.value = f"Enfermedades seleccionadas: {', '.join(enfermedades_mostrar) or 'Ninguna'}"
-                    texto_fuentes_seleccionadas.value = f"Fuentes seleccionadas: {', '.join(fuentes_mostrar) or 'Ninguna'}"
+                    for campo, texto in textos_filtros_seleccionados.items():
+                        seleccion = selecciones_filtros.get(campo, ["all"])
+                        valores_mostrar = ["Todas" if v == "all" else str(v) for v in seleccion]
+                        texto.value = f"{nombre_campo_ui(campo)} seleccionadas: {', '.join(valores_mostrar) or 'Ninguna'}"
                     page.update()
+
+                botones_filtros = {
+                    campo: ft.ElevatedButton(
+                        text=f"Seleccionar {nombre_campo_ui(campo)}",
+                        on_click=lambda _, c=campo: abrir_modal_seleccion(c),
+                    )
+                    for campo in sorted(filtros_multiseleccion.keys())
+                }
+
+                controles_filtros_dinamicos = []
+                for campo in sorted(filtros_multiseleccion.keys()):
+                    controles_filtros_dinamicos.append(botones_filtros[campo])
+                    controles_filtros_dinamicos.append(textos_filtros_seleccionados[campo])
+                    controles_filtros_dinamicos.append(ft.Divider(height=1))
+
+                if not controles_filtros_dinamicos:
+                    controles_filtros_dinamicos = [
+                        ft.Text("No hay filtros de Docs disponibles en este momento.", color=ft.Colors.YELLOW_200)
+                    ]
 
                 input_nombre_experimento = ft.TextField(
                     label="Nombre del experimento",
@@ -4144,24 +4376,10 @@ if __name__ == "__main__":
                     border=ft.InputBorder.OUTLINE,
                     border_color=ft.Colors.WHITE,
                 )
-                boton_seleccionar_plantas = ft.ElevatedButton(
-                    text="Seleccionar Plantas",
-                    on_click=lambda _: abrir_modal_seleccion("plantas"),
-                )
-
-                boton_seleccionar_enfermedades = ft.ElevatedButton(
-                    text="Seleccionar Enfermedades",
-                    on_click=lambda _: abrir_modal_seleccion("enfermedades"),
-                )
-
-                boton_seleccionar_fuentes = ft.ElevatedButton(
-                    text="Seleccionar Fuentes",
-                    on_click=lambda _: abrir_modal_seleccion("fuentes"),
-                )
                 dropdown_formato = ft.Dropdown(
                     label="Formato",
-                    options=[ft.dropdown.Option(fmt) for fmt in formatos],
-                    value=formatos[0],
+                    options=[ft.dropdown.Option(fmt) for fmt in formato_opciones],
+                    value=formato_opciones[0] if formato_opciones else None,
                     border_color=ft.Colors.WHITE,
                 )
                 dropdown_modelo = ft.Dropdown(
@@ -4201,18 +4419,34 @@ if __name__ == "__main__":
                     on_change=on_entrenar_change,
                 )
 
+                def construir_config_experimento():
+                    """Construye config con valores legibles (nombres) incluyendo todos los campos dinámicos."""
+                    config = {
+                        "formato": dropdown_formato.value,
+                        "imagenes_por_clase": int(dropdown_num_imagenes.value) if dropdown_num_imagenes.value != "Todas" else dropdown_num_imagenes.value,
+                        "modelo": dropdown_modelo.value,
+                    }
+                    
+                    # Añadir todos los campos dinámicos seleccionados.
+                    for campo, seleccion in selecciones_filtros.items():
+                        # Mapeo de nombres internos a nombres de config (compatibilidad).
+                        nombre_config = campo
+                        if campo == "nombre_comun":
+                            nombre_config = "enfermedades"
+                        elif campo == "planta":
+                            nombre_config = "plantas"
+                        elif campo == "fuente":
+                            nombre_config = "fuentes"
+                        
+                        config[nombre_config] = seleccion
+                    
+                    return config
+
                 boton_crear_experimento = ft.ElevatedButton(
                     text="Crear Experimento",
                     on_click=lambda _: crear_experimento(
                         input_nombre_experimento.value,
-                        {
-                            "plantas": seleccion_plantas,
-                            "enfermedades": seleccion_enfermedades,
-                            "fuentes": seleccion_fuentes,
-                            "formato": dropdown_formato.value,
-                            "imagenes_por_clase": int(dropdown_num_imagenes.value) if dropdown_num_imagenes.value != "Todas" else dropdown_num_imagenes.value,
-                            "modelo": dropdown_modelo.value,
-                        },
+                        construir_config_experimento(),
                         checkbox_entrenar_modelo.value,
                         checkbox_disponible_prediccion.value,
                         page,
@@ -4283,14 +4517,20 @@ if __name__ == "__main__":
                                                     controls=[
                                                         ft.Text("📊 SELECCIÓN DE DATOS", size=15, weight=ft.FontWeight.BOLD),
                                                         ft.Divider(height=1),
-                                                        boton_seleccionar_plantas,
-                                                        texto_plantas_seleccionadas,
-                                                        ft.Divider(height=1),
-                                                        boton_seleccionar_enfermedades,
-                                                        texto_enfermedades_seleccionadas,
-                                                        ft.Divider(height=1),
-                                                        boton_seleccionar_fuentes,
-                                                        texto_fuentes_seleccionadas,
+                                                        ft.Text(
+                                                            "Desplaza hacia abajo para ver más filtros",
+                                                            size=10,
+                                                            color=ft.Colors.GREEN_200,
+                                                            italic=True,
+                                                        ),
+                                                        ft.Container(
+                                                            height=290,
+                                                            content=ft.Column(
+                                                                spacing=12,
+                                                                scroll=ft.ScrollMode.ALWAYS,
+                                                                controls=controles_filtros_dinamicos,
+                                                            ),
+                                                        ),
                                                     ]
                                                 )
                                             ),
@@ -4581,6 +4821,7 @@ if __name__ == "__main__":
                         try:
                             # Descargar imagen con httpx (sin verificar SSL)
                             response = httpx.get(imagen_ampliada_url_original, verify=False, timeout=10.0)
+                            print(f"Respuesta descarga: {response.status_code} - {response.reason_phrase}")
                             if response.status_code == 200:
                                 # Obtener ruta de Downloads
                                 downloads_path = Path(os.path.expanduser("~/Downloads"))

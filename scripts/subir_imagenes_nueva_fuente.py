@@ -20,7 +20,8 @@ def check_upload_images_exists():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Pipeline completo de subida de imágenes para una nueva fuente")
-    parser.add_argument("--fuente", required=True, help="Nombre de la fuente nueva (subcarpeta dentro de data/Imported/)")
+    parser.add_argument("--fuente", required=True, help="Nombre de la fuente nueva (subcarpeta dentro de data/)")
+    parser.add_argument("--usuario", default="desconocido", help="Usuario que realiza la subida")
     parser.add_argument("--start", type=int, default=0, help="Índice inicial por clase (batch)")
     parser.add_argument("--limit", type=int, default=None, help="Número máximo de imágenes por clase (batch)")
     parser.add_argument("--no_auto_process", action="store_true", help="No procesar automáticamente si faltan carpetas")
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     ROOT = os.path.dirname(ROOT)
 
     fuente = args.fuente
+    usuario = args.usuario
     start = args.start
     limit = args.limit
 
@@ -43,7 +45,7 @@ if __name__ == "__main__":
         
     for formato in formatos:
         print(f"\nSubiendo imágenes en formato {formato}...")
-        cmd = ["python", os.path.join(ROOT, "scripts", "upload_images.py"), formato, "--fuente", fuente]
+        cmd = ["python", os.path.join(ROOT, "scripts", "upload_images.py"), formato, "--fuente", fuente, "--usuario", usuario]
         if start: cmd += ["--start", str(start)]
         if limit: cmd += ["--limit", str(limit)]
         if args.no_auto_process:

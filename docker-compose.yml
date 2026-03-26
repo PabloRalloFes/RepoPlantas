@@ -1,0 +1,64 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: plantas-mongo
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: plantas-api
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      URL_BBDD: ${DOCKER_URL_BBDD:-mongodb://mongo:27017/}
+      URL_API: ${URL_API:-http://api:5001}
+      URL_API_INIT: ${URL_API_INIT:-http://api:5001}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
+      GUNICORN_TIMEOUT: ${GUNICORN_TIMEOUT:-120}
+      MAX_IMAGE_SIZE_MB: ${MAX_IMAGE_SIZE_MB:-10}
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./imagenes:/app/imagenes
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - ./experiments:/app/experiments
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/opciones_modelos', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+  initdb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: plantas-initdb
+    profiles: ["init"]
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      URL_API: ${URL_API_INIT:-http://api:5001}
+      API_BASE_URL: ${URL_API_INIT:-http://api:5001}
+      URL_BBDD: ${DOCKER_URL_BBDD:-mongodb://mongo:27017/}
+    command: ["python", "scripts/setup_bbdd.py"]
+    restart: "no"
+
+volumes:
+  mongo_data:

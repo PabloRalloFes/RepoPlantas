@@ -18,12 +18,90 @@ def prepare_data_splits(db, config, save_dir):
         config: diccionario cargado desde config.yaml.
         save_dir: carpeta donde guardar los CSVs.
     """
-    fuentes = config["fuentes"]
+    fuentes = config.get("fuentes", ["all"])
     imagenes_por_clase = config["imagenes_por_clase"]
     split_ratios = config["split"]
-    formato_nombre = config["formato"]
-    plantas = config["plantas"]
-    enfermedades = config["enfermedades"]
+    formato_nombre = config.get("formato")
+    plantas = config.get("plantas", ["all"])
+    enfermedades = config.get("enfermedades", ["all"])
+
+    def is_scalar(v):
+        return isinstance(v, (str, int, float, bool)) and v is not None
+
+    def normalize_selected_values(values):
+        if values is None:
+            return []
+        if not isinstance(values, list):
+            values = [values]
+        return [v for v in values if is_scalar(v) and str(v).strip() != ""]
+
+    def resolve_collection_name(field_name, collection_names_lower):
+        candidates = [
+            field_name,
+            field_name.capitalize(),
+            field_name.title(),
+            field_name.lower(),
+            field_name.upper(),
+        ]
+        if field_name.endswith("s") and len(field_name) > 1:
+            singular = field_name[:-1]
+            candidates.extend([singular, singular.capitalize(), singular.title(), singular.lower()])
+
+        for c in candidates:
+            c_low = c.lower()
+            if c_low in collection_names_lower:
+                return collection_names_lower[c_low]
+        return None
+
+    def pick_label_field(collection_name, field_name):
+        sample = db[collection_name].find_one({}, {"_id": 0}) or {}
+        priority = [
+            field_name,
+            "nombre",
+            "name",
+            "valor",
+            "descripcion",
+            "fuente",
+            "formato",
+            "planta",
+            "nombre_comun",
+        ]
+        for p in priority:
+            if p in sample:
+                return p
+        return next(iter(sample.keys()), None)
+
+    def cast_values_to_doc_types(field_name, selected_values):
+        sample_values = [v for v in db["Docs"].distinct(field_name) if is_scalar(v)]
+        if not sample_values:
+            return selected_values
+
+        has_bool = any(isinstance(v, bool) for v in sample_values)
+        has_int = any(isinstance(v, int) and not isinstance(v, bool) for v in sample_values)
+        has_float = any(isinstance(v, float) for v in sample_values)
+
+        casted = set(selected_values)
+        for v in selected_values:
+            if isinstance(v, str):
+                t = v.strip()
+                if has_bool:
+                    if t.lower() in ("true", "1", "si", "yes"):
+                        casted.add(True)
+                    elif t.lower() in ("false", "0", "no"):
+                        casted.add(False)
+                if has_int:
+                    try:
+                        casted.add(int(t))
+                    except Exception:
+                        pass
+                if has_float:
+                    try:
+                        casted.add(float(t))
+                    except Exception:
+                        pass
+        return list(casted)
+
+    collection_names_lower = {c.lower(): c for c in db.list_collection_names()}
 
     # Obtener clases válidas con planta y enfermedad filtrados
     clases_filtradas = list(db["Clases"].find({
@@ -42,11 +120,19 @@ def prepare_data_splits(db, config, save_dir):
 
     # Formato y fuentes
     formatos = {doc["formato"]: doc["_id"] for doc in db["Formato"].find()}
-    formato_id = formatos[formato_nombre]
-    fuentes_dict = {doc["fuente"]: doc["_id"] for doc in db["Fuente"].find()}
-    fuentes_ids = [fuentes_dict[fuente] for fuente in fuentes if fuente in fuentes_dict]
+    formato_id = formatos.get(formato_nombre)
 
-    print(f"Formato seleccionado: {formato_nombre} (ID: {formato_id})")
+    if formato_id is not None:
+        print(f"Formato seleccionado: {formato_nombre} (ID: {formato_id})")
+    else:
+        print(f"Formato no encontrado o no especificado: {formato_nombre}")
+
+    fuentes_dict = {doc["fuente"]: doc["_id"] for doc in db["Fuente"].find()}
+    if isinstance(fuentes, list) and "all" in fuentes:
+        fuentes_ids = list(fuentes_dict.values())
+    else:
+        fuentes_ids = [fuentes_dict[fuente] for fuente in fuentes if fuente in fuentes_dict]
+
     print(f"Fuentes seleccionadas: {fuentes} (IDs: {fuentes_ids})")
 
     # Avisos de fuentes no encontradas
@@ -54,14 +140,73 @@ def prepare_data_splits(db, config, save_dir):
     if no_encontradas:
         print(f"️Fuentes no encontradas en la base de datos: {no_encontradas}")
 
-    # Obtener documentos válidos
-    docs = list(db["Docs"].find({
-        "formato": formato_id,
-        "clase": {"$in": clases_ids},
-        "fuente": {"$in": fuentes_ids}
-    }))
+    # Construir query base de Docs
+    docs_query = {
+        "clase": {"$in": clases_ids}
+    }
 
-    print(f"Se han encontrado {len(docs)} documentos con el formato {formato_nombre} y las fuentes seleccionadas.")
+    if formato_id is not None:
+        docs_query["formato"] = formato_id
+
+    if fuentes_ids:
+        docs_query["fuente"] = {"$in": fuentes_ids}
+
+    # Filtros dinámicos adicionales: cualquier clave del config fuera del bloque reservado.
+    reserved_keys = {
+        "batch_size",
+        "epochs",
+        "fine_tune",
+        "formato",
+        "fuentes",
+        "image_size",
+        "imagenes_por_clase",
+        "lr",
+        "min_samples_per_class",
+        "optimizer",
+        "plantas",
+        "enfermedades",
+        "split",
+        "use_class_weights",
+        "weights",
+        "peso_planta",
+        "peso_enfermedad",
+        "filtros_docs",
+    }
+
+    for key, raw_selected in config.items():
+        if key in reserved_keys:
+            continue
+
+        selected = normalize_selected_values(raw_selected)
+        if not selected or "all" in [str(v).lower() for v in selected]:
+            continue
+
+        # 1) Intentar filtro directo sobre Docs (con casteo de tipos si hace falta).
+        selected_candidates = cast_values_to_doc_types(key, selected)
+        direct_matches = db["Docs"].count_documents({key: {"$in": selected_candidates}})
+        if direct_matches > 0:
+            docs_query[key] = {"$in": selected_candidates}
+            continue
+
+        # 2) Si no hay match directo, resolver nombre->id usando una colección de referencia.
+        collection_name = resolve_collection_name(key, collection_names_lower)
+        if collection_name:
+            label_field = pick_label_field(collection_name, key)
+            if label_field:
+                ref_docs = list(
+                    db[collection_name].find(
+                        {label_field: {"$in": [str(v) for v in selected]}},
+                        {"_id": 1},
+                    )
+                )
+                ref_ids = [d["_id"] for d in ref_docs if "_id" in d]
+                if ref_ids:
+                    docs_query[key] = {"$in": ref_ids}
+
+    # Obtener documentos válidos
+    docs = list(db["Docs"].find(docs_query))
+
+    print(f"Se han encontrado {len(docs)} documentos con los filtros configurados.")
 
     # Agrupar por clase
     docs_por_clase = {}

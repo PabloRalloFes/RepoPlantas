@@ -95,6 +95,37 @@ def run_flask_server(host="0.0.0.0", port=5001, use_https=False, debug=False):
         print(f"\n✗ Error al ejecutar el servidor: {e}")
         sys.exit(1)
 
+def run_waitress_server(host="0.0.0.0", port=5001):
+    """Ejecuta la API con Waitress (WSGI) para un entorno de producción sencillo."""
+    try:
+        from main import app
+    except ImportError as e:
+        print(f"✗ Error al importar main.py: {e}")
+        sys.exit(1)
+
+    try:
+        from waitress import serve
+    except ImportError:
+        print("✗ Falta waitress. Instala dependencias con: pip install -r requirements.txt")
+        sys.exit(1)
+
+    print("=" * 70)
+    print("🚀 Servidor Waitress iniciado")
+    print(f"📍 URL: http://{host}:{port}")
+    print("🔧 Modo: Producción WSGI")
+    print("=" * 70)
+    print()
+    print("Presiona Ctrl+C para detener el servidor")
+    print()
+
+    try:
+        serve(app, host=host, port=port, threads=8)
+    except KeyboardInterrupt:
+        print("\n✓ Servidor detenido")
+    except Exception as e:
+        print(f"\n✗ Error al ejecutar Waitress: {e}")
+        sys.exit(1)
+
 def main():
     parser = argparse.ArgumentParser(
         description="Ejecuta el servidor Flask del proyecto",
@@ -134,16 +165,24 @@ Ejemplos:
         action="store_true",
         help="Activar modo desarrollo con auto-recarga (desactiva por defecto para evitar reinicios durante entrenamientos)"
     )
+
+    parser.add_argument(
+        "--prod",
+        action="store_true",
+        help="Ejecutar con servidor WSGI de producción (Waitress)"
+    )
     
     args = parser.parse_args()
     
-    # Ejecutar servidor
-    run_flask_server(
-        host=args.host,
-        port=args.port,
-        use_https=args.https,
-        debug=args.dev
-    )
+    if args.prod:
+        if args.https:
+            print("✗ --prod y --https no se usan juntos. Usa HTTPS en proxy inverso (Nginx/Caddy).")
+            sys.exit(1)
+        run_waitress_server(host=args.host, port=args.port)
+        return
+
+    # Ejecutar servidor Flask integrado (desarrollo/local)
+    run_flask_server(host=args.host, port=args.port, use_https=args.https, debug=args.dev)
 
 if __name__ == "__main__":
     main()

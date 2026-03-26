@@ -199,6 +199,11 @@ ssl_certs/
 *.pfx
 *.p12
 
+# Backups locales y archivos de restauracion
+backups/
+*.archive
+*.gz
+
 # Variables de entorno y configuraciones locales
 .env.local
 .env.*.local
@@ -229,3 +234,6 @@ Thumbs.db
 # Archivos de configuración local que pueden contener rutas/credenciales
 local_config.py
 config.local.yaml
+
+/GooglePlay
+/ENG
