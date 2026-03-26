@@ -20,7 +20,11 @@ def predict(image_path, experiment_path, known_planta=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     config_path = os.path.join(experiment_path, "config_final.yaml")
-    modelo_path = os.path.join(experiment_path, "models/best_model.pth")
+    experiment_name = os.path.basename(os.path.normpath(experiment_path))
+    modelo_path = os.path.join(experiment_path, "models", f"{experiment_name}.pth")
+    if not os.path.exists(modelo_path):
+        # Compatibilidad con experimentos antiguos.
+        modelo_path = os.path.join(experiment_path, "models", "best_model.pth")
     data_path = os.path.join(experiment_path, "data")
 
     # Cargar configuración y modelo

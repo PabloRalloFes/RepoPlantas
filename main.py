@@ -1,14 +1,20 @@
 import base64
 import io
 from PIL import Image
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, g
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import re
 import os
+import shutil
 from bson.objectid import ObjectId
 from io import BytesIO
 import uuid
+import zipfile
 from utils.model import build_model
 from utils.database import load_yaml_config, connect_to_database
+from utils.auth import hash_password, check_password
 from torchvision import transforms
 from PIL import Image
 import torch
@@ -16,6 +22,9 @@ import pandas as pd
 from pathlib import Path
 import json
 from datetime import datetime, timezone, timedelta
+import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
+from dotenv import load_dotenv
 from pymongo import UpdateOne, InsertOne, DeleteOne, ReturnDocument
 from pymongo.errors import DuplicateKeyError
 from pymongo.cursor import Cursor
@@ -27,10 +36,149 @@ import mimetypes
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+# Carga .env del directorio del proyecto (si existe).
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
+
+
+def _env_int(name, default):
+    value = os.getenv(name, str(default))
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _env_json(name, default):
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return default
+
+
 app = Flask(__name__)
 db = connect_to_database(db_name="Repositorio_Plantas")  # por defecto usa "Repositorio_Plantas"
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+IMAGES_DIR = os.path.join(ROOT, "imagenes")
+
+MAX_IMAGE_SIZE_MB = _env_int("MAX_IMAGE_SIZE_MB", 10)
+MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
+ALLOWED_IMAGE_FORMATS = {"JPEG", "PNG"}
+JWT_SECRET = os.getenv("JWT_SECRET", "CHANGE_ME_IN_PRODUCTION")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_EXP_MINUTES = _env_int("JWT_EXP_MINUTES", 120)
+PUBLIC_API_BASE_URL = os.getenv("PUBLIC_API_BASE_URL", "").strip().rstrip("/")
+
+cors_origins_env = os.getenv("CORS_ORIGINS", "").strip()
+if cors_origins_env == "*":
+    allowed_origins = "*"
+elif cors_origins_env:
+    allowed_origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+else:
+    # Origenes por defecto para desarrollo local.
+    allowed_origins = [
+        "http://localhost",
+        "http://127.0.0.1",
+        "https://localhost",
+        "https://127.0.0.1",
+    ]
+
+CORS(app, resources={r"/*": {"origins": allowed_origins}})
+limiter = Limiter(key_func=get_remote_address, app=app, default_limits=[])
+
+PUBLIC_ENDPOINTS = set(_env_json("PUBLIC_ENDPOINTS", []))
+AUTH_REQUIRED_ENDPOINTS = set(_env_json("AUTH_REQUIRED_ENDPOINTS", []))
+AUTH_REQUIRED_PREFIXES = tuple(_env_json("AUTH_REQUIRED_PREFIXES", []))
+
+ROLE_REQUIRED_ENDPOINTS = {}
+_roles_from_env = _env_json("ROLE_REQUIRED_ENDPOINTS", {})
+if isinstance(_roles_from_env, dict):
+    ROLE_REQUIRED_ENDPOINTS = {
+        str(endpoint): set(roles if isinstance(roles, list) else [roles])
+        for endpoint, roles in _roles_from_env.items()
+    }
+
+def create_access_token(username, roles, active_role=None):
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": username,
+        "roles": roles,
+        "active_role": active_role,
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(minutes=JWT_EXP_MINUTES)).timestamp()),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def _extract_bearer_token():
+    auth = request.headers.get("Authorization", "").strip()
+    if not auth:
+        return None
+    parts = auth.split(" ", 1)
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        return None
+    return parts[1].strip()
+
+def require_any_role(*allowed_roles):
+    roles = set(getattr(g, "auth_roles", []))
+    if roles.intersection(set(allowed_roles)):
+        return None
+    return jsonify({"success": False, "error": "No autorizado para este recurso"}), 403
+
+def require_self_or_admin(target_username):
+    roles = set(getattr(g, "auth_roles", []))
+    auth_username = getattr(g, "auth_username", None)
+    if auth_username == target_username or "admin" in roles:
+        return None
+    return jsonify({"success": False, "error": "No autorizado para operar sobre este usuario"}), 403
+
+@app.before_request
+def authenticate_sensitive_endpoints():
+    if request.method == "OPTIONS":
+        return None
+
+    path = request.path
+    if path in PUBLIC_ENDPOINTS:
+        return None
+
+    needs_auth = (path in AUTH_REQUIRED_ENDPOINTS) or any(path.startswith(p) for p in AUTH_REQUIRED_PREFIXES)
+    if not needs_auth:
+        return None
+
+    token = _extract_bearer_token()
+    if not token:
+        return jsonify({"success": False, "error": "Falta token de autenticacion"}), 401
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except ExpiredSignatureError:
+        return jsonify({"success": False, "error": "Token expirado"}), 401
+    except InvalidTokenError:
+        return jsonify({"success": False, "error": "Token invalido"}), 401
+
+    g.auth_user = payload
+    g.auth_username = payload.get("sub")
+    g.auth_roles = payload.get("roles", [])
+    g.auth_active_role = payload.get("active_role")
+
+    allowed_roles = ROLE_REQUIRED_ENDPOINTS.get(path)
+    if allowed_roles:
+        if not set(g.auth_roles).intersection(allowed_roles):
+            return jsonify({"success": False, "error": "No autorizado para este recurso"}), 403
+
+    return None
+
+def get_image_url(nombre_imagen):
+    """
+    Construye la URL pública de una imagen.
+    - Si PUBLIC_API_BASE_URL está definida, se usa esa base.
+    - Si no, usa el host de la request actual (útil en local y LAN).
+    """
+    if PUBLIC_API_BASE_URL:
+        return f"{PUBLIC_API_BASE_URL}/imagen_base64/{nombre_imagen}"
+    return f"{request.host_url.rstrip('/')}/imagen_base64/{nombre_imagen}"
 
 def ensure_backup_ttl(db, days=None):
     if days is None:
@@ -143,13 +291,20 @@ def jsonify_serialized(obj):
 def validar_imagen_base64(cadena_base64):
     try:
         imagen_bytes = base64.b64decode(cadena_base64)
+        if len(imagen_bytes) > MAX_IMAGE_SIZE_BYTES:
+            max_mb = MAX_IMAGE_SIZE_BYTES // (1024 * 1024)
+            return False, f"La imagen supera el tamaño máximo permitido ({max_mb} MB)"
         with Image.open(BytesIO(imagen_bytes)) as imagen:
             imagen.load()  # Fuerza la carga completa
-        return jsonify(True), imagen_bytes
+            fmt = imagen.format
+        if fmt not in ALLOWED_IMAGE_FORMATS:
+            return False, f"Formato no permitido: '{fmt}'. Solo se aceptan JPEG y PNG"
+        return True, imagen_bytes
     except Exception as e:
-        return jsonify(False), str(e)
+        return False, str(e)
     
 def guardar_como_png(imagen_bytes, ruta_salida):
+    os.makedirs(os.path.dirname(ruta_salida), exist_ok=True)
     with Image.open(BytesIO(imagen_bytes)) as img:
         img = img.convert("RGB")  # Asegura compatibilidad
         img.save(ruta_salida, format="PNG")
@@ -316,18 +471,211 @@ def opciones_fuentes():
     fuentes = list(db.Fuente.distinct("fuente"))
     return jsonify_serialized(fuentes)
 
+@app.route("/opciones_modelos", methods=["GET"])
+def opciones_modelos():
+    modelos = ["MobileNetV2"] # De momento solo MobileNetV2
+    return jsonify_serialized(modelos)
+
+@app.route("/opciones_filtros_docs", methods=["GET"])
+def opciones_filtros_docs():
+    """
+    Descubre filtros disponibles en Docs de forma dinamica.
+    - Excluye campos no filtrables.
+    - Devuelve 'formato' aparte para tratarlo como seleccion unica en UI.
+    """
+    try:
+        excluded_fields = {"_id", "imagen_rgb", "validada", "usuario"}
+        max_docs_scan = 1000
+        docs_muestreados = 0
+        keys_detectadas = set()
+
+        def is_scalar_value(v):
+            return v is not None and isinstance(v, (str, int, float, bool)) and str(v).strip() != ""
+
+        def resolve_collection_name(field_name, collection_names_lower):
+            candidates = [
+                field_name,
+                field_name.capitalize(),
+                field_name.title(),
+                field_name.lower(),
+                field_name.upper(),
+            ]
+            if field_name.endswith("s") and len(field_name) > 1:
+                singular = field_name[:-1]
+                candidates.extend([singular, singular.capitalize(), singular.title(), singular.lower()])
+
+            for c in candidates:
+                c_low = c.lower()
+                if c_low in collection_names_lower:
+                    return collection_names_lower[c_low]
+            return None
+
+        def pick_label_field(collection_name, field_name):
+            sample = db[collection_name].find_one({}, {"_id": 0}) or {}
+            priority = [
+                field_name,
+                "nombre",
+                "name",
+                "valor",
+                "descripcion",
+                "fuente",
+                "formato",
+                "planta",
+                "nombre_comun",
+            ]
+            for p in priority:
+                if p in sample:
+                    return p
+            return next(iter(sample.keys()), None)
+
+        # Escanear docs repartiendo la muestra por fuente para evitar sesgo por orden de insercion.
+        fuentes_docs = [f for f in db["Docs"].distinct("fuente") if is_scalar_value(f)]
+
+        if fuentes_docs:
+            fuentes_ordenadas = sorted(fuentes_docs, key=lambda x: str(x).lower())
+
+            if len(fuentes_ordenadas) > max_docs_scan:
+                # Si hay mas fuentes que cupo, muestrear al menos 1 doc de tantas fuentes como permita el limite.
+                fuentes_ordenadas = fuentes_ordenadas[:max_docs_scan]
+                per_source_limit = 1
+            else:
+                per_source_limit = max(1, max_docs_scan // len(fuentes_ordenadas))
+
+            for fuente_id in fuentes_ordenadas:
+                if docs_muestreados >= max_docs_scan:
+                    break
+                remaining = max_docs_scan - docs_muestreados
+                limit_fuente = min(per_source_limit, remaining)
+
+                for doc in db["Docs"].find({"fuente": fuente_id}, {"_id": 0}).limit(limit_fuente):
+                    docs_muestreados += 1
+                    keys_detectadas.update(doc.keys())
+
+            # Completar con documentos sin fuente definida si queda cupo.
+            if docs_muestreados < max_docs_scan:
+                remaining = max_docs_scan - docs_muestreados
+                for doc in db["Docs"].find({"fuente": {"$exists": False}}, {"_id": 0}).limit(remaining):
+                    docs_muestreados += 1
+                    keys_detectadas.update(doc.keys())
+        else:
+            # Fallback: si no hay campo fuente, usar muestreo simple.
+            for doc in db["Docs"].find({}, {"_id": 0}).limit(max_docs_scan):
+                docs_muestreados += 1
+                keys_detectadas.update(doc.keys())
+
+        keys_permitidas = sorted(k for k in keys_detectadas if k not in excluded_fields)
+        collection_names = db.list_collection_names()
+        collection_names_lower = {c.lower(): c for c in collection_names}
+
+        filtros_multiseleccion = {}
+        formato_opciones = []
+        mapeos_ids = {}
+
+        for key in keys_permitidas:
+            # 'clase' se trata aparte para mostrar planta + nombre_comun.
+            if key == "clase":
+                continue
+
+            raw_values = [v for v in db["Docs"].distinct(key) if is_scalar_value(v)]
+            if not raw_values:
+                continue
+
+            collection_name = resolve_collection_name(key, collection_names_lower)
+
+            if collection_name:
+                label_field = pick_label_field(collection_name, key)
+                if label_field:
+                    docs_ref = list(
+                        db[collection_name].find(
+                            {"_id": {"$in": raw_values}},
+                            {"_id": 1, label_field: 1},
+                        )
+                    )
+                    id_to_label = {
+                        d.get("_id"): d.get(label_field)
+                        for d in docs_ref
+                        if is_scalar_value(d.get(label_field))
+                    }
+
+                    labels = sorted(set(str(id_to_label[v]) for v in raw_values if v in id_to_label), key=lambda x: x.lower())
+                    if labels:
+                        if key == "formato":
+                            formato_opciones = labels
+                        else:
+                            filtros_multiseleccion[key] = labels
+                        mapeos_ids[key] = {
+                            str(id_to_label[v]): [v]
+                            for v in raw_values
+                            if v in id_to_label
+                        }
+                        continue
+
+            # Campo escalar directo en Docs (sin coleccion de referencia).
+            labels_directos = sorted(set(str(v) for v in raw_values), key=lambda x: x.lower())
+            if key == "formato":
+                formato_opciones = labels_directos
+            else:
+                filtros_multiseleccion[key] = labels_directos
+            mapeos_ids[key] = {str(v): [v] for v in raw_values}
+
+        # Tratamiento especial de 'clase' -> filtros por planta y enfermedad.
+        clase_ids = [v for v in db["Docs"].distinct("clase") if is_scalar_value(v)]
+        if clase_ids:
+            clases_docs = list(
+                db["Clases"].find(
+                    {"_id": {"$in": clase_ids}},
+                    {"_id": 1, "planta": 1, "nombre_comun": 1},
+                )
+            )
+            plantas = sorted(
+                set(str(c.get("planta")) for c in clases_docs if is_scalar_value(c.get("planta"))),
+                key=lambda x: x.lower(),
+            )
+            enfermedades = sorted(
+                set(str(c.get("nombre_comun")) for c in clases_docs if is_scalar_value(c.get("nombre_comun"))),
+                key=lambda x: x.lower(),
+            )
+
+            if plantas:
+                filtros_multiseleccion["planta"] = plantas
+                mapeos_ids["planta"] = {
+                    p: [c["_id"] for c in clases_docs if str(c.get("planta")) == p]
+                    for p in plantas
+                }
+            if enfermedades:
+                filtros_multiseleccion["nombre_comun"] = enfermedades
+                mapeos_ids["nombre_comun"] = {
+                    e: [c["_id"] for c in clases_docs if str(c.get("nombre_comun")) == e]
+                    for e in enfermedades
+                }
+
+        return jsonify_serialized({
+            "success": True,
+            "filtros_multiseleccion": filtros_multiseleccion,
+            "formato_opciones": formato_opciones,
+            "mapeos_ids": mapeos_ids,
+            "meta": {
+                "docs_muestreados": docs_muestreados,
+                "campos_detectados": len(keys_detectadas),
+                "campos_filtrables": len(keys_permitidas),
+            },
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/subida_masiva", methods=["POST"])
 def subida_masiva():
     data = request.get_json(force=True)
     fuente = data.get("fuente")
     procesar = data.get("procesar", False)
+    usuario = data.get("usuario")
 
     if not fuente:
         return jsonify({"success": False, "error": "Falta el nombre de la fuente"}), 400
 
     script_path = os.path.join(ROOT, "scripts", "subida_masiva_app.py")
 
-    cmd = ["python", script_path, "--fuente", fuente]
+    cmd = ["python", script_path, "--fuente", fuente, "--usuario", usuario or "desconocido"]
     if procesar:
         cmd.append("--procesar")
 
@@ -357,7 +705,7 @@ def subida_masiva():
         if "No se encontró la carpeta" in output:
             return jsonify({
                 "success": False,
-                "error": "No se encontró la carpeta indicada en data/Imported/. Verifica el nombre y vuelve a intentarlo."
+                "error": "No se encontró la carpeta indicada en data/. Verifica el nombre de la fuente y vuelve a intentarlo."
             }), 400
 
         # Error genérico
@@ -369,6 +717,194 @@ def subida_masiva():
         return jsonify({
             "success": False,
             "error": f"Ocurrió un error durante la subida. Revisa el log en '{log_path}'."
+        }), 500
+
+@app.route("/listar_fuentes_importadas", methods=["GET"])
+def listar_fuentes_importadas():
+    try:
+        data_dir = os.path.join(ROOT, "data")
+        
+        if not os.path.isdir(data_dir):
+            return jsonify({
+                "success": True,
+                "fuentes": []
+            })
+
+        def _es_fuente_valida(path_fuente):
+            color_dir = os.path.join(path_fuente, "color")
+            if os.path.isdir(color_dir):
+                return True
+            if not os.path.isdir(path_fuente):
+                return False
+            # Compatibilidad: permitir fuentes sin carpeta color si contienen clases directamente.
+            return any(
+                os.path.isdir(os.path.join(path_fuente, d)) and "___" in d
+                for d in os.listdir(path_fuente)
+            )
+        
+        # Listar solo carpetas de datasets (no archivos ni carpetas internas del proyecto)
+        carpetas = [
+            f for f in os.listdir(data_dir)
+            if os.path.isdir(os.path.join(data_dir, f)) and _es_fuente_valida(os.path.join(data_dir, f))
+        ]
+        carpetas.sort()
+        
+        return jsonify({
+            "success": True,
+            "fuentes": carpetas
+        })
+    
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route("/subida_masiva_zip", methods=["POST"])
+def subida_masiva_zip():
+    try:
+        # Validaciones iniciales
+        if 'file' not in request.files:
+            return jsonify({"success": False, "error": "Falta el archivo ZIP"}), 400
+        
+        nombre_fuente = request.form.get("nombre_fuente", "").strip()
+        if not nombre_fuente:
+            return jsonify({"success": False, "error": "Falta el nombre de la fuente"}), 400
+        
+        zip_file = request.files['file']
+        if zip_file.filename == '':
+            return jsonify({"success": False, "error": "Archivo no seleccionado"}), 400
+        
+        if not zip_file.filename.lower().endswith('.zip'):
+            return jsonify({"success": False, "error": "El archivo debe ser un ZIP"}), 400
+        
+        # Validar tamaño (máximo 500MB)
+        max_size = 500 * 1024 * 1024
+        zip_file.seek(0, os.SEEK_END)
+        size = zip_file.tell()
+        zip_file.seek(0)
+        
+        if size > max_size:
+            return jsonify({
+                "success": False,
+                "error": f"El archivo ZIP es demasiado grande. Máximo: 500MB, Actual: {size / (1024*1024):.2f}MB"
+            }), 400
+        
+        if size == 0:
+            return jsonify({"success": False, "error": "El archivo ZIP está vacío"}), 400
+        
+        # Carpeta destino (sin timestamp, solo nombre de fuente)
+        dest_dir = os.path.join(ROOT, "data", nombre_fuente)
+        
+        # Si ya existe, avisar
+        if os.path.isdir(dest_dir):
+            return jsonify({
+                "success": False,
+                "error": f"La fuente '{nombre_fuente}' ya existe. Elige otro nombre o elimina la carpeta existente."
+            }), 400
+        
+        os.makedirs(dest_dir, exist_ok=True)
+        
+        try:
+            # Descomprimir ZIP
+            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                zip_ref.extractall(dest_dir)
+
+            # Detectar base de clases válida:
+            # 1) data/<fuente>/color/<Planta___Enfermedad>/...
+            # 2) data/<fuente>/<Planta___Enfermedad>/...
+            # 3) con carpeta contenedora adicional en el ZIP
+            color_path = os.path.join(dest_dir, "color")
+            candidate_base = None
+
+            if os.path.isdir(color_path):
+                candidate_base = color_path
+            else:
+                root_dirs = [d for d in os.listdir(dest_dir) if os.path.isdir(os.path.join(dest_dir, d)) and d != "__MACOSX"]
+                root_class_dirs = [d for d in root_dirs if "___" in d]
+
+                if root_class_dirs:
+                    candidate_base = dest_dir
+                elif len(root_dirs) == 1:
+                    wrapper_dir = os.path.join(dest_dir, root_dirs[0])
+                    wrapper_color = os.path.join(wrapper_dir, "color")
+                    if os.path.isdir(wrapper_color):
+                        candidate_base = wrapper_color
+                    else:
+                        wrapper_dirs = [d for d in os.listdir(wrapper_dir) if os.path.isdir(os.path.join(wrapper_dir, d)) and d != "__MACOSX"]
+                        wrapper_class_dirs = [d for d in wrapper_dirs if "___" in d]
+                        if wrapper_class_dirs:
+                            candidate_base = wrapper_dir
+
+            if not candidate_base:
+                shutil.rmtree(dest_dir, ignore_errors=True)
+                return jsonify({
+                    "success": False,
+                    "error": "Estructura inválida. El ZIP debe contener carpetas 'Planta___Enfermedad' (directamente o dentro de 'color/')."
+                }), 400
+
+            # Validar carpetas Planta___Enfermedad con imágenes
+            subdirs = [d for d in os.listdir(candidate_base) if os.path.isdir(os.path.join(candidate_base, d))]
+            valid_class_dirs = []
+            for subdir in subdirs:
+                if "___" not in subdir:
+                    continue
+                subdir_path = os.path.join(candidate_base, subdir)
+                contains_images = False
+                for _, _, files in os.walk(subdir_path):
+                    if any(f.lower().endswith((".jpg", ".jpeg", ".png")) for f in files):
+                        contains_images = True
+                        break
+                if contains_images:
+                    valid_class_dirs.append(subdir)
+
+            if not valid_class_dirs:
+                shutil.rmtree(dest_dir, ignore_errors=True)
+                return jsonify({
+                    "success": False,
+                    "error": "No se encontraron carpetas válidas 'Planta___Enfermedad' con imágenes .jpg/.jpeg/.png."
+                }), 400
+
+            # Normalizar siempre a data/<fuente>/color/<Planta___Enfermedad>/...
+            final_color_path = os.path.join(dest_dir, "color")
+            os.makedirs(final_color_path, exist_ok=True)
+            if candidate_base != final_color_path:
+                for class_dir in valid_class_dirs:
+                    src = os.path.join(candidate_base, class_dir)
+                    dst = os.path.join(final_color_path, class_dir)
+                    if os.path.exists(dst):
+                        shutil.rmtree(dest_dir, ignore_errors=True)
+                        return jsonify({
+                            "success": False,
+                            "error": f"Conflicto al normalizar estructura: la carpeta '{class_dir}' ya existe en color/."
+                        }), 400
+                    shutil.move(src, dst)
+            
+            # Guardar backup del ZIP en logs/zips/
+            zips_backup_dir = os.path.join(ROOT, "logs", "zips")
+            os.makedirs(zips_backup_dir, exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_zip_path = os.path.join(zips_backup_dir, f"{timestamp}_{nombre_fuente}.zip")
+            zip_file.seek(0)
+            with open(backup_zip_path, 'wb') as f:
+                f.write(zip_file.read())
+            
+            return jsonify({
+                "success": True,
+                "message": f"ZIP descomprimido correctamente en 'data/{nombre_fuente}/'. Backup guardado en '{backup_zip_path}'."
+            })
+        
+        except zipfile.BadZipFile:
+            shutil.rmtree(dest_dir, ignore_errors=True)
+            return jsonify({
+                "success": False,
+                "error": "El archivo ZIP está corrompido o no es válido"
+            }), 400
+    
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Error inesperado: {str(e)}"
         }), 500
 
 @app.route("/editar_clases", methods=["GET"])
@@ -492,6 +1028,15 @@ def crear_experimento():
                 total_imagenes[clase] = db["Docs"].count_documents({"clase": clase})
             config_variables["imagenes_por_clase"] = max(total_imagenes.values())
 
+        mapeo_modelos = {
+            "MobileNetV2": "MobileNet_V2_Weights.DEFAULT"
+        }
+
+        # Renombrar "modelo" a "weights" si existe
+        if "modelo" in config_variables:
+            modelo = config_variables.pop("modelo")
+            config_variables["weights"] = mapeo_modelos.get(modelo, modelo)
+
         script_path = os.path.join(os.path.dirname(__file__), "scripts", "make_experiment.py")
         cmd = ["python", script_path, experiment_name]
 
@@ -547,12 +1092,16 @@ def solicitar_entrenamiento():
     try:
         data = request.get_json()
         nombre_experimento = data.get("nombre")
+        usuario = data.get("usuario")
+        disponible_prediccion = data.get("disponible_prediccion", False)
 
         if not nombre_experimento:
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
 
         db["Entrenamientos"].insert_one({
             "nombre": nombre_experimento,
+            "usuario": usuario,
+            "disponible_prediccion": disponible_prediccion,
             "created_at": datetime.utcnow()
         })
 
@@ -576,10 +1125,12 @@ def entrenar_modelo():
     """
     Ejecuta el entrenamiento de un modelo.
     Si el entrenamiento termina correctamente, elimina el experimento de la colección 'Experimentos'.
+    El admin decide si acepta hacer el modelo disponible para predicción mediante el parámetro aceptar_disponible_prediccion.
     """
     try:
         data = request.get_json()
         nombre_experimento = data.get("nombre")
+        aceptar_disponible_prediccion = data.get("aceptar_disponible_prediccion", False)
 
         if not nombre_experimento:
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
@@ -613,8 +1164,42 @@ def entrenar_modelo():
             print("Error en el entrenamiento:", result.stderr)
             return jsonify({"success": False, "error": result.stderr}), 500
 
-        # Si el entrenamiento fue correcto, intentar eliminar el experimento de la colección Experimentos.
+        # Normalizar nombre del modelo entrenado a <experimento>.pth.
+        models_dir = os.path.join("experiments", nombre_experimento, "models")
+        modelo_best = os.path.join(models_dir, "best_model.pth")
+        modelo_experimento = os.path.join(models_dir, f"{nombre_experimento}.pth")
+
+        if os.path.exists(modelo_best):
+            if os.path.exists(modelo_experimento):
+                os.remove(modelo_experimento)
+            os.replace(modelo_best, modelo_experimento)
+            print(f"Modelo renombrado a {modelo_experimento}")
+
+        # Si el entrenamiento fue correcto, verificar si el admin acepta disponibilidad para predicción
         try:
+            solicitud = db["Entrenamientos"].find_one({"nombre": nombre_experimento})
+            
+            # Si el admin acepta hacer el modelo disponible para predicción, copiarlo a models/
+            # Nota: El usuario puede haber solicitado disponibilidad (solicitud.get("disponible_prediccion")),
+            # pero la decisión final es del admin (aceptar_disponible_prediccion)
+            if aceptar_disponible_prediccion:
+                modelo_origen = os.path.join("experiments", nombre_experimento, "models", f"{nombre_experimento}.pth")
+                if not os.path.exists(modelo_origen):
+                    # Compatibilidad con experimentos antiguos.
+                    modelo_origen = os.path.join("experiments", nombre_experimento, "models", "best_model.pth")
+                modelo_destino = os.path.join("models", f"{nombre_experimento}.pth")
+                
+                # Crear carpeta models/ si no existe
+                os.makedirs("models", exist_ok=True)
+                
+                # Copiar el modelo
+                if os.path.exists(modelo_origen):
+                    shutil.copy2(modelo_origen, modelo_destino)
+                    print(f"Modelo copiado a {modelo_destino} (aprobado por admin)")
+                else:
+                    print(f"Advertencia: No se encontró el modelo en {modelo_origen}")
+            
+            # Eliminar el documento de Entrenamientos
             delete_res = db["Entrenamientos"].delete_one({"nombre": nombre_experimento})
             lista = []
             for doc in db["Entrenamientos"].find():
@@ -1014,7 +1599,7 @@ def add_dato():
                         abort(400, f"La imagen {nombre_campo} ha provocado la siguiente excepcion: " + res)
                     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, res)) + ".png"
                     imagenes_extra.append((nombre_imagen, base64.b64decode(res)))
-                    campos_extra[nombre_campo] = f"http://158.42.184.169:5001/imagen_base64/{nombre_imagen}"
+                    campos_extra[nombre_campo] = get_image_url(nombre_imagen)
                     # Nos guardamos en una lista el nombre de la imagen y la codificación para insertarla más tarde si no hay errores
                 elif cod_campo == 0 or cod_campo == 4:
                     if type(valor) is not int:
@@ -1025,7 +1610,8 @@ def add_dato():
                             abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
         for nombre_imagen, imagen in imagenes_extra:
-            with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+            os.makedirs(IMAGES_DIR, exist_ok=True)
+            with open(os.path.join(IMAGES_DIR, nombre_imagen), "wb") as f:
                 f.write(imagen)
 
     db.Docs.update_one({"_id": _id}, {"$set": campos_extra})
@@ -1043,7 +1629,7 @@ def eliminar_dato():
     if cod == 3:
         archivo = db.Docs.find_one({"_id": _id})
         nombre_imagen = re.search(r"[^/]+$", archivo[f"{nombre_campo}"]).group()
-        os.remove(f"./imagenes/" + nombre_imagen)
+        os.remove(os.path.join(IMAGES_DIR, nombre_imagen))
         db.Docs.update_one({"_id": _id}, {"$unset": {f"{nombre_campo}": ""}})
 
         return jsonify(success=True)
@@ -1058,6 +1644,8 @@ def devolver_docs():
     if clasificacion is not None:
         if nombre is not None:
             etiqueta = db.Etiquetas.find_one({"clasificacion": clasificacion, "nombre": nombre}, {"_id": 1})
+            if not etiqueta:
+                return jsonify_serialized([])
             res = db.Docs.find({"clase": etiqueta["_id"]},{})
         else:
             id_etiqueta = db.Etiquetas.find({"clasificacion": clasificacion}, {"_id": 1})
@@ -1068,7 +1656,7 @@ def devolver_docs():
     else:
         res = db.Docs.find()
 
-    return list(res)
+    return jsonify_serialized(list(res))
 
 @app.route("/clasificar", methods=["POST"])
 def etiquetar_doc():
@@ -1085,7 +1673,7 @@ def etiquetar_doc():
 
 @app.route("/imagen_base64/<nombre_imagen>", methods=["GET"])
 def devolver_imagen_base64(nombre_imagen):
-    imagen = Image.open(f"./imagenes/{nombre_imagen}", mode='r')
+    imagen = Image.open(os.path.join(IMAGES_DIR, nombre_imagen), mode='r')
     bytes_array = io.BytesIO()
     imagen.save(bytes_array, format=imagen.format)
     #bytes_array = bytes_array.getvalue()
@@ -1119,14 +1707,28 @@ def devolver_x_archivos():
             return jsonify([])
 
     if formato:
-        formato_doc = db.Formato.find_one({"nombre": formato})
+        formato_doc = db.Formato.find_one({
+            "$or": [
+                {"formato": formato},
+                {"nombre": formato},
+            ]
+        })
         if formato_doc:
             filtros["formato"] = formato_doc["_id"]
+        else:
+            return jsonify_serialized([])
 
     if fuente:
-        fuente_doc = db.Fuente.find_one({"nombre": fuente})
+        fuente_doc = db.Fuente.find_one({
+            "$or": [
+                {"fuente": fuente},
+                {"nombre": fuente},
+            ]
+        })
         if fuente_doc:
             filtros["fuente"] = fuente_doc["_id"]
+        else:
+            return jsonify_serialized([])
 
     res = list(db.Docs.find(filtros).skip(inicio).limit(n_archivos))
     return jsonify_serialized(res)
@@ -1157,14 +1759,28 @@ def devolver_x_archivos_sin_validar():
             return jsonify([])
 
     if formato:
-        formato_doc = db.Formato.find_one({"nombre": formato})
+        formato_doc = db.Formato.find_one({
+            "$or": [
+                {"formato": formato},
+                {"nombre": formato},
+            ]
+        })
         if formato_doc:
             filtros["formato"] = formato_doc["_id"]
+        else:
+            return jsonify(serialize_value([]))
 
     if fuente:
-        fuente_doc = db.Fuente.find_one({"nombre": fuente})
+        fuente_doc = db.Fuente.find_one({
+            "$or": [
+                {"fuente": fuente},
+                {"nombre": fuente},
+            ]
+        })
         if fuente_doc:
             filtros["fuente"] = fuente_doc["_id"]
+        else:
+            return jsonify(serialize_value([]))
 
     res = list(db.Docs.find(filtros).skip(inicio).limit(n_archivos))
     return jsonify(serialize_value(res))
@@ -1181,14 +1797,17 @@ def subir_imagen():
     usuario = data.get("usuario")
 
     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, data["imagen_b64"])) + ".png"
+    image_path = os.path.join(IMAGES_DIR, nombre_imagen)
+    image_url = get_image_url(nombre_imagen)
 
-    if os.path.isfile(f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/imagenes/{nombre_imagen}"):
-        db.Docs.delete_one({"imagen_rgb": f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}"})
+    if os.path.isfile(image_path):
+        # Borra posible doc previo con esa imagen, independientemente del host guardado en la URL.
+        db.Docs.delete_one({"imagen_rgb": {"$regex": f"/imagen_base64/{re.escape(nombre_imagen)}$"}})
 
-    guardar_como_png(imagen_bytes=res, ruta_salida=f"C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Repo/imagenes/{nombre_imagen}")
+    guardar_como_png(imagen_bytes=res, ruta_salida=image_path)
 
     doc = {
-        "imagen_rgb": f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}",
+        "imagen_rgb": image_url,
         "validada": False,
         "usuario": usuario,
         "clase": clase
@@ -1214,7 +1833,7 @@ def subir_imagen():
                         abort(400, f"La imagen {nombre_campo} ha provocado la siguiente excepcion: " + res)
                     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, valor)) + ".png"
                     imagenes_extra.append((nombre_imagen, base64.b64decode(res)))
-                    campos_extra[nombre_campo] = f"http://127.0.0.1:5001/imagen_base64/{nombre_imagen}"
+                    campos_extra[nombre_campo] = get_image_url(nombre_imagen)
                     # Nos guardamos en una lista el nombre de la imagen y la codificación para insertarla más tarde si no hay errores
                 elif cod_campo == 0 or cod_campo == 4:
                     if type(valor) is not int:
@@ -1225,7 +1844,8 @@ def subir_imagen():
                             abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
         for nombre_imagen, imagen in imagenes_extra:
-            with open(f"./imagenes/{nombre_imagen}", "wb") as f:
+            os.makedirs(IMAGES_DIR, exist_ok=True)
+            with open(os.path.join(IMAGES_DIR, nombre_imagen), "wb") as f:
                 f.write(imagen)
 
         doc.update(campos_extra)        
@@ -1240,7 +1860,7 @@ def eliminar_imagen():
     _id = ObjectId(id)
     archivo = db.Docs.find_one({"_id": _id})
     nombre_imagen = re.search(r"[^/]+$", archivo["imagen_rgb"]).group()
-    os.remove(f"./imagenes/" + nombre_imagen)
+    os.remove(os.path.join(IMAGES_DIR, nombre_imagen))
     db.Docs.delete_one({"_id": _id})
 
     return jsonify(True)
@@ -1254,20 +1874,37 @@ bd_usuarios = connect_to_database(db_name="appPlantas")
 col_usuarios = bd_usuarios["usuarios"]
 
 @app.route("/iniciar_sesion", methods=["POST"])
+@limiter.limit("10 per minute")
 def inicio_sesion():
     data = request.get_json(force=True)
     nombre = data.get("nombre")
     password = data.get("password")
     rol = data.get("rol")
 
-    query = {"nombre": nombre, "password": password, "rol": rol}
+    usuario = col_usuarios.find_one({"nombre": nombre})
+    if not usuario:
+        return jsonify({"success": False}), 401
+    if not check_password(password, usuario.get("password", "")):
+        return jsonify({"success": False}), 401
+    if rol and rol not in usuario.get("rol", []):
+        return jsonify({"success": False}), 403
 
-    res = list(col_usuarios.find(query))
+    roles = usuario.get("rol", [])
+    active_role = rol if rol else (roles[0] if roles else None)
+    token = create_access_token(nombre, roles, active_role)
 
-    return jsonify(True) if len(res) == 1 else jsonify(False)
+    return jsonify({
+        "success": True,
+        "access_token": token,
+        "token_type": "Bearer",
+        "expires_in": JWT_EXP_MINUTES * 60,
+        "usuario": {"nombre": nombre, "rol": roles},
+        "active_role": active_role,
+    })
 
 
 @app.route("/registro", methods=["POST"]) 
+@limiter.limit("10 per minute")
 def registro():
     data = request.get_json(force=True)
     nombre = data.get("nombre")
@@ -1283,16 +1920,19 @@ def registro():
     # Insertar nuevo usuario
     col_usuarios.insert_one({
         "nombre": nombre,
-        "password": password,
+        "password": hash_password(password),
         "rol": ["usuario"],
-        "nombres_antiguos": [],
-        "contenido": []
+        "nombres_antiguos": []
     })
 
     return jsonify({"success": True})
 
 @app.route("/add_rol", methods=["POST"])
 def add_rol():
+    auth_error = require_any_role("admin")
+    if auth_error:
+        return auth_error
+
     data = request.get_json(force=True)
     nombre = data.get("nombre")
     rol = data.get("rol")
@@ -1312,6 +1952,10 @@ def add_rol():
 
 @app.route("/eliminar_rol", methods=["POST"])
 def eliminar_rol():
+    auth_error = require_any_role("admin")
+    if auth_error:
+        return auth_error
+
     data = request.get_json(force=True)
     nombre = data.get("nombre")
     rol = data.get("rol")
@@ -1338,6 +1982,10 @@ def eliminar_rol():
 #        query[tipo_busqueda] = {"$regex": nombre, "$options": "i"}  
 
 def buscar_usuarios():
+    auth_error = require_any_role("admin")
+    if auth_error:
+        return auth_error
+
     nombre = request.args.get("nombre")
     rol = request.args.get("rol")
     
@@ -1357,6 +2005,10 @@ def buscar_usuarios():
 
 @app.route("/eliminar_usuario", methods=["POST"])
 def eliminar_usuario():
+    auth_error = require_any_role("admin")
+    if auth_error:
+        return auth_error
+
     data = request.get_json(force=True)
     nombre = data.get("nombre")
 
@@ -1377,16 +2029,21 @@ def cambiar_nombre_usuario():
     password = data.get("password")
     nueva_password = data.get("nueva_password")
 
-    res = col_usuarios.find({"nombre": nombre, "password": password})
-    if len(list(res)) != 1:
-        return (False, "Contraseña Incorrecta")
+    auth_error = require_self_or_admin(nombre)
+    if auth_error:
+        return auth_error
 
-    res = col_usuarios.find({"nombre": nuevo_nombre})
-    if len(list(res)) == 1:
-        return(False, "Nombre de usuario ya en uso")
-    
-    col_usuarios.update_one({"nombre": nombre},{"$set": {"nombre": nuevo_nombre, "password": nueva_password}, "$addToSet":{"nombres_antiguos": nombre}})
-    
+    usuario = col_usuarios.find_one({"nombre": nombre})
+    if not usuario or not check_password(password, usuario.get("password", "")):
+        return jsonify({"success": False, "error": "Contraseña Incorrecta"}), 401
+
+    if col_usuarios.find_one({"nombre": nuevo_nombre}):
+        return jsonify({"success": False, "error": "Nombre de usuario ya en uso"}), 409
+
+    col_usuarios.update_one(
+        {"nombre": nombre},
+        {"$set": {"nombre": nuevo_nombre, "password": hash_password(nueva_password)}, "$addToSet": {"nombres_antiguos": nombre}}
+    )
     return jsonify({"success": True, "error": ""})
 
 @app.route("/cambiar_password", methods=["POST"]) 
@@ -1396,18 +2053,25 @@ def cambiar_password():
     password = data.get("password")
     nueva_password = data.get("nueva_password")
 
-    res = col_usuarios.find({"nombre": nombre, "password": password})
-    if len(list(res)) != 1:
-        return (False, "Contraseña Incorrecta")
-    
-    col_usuarios.update_one({"nombre": nombre}, {"$set": {"password": nueva_password}})
-    
+    auth_error = require_self_or_admin(nombre)
+    if auth_error:
+        return auth_error
+
+    usuario = col_usuarios.find_one({"nombre": nombre})
+    if not usuario or not check_password(password, usuario.get("password", "")):
+        return jsonify({"success": False, "error": "Contraseña Incorrecta"}), 401
+
+    col_usuarios.update_one({"nombre": nombre}, {"$set": {"password": hash_password(nueva_password)}})
     return jsonify({"success": True, "error": ""})
 
 @app.route("/seleccionar_usuario", methods=["POST"])
 def seleccionar_usuario():
     data = request.get_json(force=True)
     nombre = data.get("nombre")
+
+    auth_error = require_self_or_admin(nombre)
+    if auth_error:
+        return auth_error
 
     if not nombre:
         return jsonify({"success": False, "error": "Falta el nombre de usuario"}), 400
@@ -1424,6 +2088,10 @@ def verificar_rol():
         usuario = data.get("usuario")
         rol = data.get("rol")
 
+        auth_error = require_self_or_admin(usuario)
+        if auth_error:
+            return auth_error
+
         if not usuario or not rol:
             return jsonify({"success": False, "error": "Faltan parámetros (usuario o rol)"}), 400
 
@@ -1437,16 +2105,28 @@ def verificar_rol():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
     
+@app.route("/logos", methods=["GET"])
+def logos():
+    try:
+        ruta_logos = "./src/assets/logos.png"
+        
+        if not os.path.exists(ruta_logos):
+            return jsonify({"success": False, "error": "Archivo de logos no encontrado"}), 404
+        
+        with open(ruta_logos, "rb") as f:
+            imagen_bytes = f.read()
+        
+        imagen_b64 = base64.b64encode(imagen_bytes).decode("utf-8")
+        
+        return jsonify({"success": True, "imagen_b64": imagen_b64})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
-"""
-@app.route("/test", methods=["GET"])
-def test():
-    print(db.Etiquetas.find_one({"clasificacion": "Sin_clasificar"}, {"_id": 1})["_id"])
-
-    return ""
-"""
-
-if __name__ == "__main__":
-    app.run(debug=True)
+# Usar run_server.py para ejecutar este servidor
+# python run_server.py              # HTTP simple
+# python run_server.py --https      # HTTPS (recomendado)
+# python run_server.py --https --port 8000  # HTTPS en puerto 8000

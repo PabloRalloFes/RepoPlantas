@@ -13,12 +13,12 @@ def run_subprocess(cmd):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Procesamiento por lotes de imágenes importadas")
-    parser.add_argument("--fuente", required=True, help="Nombre de la fuente (subcarpeta dentro de data/Imported)")
+    parser.add_argument("--fuente", required=True, help="Nombre de la fuente (subcarpeta dentro de data/)")
     args = parser.parse_args()
 
     ROOT = os.path.dirname(os.path.abspath(__file__))
     ROOT = os.path.dirname(ROOT)
-    base_path = os.path.join(ROOT, "data", "Imported", args.fuente)
+    base_path = os.path.join(ROOT, "data", args.fuente)
     color_path = os.path.join(base_path, "color")
     grayscale_path = os.path.join(base_path, "grayscale")
     segmented_path = os.path.join(base_path, "segmented")
