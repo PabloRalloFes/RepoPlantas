@@ -1,20 +1,31 @@
 [project]
-name = "myapp"
-version = "0.1.0"
-description = ""
-readme = "README.md"
+name = "Plant-AId"
+version = "1.0.0"
+description = "Plant disease detection and labeling app"
 requires-python = ">=3.10"
 authors = [
-    { name = "Flet developer", email = "you@example.com" }
+    { name = "Pablo Rallo", email = "pablorf6@gmail.com" }
 ]
 dependencies = [
-    "flet",
-    "httpx"
+    "flet==0.28.3",
+    "httpx==0.28.1"
 ]
 
 [tool.flet]
-org = "com.mycompany"
-product = "Plantor"
-company = "My Company"
-copyright = "Copyright (C) 2025 by My Company"
+product = "Plant-AId"
+artifact = "Plant-AId"
+build_number = 1
 
+[tool.flet.app]
+module = "main_app.py"
+exclude = ["backups", "contexto", "data", "docs", "ENG", "experiments", "GooglePlay", "imagenes", "logs", "models", "notebooks", "scripts", "server", "ssl_certs", "utils", ".dockerignore", ".env", ".env.docker.example", ".gitignore", "docker-compose.yml", "Dockerfile", "main.py", "README.md", "run_server.py"]
+
+
+
+
+[tool.flet.android]
+permissions = [
+    "android.permission.INTERNET",
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.CAMERA"
+]

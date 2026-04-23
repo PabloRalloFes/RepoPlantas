@@ -108,7 +108,7 @@ class LogicaApp:
     
     def set_url_api(self, nueva_url: str):
         if not nueva_url.startswith("http://") and not nueva_url.startswith("https://"):
-            nueva_url = "https://" + nueva_url
+            nueva_url = "http://" + nueva_url
         self.url_api = nueva_url.rstrip("/")
         return {"success": True, "message": f"URL de la API actualizada a {self.url_api}"}
     

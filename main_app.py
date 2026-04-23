@@ -21,20 +21,34 @@ if __name__ == "__main__":
         return "://api:" in lowered or "://mongo:" in lowered
 
     def main(page: ft.Page):
-        saved_url_api = page.client_storage.get("url_api")
+        def safe_client_storage_get(key: str):
+            try:
+                return page.client_storage.get(key)
+            except TimeoutError:
+                return None
+            except Exception:
+                return None
+
+        def safe_client_storage_remove(key: str):
+            try:
+                page.client_storage.remove(key)
+            except Exception:
+                pass
+
+        saved_url_api = safe_client_storage_get("url_api")
         if saved_url_api and not _is_docker_internal_url(saved_url_api):
             logica_app.set_url_api(saved_url_api)
         elif saved_url_api:
-            page.client_storage.remove("url_api")
+            safe_client_storage_remove("url_api")
 
-        saved_url_bbdd = page.client_storage.get("url_bbdd")
+        saved_url_bbdd = safe_client_storage_get("url_bbdd")
         if saved_url_bbdd and not _is_docker_internal_url(saved_url_bbdd):
             previous_url_bbdd = logica_app.url_bbdd
             logica_app.set_url_bbdd(saved_url_bbdd)
             if saved_url_bbdd != previous_url_bbdd:
                 logica_app.cambiar_url_bbdd()
         elif saved_url_bbdd:
-            page.client_storage.remove("url_bbdd")
+            safe_client_storage_remove("url_bbdd")
 
         def mostrar_cargando(page, visible=True):
             if visible:
@@ -991,13 +1005,32 @@ if __name__ == "__main__":
         def avanzar_imagenes(reverso=False):
             if logica_app.avanzar_puntero_repo(reverso):
                 cargar_datos_no_validados()
+
+                # Si se intentó avanzar más allá del final y no hay datos,
+                # volvemos al último bloque válido.
+                if not reverso and len(logica_app.batch_archivos) == 0 and logica_app.puntero_repo > 0:
+                    logica_app.puntero_repo -= logica_app.max_archivos
+                    cargar_datos_no_validados()
+            else:
                 mostrar_cargando(page, False)
+
+            actualizar_estado_paginacion_imagenes()
             
             page.update()
             
 
         def retroceder_imagenes():
             avanzar_imagenes(reverso=True)
+
+        boton_anterior_imagenes = None
+        boton_siguiente_imagenes = None
+
+        def actualizar_estado_paginacion_imagenes():
+            if boton_anterior_imagenes is None or boton_siguiente_imagenes is None:
+                return
+
+            boton_anterior_imagenes.disabled = logica_app.puntero_repo <= 0
+            boton_siguiente_imagenes.disabled = len(logica_app.batch_archivos) < logica_app.max_archivos
         
         tabla_docs_no_validados = ft.DataTable(
             columns=[
@@ -1050,6 +1083,7 @@ if __name__ == "__main__":
                 )
                 tabla_docs_no_validados.rows.append(fila)
             #logica_app.evitar_recarga = False
+            actualizar_estado_paginacion_imagenes()
             page.update()
 
             import time
@@ -2530,6 +2564,24 @@ if __name__ == "__main__":
                 """if hasattr(logica_app, "filtros_actuales") and not getattr(logica_app, "evitar_recarga", False):
                     cargar_datos_no_validados()"""
                 logica_app.evitar_recarga = False  # Restablecer la bandera después de cargar los datos
+                nonlocal boton_anterior_imagenes, boton_siguiente_imagenes
+
+                boton_anterior_imagenes = ft.ElevatedButton(
+                    text="Anterior",
+                    on_click=lambda _: (mostrar_cargando(page, True), retroceder_imagenes()),
+                    bgcolor=ft.Colors.GREEN,
+                    color=ft.Colors.WHITE,
+                    disabled=logica_app.puntero_repo <= 0,
+                )
+
+                boton_siguiente_imagenes = ft.ElevatedButton(
+                    text="Siguiente",
+                    on_click=lambda _: (mostrar_cargando(page, True), avanzar_imagenes()),
+                    bgcolor=ft.Colors.GREEN,
+                    color=ft.Colors.WHITE,
+                    disabled=len(logica_app.batch_archivos) < logica_app.max_archivos,
+                )
+
                 page.views.append(
                     ft.View(
                     "/main_etiquetador/seleccion_imagenes",
@@ -2581,18 +2633,8 @@ if __name__ == "__main__":
                                             vertical_alignment = ft.CrossAxisAlignment.CENTER,
                                             spacing = 20,
                                             controls = [
-                                                ft.ElevatedButton(
-                                                    text="Anterior",
-                                                    on_click=lambda _: (mostrar_cargando(page, True), retroceder_imagenes()),
-                                                    bgcolor = ft.Colors.GREEN,
-                                                    color = ft.Colors.WHITE
-                                                ),
-                                                ft.ElevatedButton(
-                                                    text="Siguiente",
-                                                    on_click=lambda _: (mostrar_cargando(page, True), avanzar_imagenes()),
-                                                    bgcolor = ft.Colors.GREEN,
-                                                    color = ft.Colors.WHITE
-                                                ),
+                                                boton_anterior_imagenes,
+                                                boton_siguiente_imagenes,
                                                 ft.OutlinedButton(
                                                     text="Volver a filtros",
                                                     style=ft.ButtonStyle(
@@ -2629,6 +2671,7 @@ if __name__ == "__main__":
                         ]
                     )
                 )
+                actualizar_estado_paginacion_imagenes()
 
             if page.route.startswith("/main_etiquetador/seleccion_imagenes/etiquetar"):
                 # Setup para imagen ampliada
@@ -4405,12 +4448,20 @@ if __name__ == "__main__":
                     value=False,
                     disabled=True,  # Deshabilitado por defecto
                 )
+
+                checkbox_solo_validadas = ft.Checkbox(
+                    label="Usar solo imágenes validadas",
+                    value=False,
+                    disabled=True,
+                )
                 
                 def on_entrenar_change(e):
-                    """Habilita/deshabilita el checkbox de predicción según el estado de entrenar"""
+                    """Habilita/deshabilita los checkboxes dependientes según el estado de entrenar"""
                     checkbox_disponible_prediccion.disabled = not e.control.value
+                    checkbox_solo_validadas.disabled = not e.control.value
                     if not e.control.value:
                         checkbox_disponible_prediccion.value = False
+                        checkbox_solo_validadas.value = False
                     page.update()
                 
                 checkbox_entrenar_modelo = ft.Checkbox(
@@ -4425,6 +4476,7 @@ if __name__ == "__main__":
                         "formato": dropdown_formato.value,
                         "imagenes_por_clase": int(dropdown_num_imagenes.value) if dropdown_num_imagenes.value != "Todas" else dropdown_num_imagenes.value,
                         "modelo": dropdown_modelo.value,
+                        "solo_validadas": checkbox_solo_validadas.value,
                     }
                     
                     # Añadir todos los campos dinámicos seleccionados.
@@ -4547,12 +4599,12 @@ if __name__ == "__main__":
                                                     controls=[
                                                         ft.Text("⚙️ CONFIGURACIÓN", size=15, weight=ft.FontWeight.BOLD),
                                                         ft.Divider(height=1),
-                                                        dropdown_formato,
+                                                        ft.Row(controls=[dropdown_formato, dropdown_num_imagenes], spacing=20),
                                                         dropdown_modelo,
-                                                        dropdown_num_imagenes,
                                                         ft.Divider(height=1),
                                                         checkbox_entrenar_modelo,
                                                         checkbox_disponible_prediccion,
+                                                        checkbox_solo_validadas,
                                                         ft.Container(height=5),
                                                         boton_crear_experimento,
                                                     ]
@@ -4819,8 +4871,8 @@ if __name__ == "__main__":
                         page.update()
                         
                         try:
-                            # Descargar imagen con httpx (sin verificar SSL)
-                            response = httpx.get(imagen_ampliada_url_original, verify=False, timeout=10.0)
+                            # Descargar imagen usando el cliente autenticado de la app.
+                            response = logica_app._get(imagen_ampliada_url_original, verify=False, timeout=10.0)
                             print(f"Respuesta descarga: {response.status_code} - {response.reason_phrase}")
                             if response.status_code == 200:
                                 # Obtener ruta de Downloads
@@ -5130,8 +5182,8 @@ if __name__ == "__main__":
                         page.update()
                         
                         try:
-                            # Descargar imagen con httpx (sin verificar SSL)
-                            response = httpx.get(imagen_ampliada_url_original, verify=False, timeout=10.0)
+                            # Descargar imagen usando el cliente autenticado de la app.
+                            response = logica_app._get(imagen_ampliada_url_original, verify=False, timeout=10.0)
                             if response.status_code == 200:
                                 # Obtener ruta de Downloads
                                 downloads_path = Path(os.path.expanduser("~/Downloads"))

@@ -114,12 +114,19 @@ def create_access_token(username, roles, active_role=None):
 
 def _extract_bearer_token():
     auth = request.headers.get("Authorization", "").strip()
-    if not auth:
-        return None
-    parts = auth.split(" ", 1)
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        return None
-    return parts[1].strip()
+    if auth:
+        parts = auth.split(" ", 1)
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1].strip()
+            if token:
+                return token
+
+    # Fallback para clientes que abren URL en navegador externo (p. ej. app móvil).
+    token_qs = (request.args.get("access_token") or request.args.get("token") or "").strip()
+    if token_qs:
+        return token_qs
+
+    return None
 
 def require_any_role(*allowed_roles):
     roles = set(getattr(g, "auth_roles", []))
@@ -571,9 +578,55 @@ def opciones_filtros_docs():
         formato_opciones = []
         mapeos_ids = {}
 
+        # Campos principales: se obtienen siempre desde sus colecciones completas,
+        # sin depender del muestreo de Docs.
+        clases_todas = list(db["Clases"].find({}, {"_id": 1, "planta": 1, "nombre_comun": 1}))
+
+        plantas_todas = sorted(
+            set(str(c.get("planta")) for c in clases_todas if is_scalar_value(c.get("planta"))),
+            key=lambda x: x.lower(),
+        )
+        if plantas_todas:
+            filtros_multiseleccion["planta"] = plantas_todas
+            mapeos_ids["planta"] = {
+                p: [c["_id"] for c in clases_todas if str(c.get("planta")) == p]
+                for p in plantas_todas
+            }
+
+        enfermedades_todas = sorted(
+            set(str(c.get("nombre_comun")) for c in clases_todas if is_scalar_value(c.get("nombre_comun"))),
+            key=lambda x: x.lower(),
+        )
+        if enfermedades_todas:
+            filtros_multiseleccion["nombre_comun"] = enfermedades_todas
+            mapeos_ids["nombre_comun"] = {
+                e: [c["_id"] for c in clases_todas if str(c.get("nombre_comun")) == e]
+                for e in enfermedades_todas
+            }
+
+        fuentes_todas_docs = list(db["Fuente"].find({}, {"_id": 1, "fuente": 1}))
+        fuentes_todas = sorted(
+            set(str(f.get("fuente")) for f in fuentes_todas_docs if is_scalar_value(f.get("fuente"))),
+            key=lambda x: x.lower(),
+        )
+        if fuentes_todas:
+            filtros_multiseleccion["fuente"] = fuentes_todas
+            mapeos_ids["fuente"] = {
+                fuente_nombre: [
+                    f["_id"]
+                    for f in fuentes_todas_docs
+                    if is_scalar_value(f.get("fuente")) and str(f.get("fuente")) == fuente_nombre
+                ]
+                for fuente_nombre in fuentes_todas
+            }
+
         for key in keys_permitidas:
             # 'clase' se trata aparte para mostrar planta + nombre_comun.
             if key == "clase":
+                continue
+
+            # Estos campos se construyen desde sus colecciones completas.
+            if key in {"planta", "nombre_comun", "fuente"}:
                 continue
 
             raw_values = [v for v in db["Docs"].distinct(key) if is_scalar_value(v)]
@@ -617,37 +670,6 @@ def opciones_filtros_docs():
             else:
                 filtros_multiseleccion[key] = labels_directos
             mapeos_ids[key] = {str(v): [v] for v in raw_values}
-
-        # Tratamiento especial de 'clase' -> filtros por planta y enfermedad.
-        clase_ids = [v for v in db["Docs"].distinct("clase") if is_scalar_value(v)]
-        if clase_ids:
-            clases_docs = list(
-                db["Clases"].find(
-                    {"_id": {"$in": clase_ids}},
-                    {"_id": 1, "planta": 1, "nombre_comun": 1},
-                )
-            )
-            plantas = sorted(
-                set(str(c.get("planta")) for c in clases_docs if is_scalar_value(c.get("planta"))),
-                key=lambda x: x.lower(),
-            )
-            enfermedades = sorted(
-                set(str(c.get("nombre_comun")) for c in clases_docs if is_scalar_value(c.get("nombre_comun"))),
-                key=lambda x: x.lower(),
-            )
-
-            if plantas:
-                filtros_multiseleccion["planta"] = plantas
-                mapeos_ids["planta"] = {
-                    p: [c["_id"] for c in clases_docs if str(c.get("planta")) == p]
-                    for p in plantas
-                }
-            if enfermedades:
-                filtros_multiseleccion["nombre_comun"] = enfermedades
-                mapeos_ids["nombre_comun"] = {
-                    e: [c["_id"] for c in clases_docs if str(c.get("nombre_comun")) == e]
-                    for e in enfermedades
-                }
 
         return jsonify_serialized({
             "success": True,
