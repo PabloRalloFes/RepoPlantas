@@ -6,13 +6,15 @@
 
 ## 📥 Paso 1: Descargar
 
-`[Aquí irá el link de descarga - Será un link a google play, un instalador .exe para Windows o .dmg para Mac]`
+Descarga la versión de Windows, Android o Linux desde el enlace de distribución. El archivo final será un `.exe` que podrás abrir con doble clic.
 
 ---
 
 ## 💾 Paso 2: Instalar
 
-`[Aquí se explicará como instalar, espacíficamente para Windows o Mac]`
+Si te entregan un instalador, ejecútalo y sigue el asistente. Si te entregan una carpeta portable, entra dentro y abre `Plant-AId.exe`.
+
+La aplicación se conecta al servidor de la universidad, así que solo necesita que la URL de la API esté configurada correctamente. {indicar aquí la URL final}
 
 
 ---
@@ -22,6 +24,8 @@
 ### Iniciar la aplicación
 - **Windows**: Doble clic en el icono del escritorio
 - **Mac**: Abre `Aplicaciones` → `PlantAid`
+
+En Windows no hace falta abrir Python ni una terminal. La aplicación se abre como cualquier programa instalado.
 
 ### Primera pantalla
 
@@ -52,6 +56,13 @@ Si te da error de conexión asegúrate de que la dirección a la que te estás c
 - Botón "Subida masiva"
 - Sube un conjunto de imágenes
 - Funcionalidad delicada. Se requiere rol de Usuario+
+
+---
+
+## ⚠️ Requisitos para Windows
+
+- Permitir que Windows ejecute la aplicación la primera vez si el antivirus o SmartScreen muestran un aviso.
+- Si la app no conecta, revisa en "Configuración de conexión" que la URL de la API sea la correcta.
 
 
 ## 🎯 Funciones Principales para Etiquetadores

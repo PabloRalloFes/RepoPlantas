@@ -125,6 +125,30 @@ python main_app.py
 python run_server.py --https
 ```
 
+### Opción 3: Generar la app de Windows
+
+Si quieres crear un ejecutable para usuarios finales, usa el empaquetado de Flet sobre la interfaz principal:
+
+```bash
+flet build windows
+```
+
+El resultado se genera en `build/windows/` y se distribuye como app de escritorio. Esa app es un cliente que se conecta al backend remoto configurado desde la propia interfaz o mediante variables de entorno.
+
+---
+
+## 🪟 Crear una app de Windows
+
+El proyecto ya tiene un launcher de escritorio en `windows_launcher.py` que arranca la API local y luego abre la interfaz Flet. Para generar el ejecutable de Windows usa:
+
+```bash
+flet build windows
+```
+
+El resultado se genera dentro de `build/windows/` y puede distribuirse como carpeta portable o instalarse con el empaquetado que genere Flet.
+
+Si al compilar aparece un error de CMake o del generador de Visual Studio, borra `build/flutter/build/windows/x64` o `build/flutter/build/windows` y vuelve a lanzar el build.
+
 ---
 
 
