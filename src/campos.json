@@ -1,0 +1,27 @@
+[
+    {
+        "nombre": "fuente",
+        "cod": 4,
+        "campos_etiqueta": {"fuente": "str"},
+        "coleccion": "Fuente"
+    },
+    {
+        "nombre": "clase",
+        "cod": 0,
+        "campos_etiqueta": {
+            "planta": "str",
+            "clasificacion": "str",
+            "nombre_comun": "str",
+            "nombre_cientifico": "str"
+        },
+        "coleccion": "Clases"
+    },
+    {
+        "nombre": "formato",
+        "cod": 4,
+        "campos_etiqueta": {
+            "formato": "str"
+        },
+        "coleccion": "Formato"
+    }
+]

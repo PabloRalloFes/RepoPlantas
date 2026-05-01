@@ -1,0 +1,2 @@
+C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Apk/build/flutter/android/app/.cxx/RelWithDebInfo/b5s1k6e2/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Pablo/Documents/Universidad/TFG/Repositorios/Apk/build/flutter/android/app/.cxx/RelWithDebInfo/b5s1k6e2/armeabi-v7a/CMakeFiles/rebuild_cache.dir
