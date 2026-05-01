@@ -984,6 +984,69 @@ if __name__ == "__main__":
             )
         )
 
+        def _load_about_info():
+            try:
+                about_path = Path(__file__).parent / "src" / "assets" / "colaboradores.txt"
+                info = {}
+                if about_path.exists():
+                    for line in about_path.read_text(encoding="utf-8").splitlines():
+                        if ":" in line:
+                            k, v = line.split(":", 1)
+                            info[k.strip().upper()] = v.strip()
+                return info
+            except Exception:
+                return {}
+
+        def _open_about(_=None):
+            info = _load_about_info()
+            autor = info.get("AUTOR", "")
+            colaboradores = info.get("COLABORADORES", "")
+            coordinador = info.get("COORDINADOR", "")
+
+            # Determinar altura del BottomSheet (coincidir con límite inferior de ventana)
+            sheet_height = getattr(page, "window_height", None) or getattr(page, "height", None) or 600
+
+            page.open(
+                ft.BottomSheet(
+                    content=ft.Container(
+                        height=sheet_height,
+                        padding=20,
+                        content=ft.Column(
+                            scroll=ft.ScrollMode.AUTO,
+                            controls=[
+                                ft.Text("PLANT-AID", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN),
+                                ft.Divider(),
+                                ft.Text("Sobre nosotros", size=18, weight=ft.FontWeight.BOLD),
+                                ft.Divider(),
+                                ft.Text("AUTOR:", size=16, weight=ft.FontWeight.BOLD),
+                                ft.Text(autor, size=14),
+                                ft.Container(height=10),
+                                ft.Text("COLABORADORES:", size=16, weight=ft.FontWeight.BOLD),
+                                ft.Text(colaboradores, size=14),
+                                ft.Container(height=10),
+                                ft.Text("COORDINADOR:", size=16, weight=ft.FontWeight.BOLD),
+                                ft.Text(coordinador, size=14),
+                                ft.Container(height=20),
+                                ft.ElevatedButton(
+                                    "Cerrar",
+                                    color=ft.Colors.WHITE,
+                                    bgcolor=ft.Colors.GREEN,
+                                    on_click=lambda e: page.close(e.control.parent.parent.parent),
+                                ),
+                            ],
+                        ),
+                    ),
+                )
+            )
+
+        icono_about = ft.IconButton(
+            icon=ft.Icons.INFO,
+            icon_color=ft.Colors.WHITE,
+            icon_size=30,
+            tooltip="Sobre la aplicación",
+            on_click=_open_about,
+        )
+
         def foto_seleccionada(e: ft.FilePickerResultEvent):
             if seleccionar_foto.result is not None and seleccionar_foto.result is not None:
                 for f in seleccionar_foto.result.files:
@@ -1674,6 +1737,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -1860,6 +1924,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2026,6 +2091,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2259,6 +2325,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2414,6 +2481,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2551,6 +2619,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2664,6 +2733,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2819,6 +2889,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3127,6 +3198,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3326,6 +3398,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3521,6 +3594,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -3750,6 +3824,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3992,6 +4067,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -4284,6 +4360,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -4629,6 +4706,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -4813,6 +4891,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -5080,6 +5159,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -5124,6 +5204,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -5391,6 +5472,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
