@@ -1,0 +1,422 @@
+[
+  {
+    "_id": 0,
+    "planta": "Apple",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Apple_scab",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 1,
+    "planta": "Apple",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Black_rot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 2,
+    "planta": "Apple",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Cedar_apple_rust",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 3,
+    "planta": "Apple",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 4,
+    "planta": "Blueberry",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 5,
+    "planta": "Cherry_(including_sour)",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 6,
+    "planta": "Cherry_(including_sour)",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Powdery_mildew",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 7,
+    "planta": "Corn_(maize)",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Cercospora_leaf_spot_Gray_leaf_spot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 8,
+    "planta": "Corn_(maize)",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Common_rust",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 9,
+    "planta": "Corn_(maize)",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 10,
+    "planta": "Corn_(maize)",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Northern_Leaf_Blight",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 11,
+    "planta": "Grape",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Black_rot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 12,
+    "planta": "Grape",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Esca_(Black_Measles)",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 13,
+    "planta": "Grape",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 14,
+    "planta": "Grape",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Leaf_blight_(Isariopsis_Leaf_Spot)",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 15,
+    "planta": "Orange",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Haunglongbing_(Citrus_greening)",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 16,
+    "planta": "Peach",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Bacterial_spot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 17,
+    "planta": "Peach",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 18,
+    "planta": "Pepper_bell",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Bacterial_spot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 19,
+    "planta": "Pepper_bell",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 20,
+    "planta": "Potato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Early_blight",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 21,
+    "planta": "Potato",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 22,
+    "planta": "Potato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Late_blight",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 23,
+    "planta": "Raspberry",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 24,
+    "planta": "Soybean",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 25,
+    "planta": "Squash",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Powdery_mildew",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 26,
+    "planta": "Strawberry",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 27,
+    "planta": "Strawberry",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Leaf_scorch",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 28,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Bacterial_spot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 29,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Early_blight",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 30,
+    "planta": "Tomato",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 31,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Late_blight",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 32,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Leaf_Mold",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 33,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Septoria_leaf_spot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 34,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Spider_mites_Two-spotted_spider_mite",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 35,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Target_Spot",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 36,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Tomato_mosaic_virus",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 37,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Tomato_Yellow_Leaf_Curl_Virus",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 38,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar",
+    "nombre_comun": "Sin_clasificar",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 39,
+    "planta": "Vid",
+    "clasificacion": "healthy",
+    "nombre_comun": "healthy",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 40,
+    "planta": "Vid",
+    "clasificacion": "Carencia",
+    "nombre_comun": "Boro",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 41,
+    "planta": "Vid",
+    "clasificacion": "Carencia",
+    "nombre_comun": "Clorosis_Ferrica",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 42,
+    "planta": "Vid",
+    "clasificacion": "Carencia",
+    "nombre_comun": "Magnesio",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 43,
+    "planta": "Vid",
+    "clasificacion": "Carencia",
+    "nombre_comun": "Potasio",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 44,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Botritis",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 45,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Eutipiosis",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 46,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Mildiu",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 47,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Oidio",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 48,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Podredumbre_Acida",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 49,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Tuberculosis",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 50,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Xylella",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 51,
+    "planta": "Vid",
+    "clasificacion": "Enfermedades",
+    "nombre_comun": "Yesca",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 52,
+    "planta": "Vid",
+    "clasificacion": "Plagas",
+    "nombre_comun": "Acariosis",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 53,
+    "planta": "Vid",
+    "clasificacion": "Plagas",
+    "nombre_comun": "Erinosis",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 54,
+    "planta": "Vid",
+    "clasificacion": "Plagas",
+    "nombre_comun": "Filoxera",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 55,
+    "planta": "Vid",
+    "clasificacion": "Plagas",
+    "nombre_comun": "Trips",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 56,
+    "planta": "Vid",
+    "clasificacion": "Virus",
+    "nombre_comun": "Aclaramiento_de_nervios",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 57,
+    "planta": "Vid",
+    "clasificacion": "Virus",
+    "nombre_comun": "Enrollamiento_Virotico",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 58,
+    "planta": "Vid",
+    "clasificacion": "Virus",
+    "nombre_comun": "Entrenudo_Corto",
+    "nombre_cientifico": ""
+  },
+  {
+    "_id": 59,
+    "planta": "Vid",
+    "clasificacion": "Virus",
+    "nombre_comun": "Madera_Rizada_Madera_Acorchada",
+    "nombre_cientifico": ""
+  }
+]

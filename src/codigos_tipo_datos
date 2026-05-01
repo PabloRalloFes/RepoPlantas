@@ -1,0 +1,11 @@
+Códigos de datos:
+Validada - es un campo booleano que no aparecerá en la tabla de campos
+Imagen principal - Sin código, no se puede modificar de ninguna forma y no está en la tabla de campos
+
+Enfermedad (Etiqueta exclusivo) - 0
+Numérico - 1
+Texto - 2
+Imagen - 3
+Etiquetas - 4 - Nombre de la colección con las etiquetas
+Booleano - 5
+Compuesto - 6 - Nombre de los campos

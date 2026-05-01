@@ -1,0 +1,7 @@
+.venv/
+build/
+stage/
+dist/
+*.tar.gz
+flet_minimal_test/
+__pycache__/
