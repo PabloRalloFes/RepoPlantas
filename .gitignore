@@ -1,0 +1,5 @@
+.venv/
+build/
+stage/
+dist/
+*.tar.gz
