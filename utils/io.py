@@ -24,13 +24,21 @@ def plot_history(history, path):
 
     plt.figure(figsize=(10, 6))
 
-    if "train_loss_planta" in history and "val_loss_planta" in history:
-        plt.plot(history["train_loss_planta"], label="Train Loss - planta")
-        plt.plot(history["val_loss_planta"], label="Val Loss - planta")
-
-    if "train_loss_enfermedad" in history and "val_loss_enfermedad" in history:
-        plt.plot(history["train_loss_enfermedad"], label="Train Loss - Enfermedad")
-        plt.plot(history["val_loss_enfermedad"], label="Val Loss - Enfermedad")
+    if "train_loss" in history and "val_loss" in history:
+        plt.plot(history["train_loss"], label="Train Loss")
+        plt.plot(history["val_loss"], label="Val Loss")
+    elif "train_loss_class" in history and "val_loss_class" in history:
+        plt.plot(history["train_loss_class"], label="Train Loss")
+        plt.plot(history["val_loss_class"], label="Val Loss")
+    else:
+        legacy_series = [
+            ("train_loss_planta", "val_loss_planta", "Train Loss - planta", "Val Loss - planta"),
+            ("train_loss_enfermedad", "val_loss_enfermedad", "Train Loss - enfermedad", "Val Loss - enfermedad"),
+        ]
+        for train_key, val_key, train_label, val_label in legacy_series:
+            if train_key in history and val_key in history:
+                plt.plot(history[train_key], label=train_label)
+                plt.plot(history[val_key], label=val_label)
 
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
