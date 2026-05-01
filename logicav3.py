@@ -26,12 +26,15 @@ class LogicaApp:
     
     ### NUEVOS ###
 
-    def predecir_imagen(self, modelo_seleccionado, known_planta=None):
+    def predecir_imagen(self, modelo_seleccionado):
+        """
+        Predice la clase de una imagen usando el modelo especificado.
+        Retorna: {"class_predicted": "...", "confidence": 0.95}
+        """
         url_predict = self.crear_url("/predict_image", self.url_api)
         payload = {
             "imagen": self.foto_b64, 
             "modelo": modelo_seleccionado,
-            "planta": known_planta,
         }
         res = self._post(url_predict, json=payload, verify=False, timeout=10.0)
         return res.json()
@@ -76,15 +79,23 @@ class LogicaApp:
         res = self._post(url_subida, files=files, data=data, verify=False, timeout=600)
         return res.json()
 
-    def obtener_opciones_plantas(self):
-        url = self.crear_url("/opciones_plantas", self.url_api)
+    def get_classification_classes(self):
+        """
+        Obtiene la lista única de clases disponibles para clasificación.
+        Retorna una lista de strings con formato: ["Clase1", "Clase2", ...]
+        """
+        url = self.crear_url("/classification_classes", self.url_api)
         res = self._get(url, verify=False, timeout=10.0)
         return res.json()
 
+    # Métodos legacy para compatibilidad
+    def obtener_opciones_plantas(self):
+        """Deprecated: usar get_classification_classes() en su lugar"""
+        return self.get_classification_classes()
+
     def obtener_opciones_enfermedades(self):
-        url = self.crear_url("/opciones_enfermedades", self.url_api)
-        res = self._get(url, verify=False, timeout=10.0)
-        return res.json()
+        """Deprecated: usar get_classification_classes() en su lugar"""
+        return self.get_classification_classes()
 
     def obtener_opciones_formatos(self):
         url = self.crear_url("/opciones_formatos", self.url_api)
@@ -518,28 +529,17 @@ class LogicaApp:
         
 
     
-    def avanzar_puntero_repo(self, reverso=False):
-
-        if not reverso and len(self.batch_archivos) == self.max_archivos:
-            self.puntero_repo += self.max_archivos
-            return True
-
-        if reverso and self.puntero_repo > 0:
-            self.puntero_repo -= self.max_archivos
-            return True
-        
-        return False
-
-
-    def recuperar_n_archivos(self, planta=None, enfermedad=None, formato=None, fuente=None):
+    def recuperar_n_archivos(self, class_label=None, formato=None, fuente=None):
+        """
+        Recupera n archivos sin validar. Clasificación simple: un solo filtro class_label.
+        """
         url_recuperar_n_img = self.crear_url("/servir_n_archivos_sin_validar", self.url_api)
 
         params = {
             "inicio": self.puntero_repo,
             "n_archivos": self.max_archivos
         }
-        if planta: params["planta"] = planta
-        if enfermedad: params["enfermedad"] = enfermedad
+        if class_label: params["class_label"] = class_label
         if formato: params["formato"] = formato
         if fuente: params["fuente"] = fuente
 

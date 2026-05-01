@@ -345,14 +345,14 @@ def get_next_id(db, name="clases_counter"):
 @app.route("/predict_image", methods=["POST"])
 def predict_image():
     """
-    Endpoint para predecir planta y enfermedad a partir de una imagen base64.
+    Endpoint para predecir una clase/etiqueta a partir de una imagen base64.
+    Clasificación simple: una única salida por imagen.
     Requiere que el modelo y la configuración estén definidos en una carpeta de experimento.
     """
     try:
         data = request.get_json(force=True)
         image_b64 = data.get("imagen")
         modelo_seleccionado = data.get("modelo", None)
-        known_planta = data.get("planta", None)
 
         if not image_b64 or not modelo_seleccionado:
             return jsonify({"success": False, "error": "Faltan datos para la predicción"}), 400
@@ -369,7 +369,6 @@ def predict_image():
         experiment_path = os.path.join("./experiments", experiment_path)
         config_path = os.path.join(experiment_path, "config_final.yaml")
         modelo_path = os.path.join("./models", modelo_seleccionado)
-        data_path = os.path.join(experiment_path, "data")
 
         if not os.path.exists(modelo_path):
             return jsonify({"success": False, "error": f"El modelo '{modelo_seleccionado}' no existe"}), 404
@@ -379,10 +378,15 @@ def predict_image():
         config = load_yaml_config(config_path)
 
         # Completar nombres de clases desde la base de datos si están en "all"
-        if config["plantas"] == "all":
-            config["plantas"] = sorted(db["Clases"].distinct("planta"))
-        if config["enfermedades"] == "all":
-            config["enfermedades"] = sorted(db["Clases"].distinct("nombre_comun"))
+        if config.get("classes") == "all" or config.get("classes") is None:
+            clases_docs = list(db["Clases"].find({}, {"_id": 0, "planta": 1, "nombre_comun": 1}))
+            clases_unicas = set()
+            for doc in clases_docs:
+                planta = doc.get("planta", "").strip()
+                nombre_comun = doc.get("nombre_comun", "").strip()
+                if planta and nombre_comun:
+                    clases_unicas.add(f"{planta}___{nombre_comun}")
+            config["classes"] = sorted(clases_unicas)
 
         # Cargar modelo
         model = build_model(config)
@@ -398,45 +402,23 @@ def predict_image():
         ])
         tensor_img = transform(image).unsqueeze(0).to(device)
 
-        # Inferencia
+        # Inferencia - Clasificación simple (una cabeza, una salida)
         with torch.no_grad():
-            out_cultivo, out_enfermedad = model(tensor_img)
-            probs_c = torch.softmax(out_cultivo, dim=1).squeeze()
-            probs_e = torch.softmax(out_enfermedad, dim=1).squeeze()
+            output = model(tensor_img)
+            probs = torch.softmax(output, dim=1).squeeze()
 
-            cultivo_to_idx = {c: i for i, c in enumerate(config["plantas"])}
-            enfermedad_to_idx = {e: i for i, e in enumerate(config["enfermedades"])}
-            idx_to_cultivo = {i: c for c, i in cultivo_to_idx.items()}
-            idx_to_enfermedad = {i: e for e, i in enfermedad_to_idx.items()}
+            class_to_idx = {c: i for i, c in enumerate(config["classes"])}
+            idx_to_class = {i: c for c, i in class_to_idx.items()}
 
-            if known_planta:
-                if known_planta not in cultivo_to_idx:
-                    return jsonify({"success": False, "error": f"La planta '{known_planta}' no está en el config."}), 400
-                idx_cultivo = cultivo_to_idx[known_planta]
-                cultivo_pred = known_planta
-                prob_planta = 1.0  # La planta es conocida, por lo que su probabilidad es 100%
-            else:
-                idx_cultivo = probs_c.argmax().item()
-                cultivo_pred = idx_to_cultivo[idx_cultivo]
-                prob_planta = probs_c[idx_cultivo].item()
-
-            # Filtrar enfermedades válidas para ese cultivo
-            df_train = pd.read_csv(Path(data_path) / "train.csv")
-            combinaciones_validas = set(zip(df_train["planta"], df_train["nombre_comun"]))
-            enfermedades_validas = [e for (p, e) in combinaciones_validas if p == cultivo_pred]
-
-            probs_filtradas = {e: probs_e[enfermedad_to_idx[e]].item() for e in enfermedades_validas}
-            enfermedad_pred = max(probs_filtradas, key=probs_filtradas.get)
-            prob_enfermedad = probs_filtradas[enfermedad_pred]
-
-            # Calcular probabilidad conjunta si se proporciona known_planta
-            probabilidad_final = prob_enfermedad * prob_planta if not known_planta else prob_enfermedad
+            # Predicción: tomar la clase con mayor probabilidad
+            idx_class = probs.argmax().item()
+            class_prediction = idx_to_class[idx_class]
+            confidence = probs[idx_class].item()
 
         return jsonify({
             "success": True,
-            "planta_predicha": cultivo_pred,
-            "enfermedad_predicha": enfermedad_pred,
-            "probabilidad": probabilidad_final
+            "class_predicted": class_prediction,
+            "confidence": confidence
         })
 
     except Exception as e:
@@ -458,15 +440,21 @@ def validar_imagen():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
     
-@app.route("/opciones_plantas", methods=["GET"])
-def opciones_plantas():
-    plantas = sorted(db.Clases.distinct("planta"))
-    return jsonify(plantas)
-
-@app.route("/opciones_enfermedades", methods=["GET"])
-def opciones_enfermedades():
-    enfermedades = sorted(db.Clases.distinct("nombre_comun"))
-    return jsonify(enfermedades)
+@app.route("/classification_classes", methods=["GET"])
+def classification_classes():
+    """
+    Devuelve la lista única de todas las clases/etiquetas disponibles para clasificación simple.
+    Combina valores históricos de 'planta' y 'nombre_comun' en una lista única.
+    """
+    # Obtener todas las combinaciones únicas planta___nombre_comun como clase única
+    clases_docs = list(db.Clases.find({}, {"_id": 0, "planta": 1, "nombre_comun": 1}))
+    clases_unicas = set()
+    for doc in clases_docs:
+        planta = doc.get("planta", "").strip()
+        nombre_comun = doc.get("nombre_comun", "").strip()
+        if planta and nombre_comun:
+            clases_unicas.add(f"{planta}___{nombre_comun}")
+    return jsonify(sorted(clases_unicas))
 
 @app.route("/opciones_formatos", methods=["GET"])
 def opciones_formatos():
@@ -578,30 +566,29 @@ def opciones_filtros_docs():
         formato_opciones = []
         mapeos_ids = {}
 
-        # Campos principales: se obtienen siempre desde sus colecciones completas,
+        # Campos principales: clases únicas combinadas para clasificación simple
         # sin depender del muestreo de Docs.
         clases_todas = list(db["Clases"].find({}, {"_id": 1, "planta": 1, "nombre_comun": 1}))
 
-        plantas_todas = sorted(
-            set(str(c.get("planta")) for c in clases_todas if is_scalar_value(c.get("planta"))),
-            key=lambda x: x.lower(),
-        )
-        if plantas_todas:
-            filtros_multiseleccion["planta"] = plantas_todas
-            mapeos_ids["planta"] = {
-                p: [c["_id"] for c in clases_todas if str(c.get("planta")) == p]
-                for p in plantas_todas
-            }
+        # Construir clases únicas: combinación planta___nombre_comun
+        clases_unicas = set()
+        class_to_ids = {}
+        for c in clases_todas:
+            planta = str(c.get("planta", "")).strip()
+            nombre_comun = str(c.get("nombre_comun", "")).strip()
+            if planta and nombre_comun:
+                class_label = f"{planta}___{nombre_comun}"
+                clases_unicas.add(class_label)
+                if class_label not in class_to_ids:
+                    class_to_ids[class_label] = []
+                class_to_ids[class_label].append(c["_id"])
 
-        enfermedades_todas = sorted(
-            set(str(c.get("nombre_comun")) for c in clases_todas if is_scalar_value(c.get("nombre_comun"))),
-            key=lambda x: x.lower(),
-        )
-        if enfermedades_todas:
-            filtros_multiseleccion["nombre_comun"] = enfermedades_todas
-            mapeos_ids["nombre_comun"] = {
-                e: [c["_id"] for c in clases_todas if str(c.get("nombre_comun")) == e]
-                for e in enfermedades_todas
+        clases_ordenadas = sorted(clases_unicas, key=lambda x: x.lower())
+        if clases_ordenadas:
+            filtros_multiseleccion["class_label"] = clases_ordenadas
+            mapeos_ids["class_label"] = {
+                cl: class_to_ids.get(cl, [])
+                for cl in clases_ordenadas
             }
 
         fuentes_todas_docs = list(db["Fuente"].find({}, {"_id": 1, "fuente": 1}))
@@ -621,12 +608,12 @@ def opciones_filtros_docs():
             }
 
         for key in keys_permitidas:
-            # 'clase' se trata aparte para mostrar planta + nombre_comun.
-            if key == "clase":
+            # Omitir 'clase', 'planta' y 'nombre_comun' - ya procesados como class_label único
+            if key in {"clase", "planta", "nombre_comun"}:
                 continue
 
             # Estos campos se construyen desde sus colecciones completas.
-            if key in {"planta", "nombre_comun", "fuente"}:
+            if key == "fuente":
                 continue
 
             raw_values = [v for v in db["Docs"].distinct(key) if is_scalar_value(v)]
