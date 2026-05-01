@@ -1,0 +1,224 @@
+\documentclass[11pt,spanish,listoffigures,listoftables]{tfgetsinf}
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=cyan}
+
+\title{PlantAID: Sistema de Clasificación de Enfermedades de Plantas}
+\author{Pablo Rallo Fes}
+\tutor{Por definir}
+\curs{2025-2026}
+
+\keywords{clasificación de plantas, enfermedades de plantas, aprendizaje profundo, MobileNetV2, visión por computadora}
+           {clasificación de plantas, enfermedades de plantas, aprendizaje profundo, MobileNetV2, visión por computadora}
+           {plant classification, plant diseases, deep learning, MobileNetV2, computer vision}
+
+\begin{document}
+
+\begin{abstract}
+PlantAID es un sistema para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas mediante aprendizaje profundo. La memoria documenta el problema, la solución propuesta, la arquitectura software, la experimentación realizada y la evaluación de los resultados.
+\end{abstract}
+
+\begin{abstract}[spanish]
+PlantAID es un sistema para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas mediante aprendizaje profundo. La memoria documenta el problema, la solución propuesta, la arquitectura software, la experimentación realizada y la evaluación de los resultados.
+\end{abstract}
+
+\begin{abstract}[english]
+PlantAID is a system for collecting, labeling, and classifying images of healthy and diseased plant leaves using deep learning. This thesis describes the problem, the proposed solution, the software architecture, the experiments, and the evaluation of the results.
+\end{abstract}
+
+\mainmatter
+
+\chapter{Introducción}
+\section{Motivación y contexto del problema}
+Explicar la importancia de la detección temprana de enfermedades en plantas y el interés práctico del proyecto.
+
+\section{Objetivos generales y específicos}
+Describir qué se pretende conseguir con el sistema y qué metas concretas se persiguen.
+
+\section{Alcance del trabajo y limitaciones}
+Delimitar qué incluye la solución y qué queda fuera del alcance del TFG.
+
+\section{Impacto esperado}
+Justificar el valor técnico y aplicado del sistema en un entorno real o semi-real.
+
+\section{Metodología general de trabajo}
+Resumir la forma de abordar el proyecto: recogida de datos, desarrollo, experimentación y validación.
+
+\section{Estructura de la memoria}
+Explicar brevemente el contenido de cada capítulo.
+
+\section{\textit{Duda}: colaboraciones, agradecimientos o participación externa}
+Dejar esta sección como opcional hasta decidir si la memoria debe incluirla.
+
+\chapter{Marco teórico y estado del arte}
+\section{Visión por computadora aplicada a agricultura}
+Presentar el contexto científico y técnico del problema.
+
+\section{Aprendizaje profundo y redes convolucionales}
+Explicar los conceptos básicos necesarios para entender la solución.
+
+\section{Transfer learning y MobileNetV2}
+Describir por qué se usa transferencia de aprendizaje y por qué se eligió esta arquitectura.
+
+\section{Clasificación multiclase y enfoque multitarea}
+Justificar la predicción conjunta de cultivo y enfermedad.
+
+\section{Dataset PlantVillage y datasets reales de campo}
+Resumir las fuentes de datos usadas y sus diferencias.
+
+\section{\textit{Duda}: convenciones de notación, abreviaturas y terminología}
+Sección opcional si finalmente conviene explicitar notación o glosario.
+
+\chapter{Análisis del problema y requisitos}
+\section{Casos de uso del sistema}
+Definir los escenarios principales de uso de la aplicación.
+
+\section{Roles de usuario: usuario, etiquetador y administrador}
+Explicar las funciones disponibles para cada rol.
+
+\section{Requisitos funcionales}
+Listar las capacidades que debe ofrecer el sistema.
+
+\section{Requisitos no funcionales}
+Recoger aspectos de seguridad, mantenibilidad, rendimiento y usabilidad.
+
+\section{Criterios de calidad y seguridad}
+Explicar las medidas adoptadas para asegurar un funcionamiento robusto.
+
+\chapter{Diseño y arquitectura de la solución}
+\section{Visión global del sistema}
+Presentar la organización general del proyecto y sus componentes.
+
+\section{Arquitectura backend, frontend y servicios auxiliares}
+Describir la relación entre la API, la aplicación gráfica y los scripts auxiliares.
+
+\section{Diseño de la comunicación entre aplicación y API}
+Explicar el flujo HTTP/JSON y el papel del módulo de conexión.
+
+\section{Modelo de datos y persistencia en MongoDB}
+Describir las colecciones, campos y relaciones principales.
+
+\section{Despliegue y contenedorización con Docker}
+Explicar cómo se empaqueta y despliega el sistema.
+
+\chapter{Datos y preparación experimental}
+\section{Fuentes de datos y organización del repositorio}
+Indicar qué datasets se usan y cómo están organizados en el repositorio.
+
+\section{Taxonomía de plantas y enfermedades}
+Explicar cómo se codifican las clases y sus relaciones.
+
+\section{Limpieza, validación e importación de imágenes}
+Describir el flujo de incorporación de imágenes a la base de datos y al almacenamiento local.
+
+\section{Preprocesamientos: color, grayscale y segmentado}
+Explicar las variantes de imagen consideradas en los experimentos.
+
+\section{División train/validation/test}
+Justificar el criterio de partición de los datos.
+
+\section{Balanceo de clases y control de sesgos}
+Describir las estrategias para evitar clases dominantes y resultados engañosos.
+
+\chapter{Modelo y metodología de entrenamiento}
+\section{Arquitectura multitarea basada en MobileNetV2}
+Describir la red base, las cabezas de salida y la lógica multitarea.
+
+\section{Estrategias de fine-tuning}
+Comparar congelado parcial, fine-tuning de capas superiores y ajuste completo.
+
+\section{Función de pérdida, optimización y métricas}
+Explicar cómo se entrena el modelo y cómo se evalúa.
+
+\section{Gestión de experimentos y configuración reproducible}
+Describir el sistema de configuración por YAML y el versionado experimental.
+
+\section{Scripts de entrenamiento e inferencia}
+Resumir los scripts utilizados para entrenar, evaluar y predecir.
+
+\chapter{Implementación del sistema}
+\section{Backend Flask y endpoints principales}
+Describir los servicios expuestos por la API.
+
+\section{Interfaz de usuario Flet}
+Explicar la aplicación de escritorio/móvil y sus pantallas principales.
+
+\section{Flujo de autenticación y roles}
+Detallar el acceso y las acciones permitidas según el tipo de usuario.
+
+\section{Herramientas de administración, carga y mantenimiento}
+Recoger los scripts y utilidades para operar el sistema.
+
+\section{Integración con modelos de predicción}
+Explicar cómo se invocan y consumen los modelos entrenados.
+
+\chapter{Experimentación y resultados}
+\section{Experimentos de referencia}
+Presentar los experimentos base y su configuración.
+
+\section{Comparativa entre formatos de imagen}
+Analizar el impacto de color, escala de grises y segmentación.
+
+\section{Comparativa entre configuraciones de entrenamiento}
+Comparar variantes de datos, épocas, fine-tuning y pesos de clase.
+
+\section{Resultados sobre datos reales y generalización}
+Valorar el comportamiento en imágenes más cercanas al caso de uso real.
+
+\section{Análisis de errores y casos mal clasificados}
+Estudiar los fallos más relevantes y sus patrones.
+
+\section{Discusión de resultados}
+Interpretar los hallazgos principales y sus implicaciones.
+
+\chapter{Validación y despliegue}
+\section{Validación funcional del sistema}
+Comprobar que las funciones principales trabajan como se espera.
+
+\section{Validación del despliegue en Docker}
+Verificar el arranque, la persistencia y la operación del sistema en contenedores.
+
+\section{Reproducibilidad de los experimentos}
+Asegurar que las ejecuciones pueden repetirse con la misma configuración.
+
+\section{\textit{Duda}: evidencias de colaboración externa o validación por terceros}
+Sección opcional si finalmente se documentan revisiones externas o validación adicional.
+
+\chapter{Conclusiones y trabajo futuro}
+\section{Conclusiones}
+Sintetizar las aportaciones y aprendizajes principales.
+
+\section{Limitaciones}
+Reconocer las restricciones del sistema y del estudio experimental.
+
+\section{Trabajo futuro}
+Proponer extensiones técnicas y funcionales.
+
+\chapter{Apéndices}
+\section{Instrucciones de instalación y ejecución}
+Recoger los pasos necesarios para preparar el entorno y levantar el sistema.
+
+\section{Comandos de reproducción de experimentos}
+Listar los comandos o procedimientos para replicar resultados.
+
+\section{Fragmentos de código clave}
+Incluir extractos útiles de los módulos más importantes.
+
+\section{Figuras y tablas complementarias}
+Añadir material de apoyo que no conviene llevar al cuerpo principal.
+
+\backmatter
+\begin{thebibliography}{10}
+\bibitem{mohanty2016}
+S. P. Mohanty, D. P. Hughes y M. Salathé.
+\newblock Using deep learning for image-based plant disease detection.
+\newblock \textit{Frontiers in Plant Science}, 2016.
+
+\bibitem{mobilenetv2}
+M. Sandler et al.
+\newblock MobileNetV2: Inverted Residuals and Linear Bottlenecks.
+\newblock \textit{CVPR}, 2018.
+\end{thebibliography}
+
+\end{document}

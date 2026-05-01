@@ -151,6 +151,10 @@ def prepare_data_splits(db, config, save_dir):
     if fuentes_ids:
         docs_query["fuente"] = {"$in": fuentes_ids}
 
+    solo_validadas = bool(config.get("solo_validadas", False))
+    if solo_validadas:
+        docs_query["validada"] = True
+
     # Filtros dinámicos adicionales: cualquier clave del config fuera del bloque reservado.
     reserved_keys = {
         "batch_size",
@@ -171,6 +175,7 @@ def prepare_data_splits(db, config, save_dir):
         "peso_planta",
         "peso_enfermedad",
         "filtros_docs",
+        "solo_validadas",
     }
 
     for key, raw_selected in config.items():
@@ -206,6 +211,13 @@ def prepare_data_splits(db, config, save_dir):
     # Obtener documentos válidos
     docs = list(db["Docs"].find(docs_query))
 
+    if not docs:
+        if solo_validadas:
+            raise ValueError(
+                "No se han encontrado documentos para entrenar con los filtros actuales usando solo imágenes validadas."
+            )
+        raise ValueError("No se han encontrado documentos para entrenar con los filtros actuales.")
+
     print(f"Se han encontrado {len(docs)} documentos con los filtros configurados.")
 
     # Agrupar por clase
@@ -214,6 +226,13 @@ def prepare_data_splits(db, config, save_dir):
         clase_id = doc.get("clase")
         if clase_id in id_to_info:
             docs_por_clase.setdefault(clase_id, []).append(doc)
+
+    if not docs_por_clase:
+        if solo_validadas:
+            raise ValueError(
+                "No hay clases con imágenes disponibles tras aplicar el filtro de solo imágenes validadas."
+            )
+        raise ValueError("No hay clases con imágenes disponibles tras aplicar los filtros seleccionados.")
 
     print(f"Se han encontrado {len(docs_por_clase)} clases con imágenes en formato {formato_nombre}.")
 
@@ -256,6 +275,13 @@ def prepare_data_splits(db, config, save_dir):
                 "clase_id": clase_id,  # para trazabilidad
                 "subset": subset
             })
+
+    if not split_data:
+        if solo_validadas:
+            raise ValueError(
+                "No se han podido generar muestras para train/val/test con solo imágenes validadas."
+            )
+        raise ValueError("No se han podido generar muestras para train/val/test con los filtros seleccionados.")
 
 
     config["plantas"] = plantas_filtradas
