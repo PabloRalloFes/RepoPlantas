@@ -11,7 +11,7 @@ from torchvision import transforms
 def prepare_data_splits(db, config, save_dir):
     """
     Prepara los CSVs con rutas a imágenes y etiquetas para train/val/test.
-    La etiqueta es única: class_label = planta___nombre_comun.
+    La etiqueta es única: class_label = nombre/clase de la colección Clases.
     """
     fuentes = config.get("fuentes", ["all"])
     imagenes_por_clase = config["imagenes_por_clase"]
@@ -49,7 +49,7 @@ def prepare_data_splits(db, config, save_dir):
 
     def pick_label_field(collection_name, field_name):
         sample = db[collection_name].find_one({}, {"_id": 0}) or {}
-        priority = [field_name, "nombre", "name", "valor", "descripcion", "fuente", "formato", "planta", "nombre_comun"]
+        priority = [field_name, "nombre", "clase", "class_label", "name", "valor", "descripcion", "fuente", "formato"]
         for priority_field in priority:
             if priority_field in sample:
                 return priority_field
@@ -87,14 +87,15 @@ def prepare_data_splits(db, config, save_dir):
 
     collection_names_lower = {c.lower(): c for c in db.list_collection_names()}
 
-    clases_todas = list(db["Clases"].find({}, {"_id": 1, "planta": 1, "nombre_comun": 1}))
+    clases_todas = list(db["Clases"].find({}, {"_id": 1, "class_label": 1, "nombre": 1, "clase": 1}))
     class_docs = []
     for doc in clases_todas:
-        planta = str(doc.get("planta", "")).strip()
-        nombre_comun = str(doc.get("nombre_comun", "")).strip()
-        if planta and nombre_comun:
-            class_label = f"{planta}___{nombre_comun}"
-            class_docs.append({"_id": doc["_id"], "class_label": class_label, "planta": planta, "nombre_comun": nombre_comun})
+        class_label = str(doc.get("class_label", "")).strip()
+        nombre = str(doc.get("nombre", "")).strip()
+        clase = str(doc.get("clase", "")).strip()
+        class_label = class_label or clase or nombre
+        if class_label:
+            class_docs.append({"_id": doc["_id"], "class_label": class_label, "nombre": nombre or class_label, "clase": clase or class_label})
 
     if not class_docs:
         raise ValueError("No se han encontrado clases válidas en la colección Clases.")
@@ -246,8 +247,8 @@ def prepare_data_splits(db, config, save_dir):
             split_data.append({
                 "imagen_rgb": ruta_local,
                 "class_label": class_info["class_label"],
-                "planta": class_info["planta"],
-                "nombre_comun": class_info["nombre_comun"],
+                "nombre": class_info["nombre"],
+                "clase": class_info["clase"],
                 "clase_id": clase_id,
                 "subset": subset,
             })
@@ -293,7 +294,7 @@ class GenericDataset(Dataset):
         elif "class_label" in row:
             class_label = row["class_label"]
         else:
-            class_label = f"{row['planta']}___{row['nombre_comun']}"
+            class_label = row.get("class_label") or row.get("clase") or row.get("nombre")
 
         label = self.class_to_idx[class_label]
         image = Image.open(image_path).convert("RGB")

@@ -1,0 +1,17 @@
+[
+  {
+    "_id": 0,
+    "nombre": "Inofensiva",
+    "clase": "Inofensiva"
+  },
+  {
+    "_id": 1,
+    "nombre": "Neutra",
+    "clase": "Neutra"
+  },
+  {
+    "_id": 2,
+    "nombre": "Peligrosa",
+    "clase": "Peligrosa"
+  }
+]

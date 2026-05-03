@@ -23,7 +23,7 @@ def _normalize_local_mongo_uri(uri: str) -> str:
 
     return uri
 
-def connect_to_database(uri=None, db_name="Repositorio_Plantas"):
+def connect_to_database(uri=None, db_name="Demo_Grietas"):
     """Conecta a MongoDB y devuelve la instancia de base de datos."""
     if uri is None:
         uri = os.getenv("URL_BBDD", "mongodb://localhost:27017/")

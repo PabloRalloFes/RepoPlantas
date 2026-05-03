@@ -32,12 +32,12 @@ def compare_experiments(experiments):
     comparison_folder = os.path.join(base_path, "comparison", "_vs_".join(experiments))
     os.makedirs(comparison_folder, exist_ok=True)
 
-    # Crear gráfico combinado para las métricas de accuracy
-    combined_metrics = ["accuracy_planta", "accuracy_enfermedad", "accuracy_combinada"]
+    # Crear gráfico combinado para las métricas principales de clasificación simple.
+    combined_metrics = ["accuracy", "f1", "precision", "recall"]
     x = range(len(experiments))
 
     plt.figure()
-    width = 0.2  # Ancho de las barras
+    width = 0.18
 
     for i, metric in enumerate(combined_metrics):
         values = []
@@ -45,43 +45,18 @@ def compare_experiments(experiments):
             if "test" in all_metrics[experiment] and metric in all_metrics[experiment]["test"]:
                 values.append(all_metrics[experiment]["test"][metric])
             else:
-                values.append(0)  # Valor por defecto si la métrica no está presente
+                values.append(0)
 
         plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
 
-    plt.title("Comparación de Accuracy (Planta, Enfermedad, Combinada)")
+    plt.title("Comparación de métricas de clasificación")
     plt.xlabel("Experimentos")
-    plt.ylabel("Accuracy")
-    plt.xticks([pos + width for pos in x], experiments)
+    plt.ylabel("Valor")
+    plt.xticks([pos + width * 1.5 for pos in x], experiments)
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(os.path.join(comparison_folder, "comparison_accuracy_combined.png"))
-    plt.close()
-
-    # Crear gráfico combinado para las métricas de F1-Score
-    f1_metrics = ["f1_planta", "f1_enfermedad"]
-    plt.figure()
-    width = 0.3  # Ancho de las barras
-
-    for i, metric in enumerate(f1_metrics):
-        values = []
-        for experiment in experiments:
-            if "test" in all_metrics[experiment] and metric in all_metrics[experiment]["test"]:
-                values.append(all_metrics[experiment]["test"][metric])
-            else:
-                values.append(0)  # Valor por defecto si la métrica no está presente
-
-        plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
-
-    plt.title("Comparación de F1-Score (Planta y Enfermedad)")
-    plt.xlabel("Experimentos")
-    plt.ylabel("F1-Score")
-    plt.xticks([pos + width / 2 for pos in x], experiments)
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(os.path.join(comparison_folder, "comparison_f1_combined.png"))
+    plt.savefig(os.path.join(comparison_folder, "comparison_metrics.png"))
     plt.close()
 
     # Restaurar gráfico de history

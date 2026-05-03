@@ -23,18 +23,18 @@ for e in etiquetas:
     r = requests.post(f"{URL}/add_etiqueta", json=e)
     print(r.status_code, r.json())
 
-with open("src/clases_combinadas.json", "r", encoding="utf-8") as f:
+with open("src/clases_peligro.json", "r", encoding="utf-8") as f:
     clases = json.load(f)
 
 for clase in sorted(clases, key=lambda c: c["_id"]):
     payload = {
         "coleccion": "Clases",
         "etiqueta": {
-            "clasificacion": clase.get("clasificacion",""),
-            "planta": clase["planta"],
-            "nombre_comun": clase["nombre_comun"],
-            "nombre_cientifico": clase.get("nombre_cientifico",""),
+            "nombre": clase.get("nombre", clase.get("clase", "")),
+            "clase": clase.get("clase", clase.get("nombre", "")),
+            "clasificacion": clase.get("clasificacion", ""),
+            "nombre_cientifico": clase.get("nombre_cientifico", ""),
         }
     }
     r = requests.post(f"{URL}/add_etiqueta", json=payload)
-    print(f'{clase["_id"]:>3} {clase["planta"]} - {clase["nombre_comun"]} → {r.status_code}')
+    print(f'{clase["_id"]:>3} {payload["etiqueta"]["nombre"]} → {r.status_code}')

@@ -258,6 +258,63 @@ Esto permite comparar fácilmente diferentes configuraciones (por ejemplo, cambi
 
 Toda la lógica del pipeline está dividida en módulos reutilizables dentro de `utils/` y `scripts/`, lo que facilita su mantenimiento y escalabilidad.
 
+---
+
+## ✅ Guía de comprobación manual
+
+Esta lista es la mejor forma de validar que el refactor a clasificación simple sigue funcionando de punta a punta.
+
+### 1. Preparar la demo mínima
+
+- Ejecuta `python scripts/setup_demo_minimal.py --experiment-name DemoMinimal --db-name Demo_Grietas --class-names Inofensiva Neutra Peligrosa --images-per-class 1 --overwrite`.
+- Comprueba que se crea `experiments/DemoMinimal/` con `config.yaml`, `run_experiment.py`, `data/`, `models/` y `results/`.
+- Verifica que la base de datos demo se llama `Demo_Grietas` y contiene varias clases con `nombre` y `clase` iguales a `Inofensiva`, `Neutra` y `Peligrosa`.
+
+### 2. Arrancar backend y app
+
+- Inicia la API con `python run_server.py --https --dev`.
+- Abre la app con `python main_app.py`.
+- Comprueba que la pantalla inicial carga sin errores de conexión.
+
+### 3. Probar predicción de una sola clase
+
+- Sube una imagen manualmente desde la app.
+- Lanza una predicción con un modelo disponible.
+- Verifica que el resultado muestra solo `Clase` y `Confianza`, no dos salidas separadas.
+- Comprueba que el valor de confianza tiene sentido y que la clase devuelta coincide con una etiqueta conocida o plausible.
+
+### 4. Probar filtros de imágenes
+
+- Abre la vista de etiquetado o filtrado de imágenes.
+- Selecciona una clase, un formato y una fuente.
+- Verifica que el listado cambia y que la API devuelve imágenes coherentes con el filtro.
+- Cambia el filtro a `Cualquiera` y comprueba que vuelve a mostrar resultados amplios.
+
+### 5. Probar experimentos
+
+- Abre la pantalla de experimentos.
+- Comprueba que se ve `classes` en la configuración del experimento y que no aparecen dependencias visuales de `plantas/enfermedades` en los experimentos nuevos.
+- Abre el detalle de un experimento y revisa que las métricas mostradas sean `accuracy`, `precision`, `recall` y `f1`.
+- Si el experimento es el demo, verifica que la ruta y los resultados se leen correctamente desde `experiments/DemoMinimal/`.
+
+### 6. Probar scripts auxiliares
+
+- Ejecuta `python scripts/predict_image.py <ruta_imagen> --experiment experiments/DemoMinimal` y comprueba que imprime una sola clase y una confianza.
+- Ejecuta `python scripts/compare_experiments.py <exp1> <exp2>` con dos experimentos que tengan métricas y verifica que genera el gráfico comparativo.
+
+### 7. Comprobación rápida de salud general
+
+- Repite un ciclo corto completo: login, subida de imagen, predicción, filtrado y apertura de experimento.
+- Si alguno falla, revisa primero que la URL de la API, Mongo y el modelo seleccionado sean los correctos.
+
+### Resultado esperado
+
+- La app arranca.
+- La demo mínima se crea.
+- La predicción devuelve una sola clase.
+- Los filtros funcionan con `class_label`.
+- Los experimentos y scripts ya no dependen del flujo antiguo de dos salidas.
+
 A través de la app se puede ejecutar todo este proceso de manera sencilla, además de visualizar los resultados y comparar experimentos de forma preliminar.
 
 ---

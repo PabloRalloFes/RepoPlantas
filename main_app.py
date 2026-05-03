@@ -346,14 +346,13 @@ if __name__ == "__main__":
 
         ### NUEVAS ###
 
-        def predecir_foto(modelo_seleccionado, known_planta=None):
-            if known_planta == "Ninguna":
-                known_planta = None
-            resultado = logica_app.predecir_imagen(modelo_seleccionado, known_planta)
+        def predecir_foto(modelo_seleccionado, known_class=None):
+            if known_class == "Ninguna":
+                known_class = None
+            resultado = logica_app.predecir_imagen(modelo_seleccionado)
             if resultado["success"]:
-                pred = resultado["enfermedad_predicha"]
-                planta = resultado["planta_predicha"]
-                prob = round(resultado["probabilidad"] * 100, 2)
+                class_predicted = resultado["class_predicted"]
+                confidence = round(resultado["confidence"] * 100, 2)
                 page.open(ft.AlertDialog(
                     modal=True,
                     title=ft.Text("Predicción del modelo", weight=ft.FontWeight.BOLD),
@@ -361,9 +360,8 @@ if __name__ == "__main__":
                         tight=True,
                         spacing=8,
                         controls=[
-                            ft.Row(spacing=10, controls=[ft.Text("Planta:", weight=ft.FontWeight.BOLD), ft.Text(planta)]),
-                            ft.Row(spacing=10, controls=[ft.Text("Enfermedad:", weight=ft.FontWeight.BOLD), ft.Text(pred)]),
-                            ft.Row(spacing=10, controls=[ft.Text("Probabilidad:", weight=ft.FontWeight.BOLD), ft.Text(f"{prob}%")])
+                            ft.Row(spacing=10, controls=[ft.Text("Clase:", weight=ft.FontWeight.BOLD), ft.Text(class_predicted)]),
+                            ft.Row(spacing=10, controls=[ft.Text("Confianza:", weight=ft.FontWeight.BOLD), ft.Text(f"{confidence}%")])
                         ]
                     ),
                     actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
@@ -525,17 +523,13 @@ if __name__ == "__main__":
             page.update()
 
         def abrir_dialogo_add_class(e):
-            planta_input = ft.TextField(label="Planta")
-            comun_input = ft.TextField(label="Nombre común")
-            clasif_input = ft.TextField(label="Clasificación")
-            cient_input = ft.TextField(label="Nombre científico")
+            nombre_input = ft.TextField(label="Nombre")
+            clase_input = ft.TextField(label="Clase")
 
             def confirmar_add(ev):
                 nueva = {
-                    "planta": planta_input.value.strip(),
-                    "nombre_comun": comun_input.value.strip(),
-                    "clasificacion": clasif_input.value.strip(),
-                    "nombre_cientifico": cient_input.value.strip()
+                    "nombre": nombre_input.value.strip(),
+                    "clase": clase_input.value.strip(),
                 }
                 res = logica_app.agregar_clase(nueva)
                 if res.get("success"):
@@ -564,10 +558,8 @@ if __name__ == "__main__":
                 modal=True,
                 title=ft.Text("Añadir nueva clase"),
                 content=ft.Column([
-                    planta_input,
-                    comun_input,
-                    clasif_input,
-                    cient_input,
+                    nombre_input,
+                    clase_input,
                 ], tight=True),
                 actions=[
                     ft.TextButton("Cancelar", on_click=lambda e: page.close(dialogo)),
@@ -577,15 +569,18 @@ if __name__ == "__main__":
 
             page.open(dialogo)
 
-        def aplicar_filtros_handler(page, dropdown_planta, dropdown_enfermedad, dropdown_formato, dropdown_fuente, dropdown_num_imagenes):
+        def aplicar_filtros_handler(page, dropdown_clase, dropdown_formato, dropdown_fuente, dropdown_num_imagenes):
             def _handler(e=None):
                 if not dropdown_num_imagenes.value:
                     page.open(ft.AlertDialog(title=ft.Text("Selecciona el número de imágenes")))
                     return
 
+                class_label = None
+                if dropdown_clase.value != "Cualquiera":
+                    class_label = dropdown_clase.value
+
                 logica_app.filtros_actuales = {
-                    "planta": None if dropdown_planta.value == "Cualquiera" else dropdown_planta.value,
-                    "enfermedad": None if dropdown_enfermedad.value == "Cualquiera" else dropdown_enfermedad.value,
+                    "class_label": class_label,
                     "formato": None if dropdown_formato.value == "Cualquiera" else dropdown_formato.value,
                     "fuente": None if dropdown_fuente.value == "Cualquiera" else dropdown_fuente.value,
                     "num": int(dropdown_num_imagenes.value)
@@ -1115,8 +1110,7 @@ if __name__ == "__main__":
             if hasattr(logica_app, "filtros_actuales"):
                 filtros = logica_app.filtros_actuales
                 logica_app.recuperar_n_archivos(
-                    planta=filtros.get("planta"),
-                    enfermedad=filtros.get("enfermedad"),
+                    class_label=filtros.get("class_label"),
                     formato=filtros.get("formato"),
                     fuente=filtros.get("fuente")
                 )
@@ -1164,7 +1158,12 @@ if __name__ == "__main__":
             valor_por_defecto = "none" if opcion_por_defecto is None else str(opcion_por_defecto)
             claves_disponibles = {str(opt.key) for opt in dropdown_etiquetar.options}
             dropdown_etiquetar.value = valor_por_defecto if valor_por_defecto in claves_disponibles else "none"
-            dropdown_etiquetar.update()
+            # Solo actualizar si el control ya está en la página para evitar AssertionError
+            try:
+                if dropdown_etiquetar.page is not None:
+                    dropdown_etiquetar.update()
+            except (AssertionError, AttributeError):
+                pass
 
         dropdown_etiquetar = ft.Dropdown(
             label="Etiqueta",
@@ -1249,57 +1248,63 @@ if __name__ == "__main__":
                 ))
                 return
             subida_correcta = logica_app.subir_foto(dropdown_etiquetar.value)
-            
-            if subida_correcta:
+            if isinstance(subida_correcta, dict) and subida_correcta.get("success"):
                 page.open(ft.AlertDialog(
-                    modal = True,
-                    title = ft.Text("Imagen subida correctamente"),
-                    actions = [
+                    modal=True,
+                    title=ft.Text("Imagen subida correctamente"),
+                    actions=[
                         ft.TextButton(
                             "Aceptar",
-                            on_click = lambda _: page.go("/main_usuario")
+                            on_click=lambda _: page.go("/main_usuario")
                         )
                     ]
                 ))
             else:
+                mensaje_error = subida_correcta.get("error") if isinstance(subida_correcta, dict) else "No se ha podido subir la imagen"
                 page.open(ft.AlertDialog(
-                    modal = True,
-                    title = ft.Text("No se ha podido subir la imagen"),
-                    actions = [
+                    modal=True,
+                    title=ft.Text("No se ha podido subir la imagen"),
+                    content=ft.Text(mensaje_error),
+                    actions=[
                         ft.TextButton(
                             "Aceptar",
-                            on_click = lambda _: page.go("/main_usuario")
+                            on_click=lambda _: page.go("/main_usuario")
                         )
                     ]
                 ))
 
         def obtener_logos():
-            """try:
+            if hasattr(obtener_logos, "_cache") and obtener_logos._cache is not None:
+                return obtener_logos._cache
+
+            try:
                 logos_b64 = logica_app.logos()
             except Exception:
                 logos_b64 = None
 
             if logos_b64:
-                return ft.Container(
+                obtener_logos._cache = ft.Container(
                     content=ft.Image(
-                        src_base64=logos_b64,  # Aquí llega el base64
+                        src_base64=logos_b64,
                         fit=ft.ImageFit.CONTAIN,
                     ),
                     height=100,
                     bgcolor=ft.Colors.WHITE,
-                    alignment=ft.alignment.center
-                )"""
+                    alignment=ft.alignment.center,
+                )
+                return obtener_logos._cache
 
-            return ft.Container(
+            obtener_logos._cache = ft.Container(
                 content=ft.Image(
                     src="./src/assets/logos.png",
                     fit=ft.ImageFit.CONTAIN,
-                    height=100
+                    height=100,
                 ),
                 bgcolor=ft.Colors.WHITE,
                 height=100,
-                alignment=ft.alignment.center
+                alignment=ft.alignment.center,
             )
+            return obtener_logos._cache
 
         def route_change(route):
             page.views.clear()
@@ -2446,7 +2451,7 @@ if __name__ == "__main__":
                                                                     text_align=ft.TextAlign.CENTER
                                                                 ),
                                                                 ft.Text(
-                                                                    "Visualiza y gestiona las clases de plantas y enfermedades disponibles",
+                                                                    "Visualiza y gestiona las clases disponibles",
                                                                     size=12,
                                                                     color=ft.Colors.GREY_300,
                                                                     text_align=ft.TextAlign.CENTER
@@ -2491,13 +2496,11 @@ if __name__ == "__main__":
                 )
 
             if page.route == "/main_etiquetador/filtros":
-                plantas = logica_app.obtener_opciones_plantas()
-                enfermedades = logica_app.obtener_opciones_enfermedades()
+                clases = logica_app.get_classification_classes()
                 formatos = logica_app.obtener_opciones_formatos()
                 fuentes = logica_app.obtener_opciones_fuentes()
 
-                dropdown_planta = ft.Dropdown(label="Planta", options=[ft.dropdown.Option("Cualquiera")] + [ft.dropdown.Option(p) for p in plantas], value="Cualquiera")
-                dropdown_enfermedad = ft.Dropdown(label="Enfermedad", options=[ft.dropdown.Option("Cualquiera")] + [ft.dropdown.Option(e) for e in enfermedades], value="Cualquiera")
+                dropdown_clase = ft.Dropdown(label="Clase", options=[ft.dropdown.Option("Cualquiera")] + [ft.dropdown.Option(c) for c in clases], value="Cualquiera")
                 dropdown_formato = ft.Dropdown(label="Formato", options=[ft.dropdown.Option("Cualquiera")] + [ft.dropdown.Option(f) for f in formatos], value="Cualquiera")
                 dropdown_fuente = ft.Dropdown(label="Fuente", options=[ft.dropdown.Option("Cualquiera")] + [ft.dropdown.Option(f) for f in fuentes], value="Cualquiera")
                 dropdown_num_imagenes = ft.Dropdown(
@@ -2506,8 +2509,7 @@ if __name__ == "__main__":
                     value="5"
                 )
 
-                dropdown_planta.width = 450
-                dropdown_enfermedad.width = 450
+                dropdown_clase.width = 450
                 dropdown_formato.width = 450
                 dropdown_fuente.width = 450
                 dropdown_num_imagenes.width = 450
@@ -2553,15 +2555,7 @@ if __name__ == "__main__":
                                                         border_radius=8,
                                                         bgcolor=ft.Colors.with_opacity(0.08, ft.Colors.GREEN),
                                                         border=ft.border.all(1.5, ft.Colors.GREEN_200),
-                                                        content=dropdown_planta
-                                                    ),
-                                                    ft.Container(
-                                                        width=200,
-                                                        padding=8,
-                                                        border_radius=8,
-                                                        bgcolor=ft.Colors.with_opacity(0.08, ft.Colors.GREEN),
-                                                        border=ft.border.all(1.5, ft.Colors.GREEN_200),
-                                                        content=dropdown_enfermedad
+                                                        content=dropdown_clase
                                                     ),
                                                     ft.Container(
                                                         width=200,
@@ -2600,7 +2594,7 @@ if __name__ == "__main__":
                                                 "CARGAR IMÁGENES",
                                                 bgcolor=ft.Colors.GREEN,
                                                 color=ft.Colors.WHITE,
-                                                on_click=aplicar_filtros_handler(page, dropdown_planta, dropdown_enfermedad, dropdown_formato, dropdown_fuente, dropdown_num_imagenes)
+                                                on_click=aplicar_filtros_handler(page, dropdown_clase, dropdown_formato, dropdown_fuente, dropdown_num_imagenes)
                                             )
                                         ],
                                     )
@@ -2956,10 +2950,8 @@ if __name__ == "__main__":
                 tabla_clases = ft.DataTable(
                     columns=[
                         ft.DataColumn(ft.Text("ID")),
-                        ft.DataColumn(ft.Text("Planta")),
-                        ft.DataColumn(ft.Text("Nombre común")),
-                        ft.DataColumn(ft.Text("Clasificación")),
-                        ft.DataColumn(ft.Text("Nombre científico")),
+                        ft.DataColumn(ft.Text("Nombre")),
+                        ft.DataColumn(ft.Text("Clase")),
                     ],
                     rows=[]
                 )
@@ -2969,9 +2961,9 @@ if __name__ == "__main__":
                     nonlocal clases_filtradas, pagina_actual
                     filtro = dropdown_filtro.value
                     if filtro == "Incompletas":
-                        clases_filtradas = [c for c in clases if not c.get("clasificacion") or not c.get("nombre_cientifico")]
+                        clases_filtradas = [c for c in clases if not c.get("nombre") or not c.get("clase")]
                     elif filtro == "Completas":
-                        clases_filtradas = [c for c in clases if c.get("clasificacion") and c.get("nombre_cientifico")]
+                        clases_filtradas = [c for c in clases if c.get("nombre") and c.get("clase")]
                     else:
                         clases_filtradas = clases
 
@@ -3000,32 +2992,29 @@ if __name__ == "__main__":
                     # Actualizar las filas de la tabla
                     tabla_clases.rows.clear()
                     for c in clases_pagina:
-                        clasif_input = ft.TextField(value=c.get("clasificacion", ""), expand=True)
-                        cient_input = ft.TextField(value=c.get("nombre_cientifico", ""), expand=True)
+                        nombre_input = ft.TextField(value=c.get("nombre", ""), expand=True)
+                        clase_input = ft.TextField(value=c.get("clase", ""), expand=True)
 
-                        # Usar un contenedor para fijar el ancho de las cajas de texto
-                        clasif_cell = ft.Container(
-                            content=clasif_input,
+                        nombre_cell = ft.Container(
+                            content=nombre_input,
                             width=150,
                             border=ft.border.all(1, ft.Colors.GREY),  # Borde alrededor de la celda
                         )
-                        cient_cell = ft.Container(
-                            content=cient_input,
+                        clase_cell = ft.Container(
+                            content=clase_input,
                             width=300,
                             border=ft.border.all(1, ft.Colors.GREY),  # Borde alrededor de la celda
                         )  
 
                         # Guardar los cambios en la lista temporal
-                        clasif_input.on_change = lambda e, cid=c.get("_id"): actualizar_clase(e, "clasificacion", cid)
-                        cient_input.on_change = lambda e, cid=c.get("_id"): actualizar_clase(e, "nombre_cientifico", cid)
+                        nombre_input.on_change = lambda e, cid=c.get("_id"): actualizar_clase(e, "nombre", cid)
+                        clase_input.on_change = lambda e, cid=c.get("_id"): actualizar_clase(e, "clase", cid)
 
                         fila = ft.DataRow(
                             cells=[
                                 ft.DataCell(ft.Container(content=ft.Text(str(c.get("_id"))))),
-                                ft.DataCell(ft.Container(content=ft.Text(c.get("planta", "")))),
-                                ft.DataCell(ft.Container(content=ft.Text(c.get("nombre_comun", "")))),
-                                ft.DataCell(clasif_cell),
-                                ft.DataCell(cient_cell),
+                                ft.DataCell(nombre_cell),
+                                ft.DataCell(clase_cell),
                             ]
                         )
                         tabla_clases.rows.append(fila)
@@ -3608,7 +3597,7 @@ if __name__ == "__main__":
             if page.route == "/main_usuario/prediccion":
                 modelos = logica_app.obtener_modelos()
                 experimentos = logica_app.obtener_experimentos()
-                plantas = logica_app.obtener_opciones_plantas()
+                clases = logica_app.get_classification_classes()
 
                 # Crear un diccionario para búsqueda rápida de experimentos por nombre
                 experimentos_dict = {exp["nombre"]: exp for exp in experimentos}
@@ -3656,17 +3645,16 @@ if __name__ == "__main__":
                     fuentes = config.get("fuentes", [])
                     fuentes_texto = "Todas" if "all" in fuentes else ", ".join(fuentes)
                     
-                    plantas_config = config.get("plantas", [])
-                    plantas_texto = "Todas" if "all" in plantas_config else ", ".join(plantas_config)
-                    
-                    enfermedades_config = config.get("enfermedades", [])
-                    enfermedades_texto = "Todas" if "all" in enfermedades_config else ", ".join(enfermedades_config)
+                    classes_config = config.get("classes")
+                    clases_texto = "Todas" if classes_config and "all" in classes_config else (", ".join(classes_config) if classes_config else "-")
                     
                     formato = config.get("formato", "N/A")
                     imagenes_por_clase = "Todas" if config.get("imagenes_por_clase") == "all" else str(config.get("imagenes_por_clase", "N/A"))
                     
                     precision_media = "-"
-                    if metrics and "test" in metrics and "accuracy_combinada" in metrics["test"]:
+                    if metrics and "test" in metrics and "accuracy" in metrics["test"]:
+                        precision_media = f"{round(metrics['test']['accuracy'], 4)}"
+                    elif metrics and "test" in metrics and "accuracy_combinada" in metrics["test"]:
                         precision_media = f"{round(metrics['test']['accuracy_combinada'], 4)}"
                     
                     # Actualizar contenido
@@ -3674,8 +3662,7 @@ if __name__ == "__main__":
                         ft.Text(f"Información de {nombre_experimento}:", weight=ft.FontWeight.BOLD, size=18),
                         ft.Divider(height=1),
                         ft.Row(wrap=True, controls=[ft.Text("Modelo:", size=16, weight=ft.FontWeight.BOLD), ft.Text(modelo, size=14)]),
-                        ft.Row(wrap=True, controls=[ft.Text("Plantas:", size=16, weight=ft.FontWeight.BOLD), ft.Text(plantas_texto, size=14, selectable=True)]),
-                        ft.Row(wrap=True, controls=[ft.Text("Enfermedades:", size=16, weight=ft.FontWeight.BOLD), ft.Text(enfermedades_texto, size=14, selectable=True)]),
+                        ft.Row(wrap=True, controls=[ft.Text("Clases:", size=16, weight=ft.FontWeight.BOLD), ft.Text(clases_texto, size=14, selectable=True)]),
                         ft.Row(wrap=True, controls=[ft.Text("Fuentes:", size=16, weight=ft.FontWeight.BOLD), ft.Text(fuentes_texto, size=14)]),
                         ft.Row(wrap=True, controls=[ft.Text("Formato:", size=16, weight=ft.FontWeight.BOLD), ft.Text(formato, size=14)]),
                         ft.Row(wrap=True, controls=[ft.Text("Imágenes por clase:", size=16, weight=ft.FontWeight.BOLD), ft.Text(imagenes_por_clase, size=14)]),
@@ -3695,19 +3682,8 @@ if __name__ == "__main__":
                     label_style=ft.TextStyle(color=ft.Colors.WHITE),
                 )
 
-                dropdown_planta = ft.Dropdown(
-                    label="Seleccionar planta (si la conoces)",
-                    options=[
-                        ft.DropdownOption(key=None, text="Ninguna")
-                    ] + [
-                        ft.DropdownOption(key=planta, text=planta) for planta in logica_app.obtener_opciones_plantas()
-                    ],
-                    value=None,
-                    width=400,
-                    border_color=ft.Colors.WHITE,
-                    focused_border_color=ft.Colors.GREEN,
-                    label_style=ft.TextStyle(color=ft.Colors.WHITE),
-                )
+                # Para el demo mínimo, no mostramos selección de clase
+                # Se pasa siempre None a predecir_foto()
 
                 page.views.append(
                     ft.View(
@@ -3789,7 +3765,6 @@ if __name__ == "__main__":
                                                             height=300,
                                                             fit=ft.ImageFit.CONTAIN,
                                                         ),
-                                                        dropdown_planta,
                                                     ],
                                                 ),
                                             ),
@@ -3803,7 +3778,7 @@ if __name__ == "__main__":
                                                     shape=ft.RoundedRectangleBorder(radius=12),
                                                     text_style=ft.TextStyle(size=14, weight=ft.FontWeight.BOLD),
                                                 ),
-                                                on_click=lambda e: predecir_foto(dropdown_modelo.value, dropdown_planta.value),
+                                                on_click=lambda e: predecir_foto(dropdown_modelo.value, None),
                                             ),
                                         ],
                                     ),
@@ -4193,7 +4168,7 @@ if __name__ == "__main__":
                                     ft.TextButton(
                                         text="Específicas",
                                         style=ft.ButtonStyle(color=ft.Colors.BLUE),
-                                        on_click=lambda e, lp=lista_plantas: mostrar_lista_dialogo(lp, "Plantas específicas")
+                                        on_click=lambda e, lp=lista_plantas: mostrar_lista_dialogo(lp, "Clases específicas")
                                     )
                                 )
 
@@ -4206,7 +4181,7 @@ if __name__ == "__main__":
                                     ft.TextButton(
                                         text="Específicas",
                                         style=ft.ButtonStyle(color=ft.Colors.BLUE),
-                                        on_click=lambda e, le=lista_enfermedades: mostrar_lista_dialogo(le, "Enfermedades específicas")
+                                        on_click=lambda e, le=lista_enfermedades: mostrar_lista_dialogo(le, "Clases específicas")
                                     )
                                 )
 
@@ -4384,8 +4359,7 @@ if __name__ == "__main__":
                 # Fallback por compatibilidad si el endpoint nuevo no devuelve datos.
                 if not isinstance(filtros_multiseleccion, dict) or not filtros_multiseleccion:
                     filtros_multiseleccion = {
-                        "planta": logica_app.obtener_opciones_plantas(),
-                        "nombre_comun": [e for e in logica_app.obtener_opciones_enfermedades() if e != "Sin_clasificar"],
+                        "class_label": logica_app.get_classification_classes(),
                         "fuente": logica_app.obtener_opciones_fuentes(),
                     }
 
@@ -4398,12 +4372,12 @@ if __name__ == "__main__":
                 selecciones_filtros = {}
                 for campo, valores in filtros_multiseleccion.items():
                     valores_limpios = [v for v in valores if v is not None and str(v).strip() != ""]
-                    if campo == "nombre_comun":
-                        valores_limpios = [v for v in valores_limpios if str(v) != "Sin_clasificar"]
                     filtros_multiseleccion[campo] = ["all"] + valores_limpios
                     selecciones_filtros[campo] = ["all"]
 
                 def nombre_campo_ui(campo):
+                    if campo == "class_label":
+                        return "Clase"
                     if campo == "nombre_comun":
                         return "Enfermedad"
                     return str(campo).replace("_", " ").title()
@@ -4560,7 +4534,9 @@ if __name__ == "__main__":
                     for campo, seleccion in selecciones_filtros.items():
                         # Mapeo de nombres internos a nombres de config (compatibilidad).
                         nombre_config = campo
-                        if campo == "nombre_comun":
+                        if campo == "class_label":
+                            nombre_config = "classes"
+                        elif campo == "nombre_comun":
                             nombre_config = "enfermedades"
                         elif campo == "planta":
                             nombre_config = "plantas"

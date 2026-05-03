@@ -59,7 +59,7 @@ def _env_json(name, default):
 
 
 app = Flask(__name__)
-db = connect_to_database(db_name="Repositorio_Plantas")  # por defecto usa "Repositorio_Plantas"
+db = connect_to_database()  # por defecto usa la base demo genérica
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(ROOT, "imagenes")
@@ -379,13 +379,15 @@ def predict_image():
 
         # Completar nombres de clases desde la base de datos si están en "all"
         if config.get("classes") == "all" or config.get("classes") is None:
-            clases_docs = list(db["Clases"].find({}, {"_id": 0, "planta": 1, "nombre_comun": 1}))
+            clases_docs = list(db["Clases"].find({}, {"_id": 0, "nombre": 1, "clase": 1, "class_label": 1}))
             clases_unicas = set()
             for doc in clases_docs:
-                planta = doc.get("planta", "").strip()
-                nombre_comun = doc.get("nombre_comun", "").strip()
-                if planta and nombre_comun:
-                    clases_unicas.add(f"{planta}___{nombre_comun}")
+                nombre = str(doc.get("nombre", "")).strip()
+                clase = str(doc.get("clase", "")).strip()
+                if clase:
+                    clases_unicas.add(clase)
+                elif nombre:
+                    clases_unicas.add(nombre)
             config["classes"] = sorted(clases_unicas)
 
         # Cargar modelo
@@ -444,16 +446,21 @@ def validar_imagen():
 def classification_classes():
     """
     Devuelve la lista única de todas las clases/etiquetas disponibles para clasificación simple.
-    Combina valores históricos de 'planta' y 'nombre_comun' en una lista única.
     """
-    # Obtener todas las combinaciones únicas planta___nombre_comun como clase única
-    clases_docs = list(db.Clases.find({}, {"_id": 0, "planta": 1, "nombre_comun": 1}))
+    clases_docs = list(db.Clases.find({}, {"_id": 0, "class_label": 1, "nombre": 1, "clase": 1}))
     clases_unicas = set()
     for doc in clases_docs:
-        planta = doc.get("planta", "").strip()
-        nombre_comun = doc.get("nombre_comun", "").strip()
-        if planta and nombre_comun:
-            clases_unicas.add(f"{planta}___{nombre_comun}")
+        class_label = str(doc.get("class_label", "")).strip()
+        if class_label:
+            clases_unicas.add(class_label)
+            continue
+
+        clase = str(doc.get("clase", "")).strip()
+        nombre = str(doc.get("nombre", "")).strip()
+        if clase:
+            clases_unicas.add(clase)
+        elif nombre:
+            clases_unicas.add(nombre)
     return jsonify(sorted(clases_unicas))
 
 @app.route("/opciones_formatos", methods=["GET"])
@@ -515,8 +522,9 @@ def opciones_filtros_docs():
                 "descripcion",
                 "fuente",
                 "formato",
-                "planta",
-                "nombre_comun",
+                "nombre",
+                "clase",
+                "class_label",
             ]
             for p in priority:
                 if p in sample:
@@ -566,22 +574,25 @@ def opciones_filtros_docs():
         formato_opciones = []
         mapeos_ids = {}
 
-        # Campos principales: clases únicas combinadas para clasificación simple
-        # sin depender del muestreo de Docs.
-        clases_todas = list(db["Clases"].find({}, {"_id": 1, "planta": 1, "nombre_comun": 1}))
+        # Campos principales: clases únicas simples para clasificación por peligro.
+        clases_todas = list(db["Clases"].find({}, {"_id": 1, "class_label": 1, "nombre": 1, "clase": 1}))
 
-        # Construir clases únicas: combinación planta___nombre_comun
+        # Construir clases únicas: class_label directo o nombre/clase.
         clases_unicas = set()
         class_to_ids = {}
         for c in clases_todas:
-            planta = str(c.get("planta", "")).strip()
-            nombre_comun = str(c.get("nombre_comun", "")).strip()
-            if planta and nombre_comun:
-                class_label = f"{planta}___{nombre_comun}"
+            class_label = str(c.get("class_label", "")).strip()
+            if class_label:
                 clases_unicas.add(class_label)
-                if class_label not in class_to_ids:
-                    class_to_ids[class_label] = []
-                class_to_ids[class_label].append(c["_id"])
+                class_to_ids.setdefault(class_label, []).append(c["_id"])
+                continue
+
+            clase = str(c.get("clase", "")).strip()
+            nombre = str(c.get("nombre", "")).strip()
+            class_label = clase or nombre
+            if class_label:
+                clases_unicas.add(class_label)
+                class_to_ids.setdefault(class_label, []).append(c["_id"])
 
         clases_ordenadas = sorted(clases_unicas, key=lambda x: x.lower())
         if clases_ordenadas:
@@ -608,8 +619,8 @@ def opciones_filtros_docs():
             }
 
         for key in keys_permitidas:
-            # Omitir 'clase', 'planta' y 'nombre_comun' - ya procesados como class_label único
-            if key in {"clase", "planta", "nombre_comun"}:
+            # Omitir campos de identidad de clase - ya procesados como class_label único
+            if key in {"clase", "class_label", "nombre"}:
                 continue
 
             # Estos campos se construyen desde sus colecciones completas.
@@ -998,11 +1009,12 @@ def reemplazar_clases():
 @app.route("/add_class", methods=["POST"])
 def add_class():
     data = request.get_json()
-    required = ["planta", "nombre_comun"]
+    required = ["nombre", "clase"]
     if not all(k in data for k in required):
         return jsonify({"success": False, "error": "Faltan campos obligatorios"}), 400
 
     new_doc = dict(data)
+    new_doc.setdefault("class_label", str(new_doc.get("clase", "")).strip() or str(new_doc.get("nombre", "")).strip())
 
     max_doc = db.Clases.find_one(sort=[("_id", -1)])
     max_id = max_doc["_id"] if max_doc else -1
@@ -1031,11 +1043,18 @@ def crear_experimento():
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
         
         if config_variables.get("imagenes_por_clase") == "all":
-            clases = db["Clases"].distinct("planta")
-            total_imagenes = {}
-            for clase in clases:
-                total_imagenes[clase] = db["Docs"].count_documents({"clase": clase})
-            config_variables["imagenes_por_clase"] = max(total_imagenes.values())
+            clases_seleccionadas = config_variables.get("classes")
+            query_clases = {}
+            if clases_seleccionadas and clases_seleccionadas != ["all"]:
+                query_clases["class_label"] = {"$in": clases_seleccionadas}
+
+            clases_docs = list(db["Clases"].find(query_clases, {"_id": 1, "class_label": 1, "nombre": 1, "clase": 1}))
+            if not clases_docs:
+                clases_docs = list(db["Clases"].find({}, {"_id": 1, "class_label": 1, "nombre": 1, "clase": 1}))
+
+            total_imagenes = [db["Docs"].count_documents({"clase": clase["_id"]}) for clase in clases_docs]
+            if total_imagenes:
+                config_variables["imagenes_por_clase"] = max(total_imagenes)
 
         mapeo_modelos = {
             "MobileNetV2": "MobileNet_V2_Weights.DEFAULT"
@@ -1442,20 +1461,20 @@ def recuperar_campos():
 @app.route("/etiquetas", methods=["GET"])
 def etiquetas():
     coleccion = db["Clases"]
-    res = list(coleccion.find({}, {"_id": 1, "planta": 1, "clasificacion": 1, "nombre_comun": 1}))
+    res = list(coleccion.find({}, {"_id": 1, "nombre": 1, "clase": 1}))
 
     etiquetas_vistas = set()
     etiquetas = []
 
     for r in res:
-        id = r.get("_id", "")
+        id = str(r.get("_id", ""))
         if id not in etiquetas_vistas:
             etiquetas_vistas.add(id)
+            nombre = str(r.get("nombre", r.get("clase", "")))
             etiquetas.append({
                 "_id": id,
-                "planta": r.get("planta", ""),
-                "clasificacion": r.get("clasificacion", ""),
-                "nombre": r.get("nombre_comun", "")
+                "nombre": nombre,
+                "clase": str(r.get("clase", nombre)),
             })
 
     return jsonify(etiquetas)
@@ -1547,6 +1566,10 @@ def add_campo():
         campo["campos_etiqueta"] = campos_etiqueta
         campo["coleccion"] = nombre_coleccion
         
+    ultimo = db.Campos.find_one(sort=[('_id', -1)])
+    nuevo_id = (ultimo['_id'] + 1) if ultimo and isinstance(ultimo.get('_id'), int) else 0
+    campo["_id"] = nuevo_id
+
     db.Campos.insert_one(campo)
 
     return jsonify(success=True)
@@ -1695,6 +1718,7 @@ def devolver_x_archivos():
     inicio = request.args.get('inicio', 0, type=int)
     n_archivos = request.args.get('n_archivos', 10, type=int)
 
+    class_label = request.args.get('class_label')
     planta = request.args.get('planta')
     enfermedad = request.args.get('enfermedad')
     formato = request.args.get('formato')
@@ -1702,8 +1726,10 @@ def devolver_x_archivos():
 
     filtros = {}
 
-    if planta or enfermedad:
+    if class_label or planta or enfermedad:
         clase_query = {}
+        if class_label:
+            clase_query["class_label"] = class_label
         if planta:
             clase_query["planta"] = planta
         if enfermedad:
@@ -1747,6 +1773,7 @@ def devolver_x_archivos_sin_validar():
     inicio = request.args.get('inicio', 0, type=int)
     n_archivos = request.args.get('n_archivos', 10, type=int)
 
+    class_label = request.args.get('class_label')
     planta = request.args.get('planta')
     enfermedad = request.args.get('enfermedad')
     formato = request.args.get('formato')
@@ -1754,8 +1781,10 @@ def devolver_x_archivos_sin_validar():
 
     filtros = {"validada": False}
 
-    if planta or enfermedad:
+    if class_label or planta or enfermedad:
         clase_query = {}
+        if class_label:
+            clase_query["class_label"] = class_label
         if planta:
             clase_query["planta"] = planta
         if enfermedad:
@@ -1802,7 +1831,30 @@ def subir_imagen():
         abort(400, f"La imagen principal ha provocado la siguiente excepcion: " + res)
     #imagen = base64.b64decode(res)
 
-    clase = int(data["clase"])
+    clase_raw = data["clase"]
+    clase = None
+    if isinstance(clase_raw, str):
+        try:
+            clase = ObjectId(clase_raw)
+        except Exception:
+            try:
+                clase = int(clase_raw)
+            except ValueError:
+                abort(400, "El identificador de la clase no es válido")
+    elif isinstance(clase_raw, int):
+        clase = clase_raw
+    else:
+        try:
+            clase = ObjectId(str(clase_raw))
+        except Exception:
+            try:
+                clase = int(clase_raw)
+            except Exception:
+                abort(400, "El identificador de la clase no es válido")
+
+    if db.Clases.find_one({"_id": clase}) is None:
+        abort(400, "La clase indicada no existe")
+
     usuario = data.get("usuario")
 
     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, data["imagen_b64"])) + ".png"

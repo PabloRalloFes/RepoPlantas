@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 
-JSON_PATH = os.path.join("src", "clases_combinadas.json")
+JSON_PATH = os.path.join("src", "clases_peligro.json")
 REEMPLAZAR_SCRIPT = "scripts/reemplazar_clases.py"
 
 if not os.path.exists(JSON_PATH):
@@ -12,19 +12,19 @@ if not os.path.exists(JSON_PATH):
 with open(JSON_PATH, "r", encoding="utf-8") as f:
     clases = json.load(f)
 
-original = {c["_id"]: (c["clasificacion"], c["nombre_cientifico"]) for c in clases}
+original = {c["_id"]: (c.get("clasificacion"), c.get("nombre_cientifico")) for c in clases}
 
 # Preguntar por filtro
-filtrar = input("¿Quieres aplicar un filtro por planta? (s/n): ").strip().lower()
-filtro_planta = None
+filtrar = input("¿Quieres aplicar un filtro por nombre? (s/n): ").strip().lower()
+filtro_nombre = None
 if filtrar == "s":
-    filtro_planta = input("Escribe el nombre exacto de la planta a filtrar (ej. 'Vid'): ").strip()
+    filtro_nombre = input("Escribe el nombre exacto a filtrar (ej. 'Inofensiva'): ").strip()
 
 # Filtrar clases incompletas
 incompletas = [
     c for c in clases
     if (not c.get("clasificacion") or not c.get("nombre_cientifico")) and
-       (filtro_planta is None or c["planta"] == filtro_planta)
+    (filtro_nombre is None or c.get("nombre") == filtro_nombre or c.get("clase") == filtro_nombre)
 ]
 
 if not incompletas:
@@ -33,13 +33,13 @@ if not incompletas:
 
 print(f"️Se encontraron {len(incompletas)} clases incompletas:")
 for i, clase in enumerate(incompletas):
-    print(f"[{i}] ID: {clase['_id']} | {clase['planta']}___{clase['nombre_comun']} | "
+    print(f"[{i}] ID: {clase['_id']} | {clase.get('nombre', clase.get('clase', ''))} | "
           f"clasificacion: '{clase['clasificacion']}' | cientifico: '{clase['nombre_cientifico']}'")
 
 # Preguntar si quiere editar
 print("\nPuedes editar los campos. Pulsa ENTER para dejar sin cambios.")
 for i, clase in enumerate(incompletas):
-    print(f"\n--- Clase {clase['_id']} ({clase['planta']}___{clase['nombre_comun']}) ---")
+    print(f"\n--- Clase {clase['_id']} ({clase.get('nombre', clase.get('clase', ''))}) ---")
     nueva_clasificacion = input(f"Clasificación actual: '{clase['clasificacion']}'  Nuevo valor: ") or clase['clasificacion']
     nuevo_nombre_cientifico = input(f"Nombre científico actual: '{clase['nombre_cientifico']}' Nuevo valor: ") or clase['nombre_cientifico']
 

@@ -558,24 +558,25 @@ class LogicaApp:
 
         res = []
         for etiqueta in etiquetas:
-            if etiqueta["clasificacion"] == "healthy":
-                res.append({"key": etiqueta["_id"], "texto": f"{etiqueta['planta']}, {etiqueta['clasificacion']}"})
-            else:
-                res.append({"key": etiqueta["_id"], "texto": f"{etiqueta['planta']}, {etiqueta['clasificacion']}, {etiqueta['nombre']}"})
+            nombre = etiqueta.get("nombre", "")
+            clase = etiqueta.get("clase", nombre)
+            res.append({"key": etiqueta["_id"], "texto": f"{nombre} ({clase})" if nombre != clase else nombre})
         return res
     
     def procesar_nombre_una_etiqueta(self, id_etiqueta):
         etiquetas = self.recuperar_etiquetas()
         etiqueta = None
         for et in etiquetas:
-            if et["_id"] == id_etiqueta:
+            if str(et["_id"]) == str(id_etiqueta):
                 etiqueta = et
-                pass
+                break
 
-        if etiqueta["clasificacion"] == "healthy":
-            texto = f"{etiqueta['planta']}, {etiqueta['clasificacion']}"
-        else:
-            texto = f"{etiqueta['planta']}, {etiqueta['clasificacion']}, {etiqueta['nombre']}"
+        if etiqueta is None:
+            return ""
+
+        nombre = etiqueta.get("nombre", "")
+        clase = etiqueta.get("clase", nombre)
+        texto = f"{nombre} ({clase})" if nombre != clase else nombre
         
         return texto
 
@@ -589,18 +590,20 @@ class LogicaApp:
         base64_image = base64.b64encode(img).decode("utf-8")
         self.foto_b64 = base64_image
 
-    def subir_foto(self, id_etiqueta, fuente=2, formato=0): # Por defecto fuente App, formato Color
+    def subir_foto(self, id_etiqueta, fuente=0, formato=0): # Por defecto fuente App, formato Color
         if id_etiqueta == None:
             for etiqueta in self.recuperar_etiquetas():
-                if etiqueta["clasificacion"] == "Sin_clasificar":
+                if etiqueta.get("clase") == "Sin_clasificar" or etiqueta.get("nombre") == "Sin_clasificar":
                     id_etiqueta = etiqueta["_id"]
-                    pass
+                    break
 
         url_subir_foto = self.crear_url("/subir_imagen", self.url_api)
 
         res = self._post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}, "usuario": self.usuario["nombre"]}, verify=False)
-
-        return res.json()
+        try:
+            return res.json()
+        except Exception:
+            return {"success": False, "error": res.text or "La API no devolvió JSON válido"}
     
     def logos(self):
         url_logos = self.crear_url("/logos", self.url_api)

@@ -8,18 +8,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-DB_NAME = "Repositorio_Plantas"
+DB_NAME = "Demo_Grietas"
 CLASE_COLECCION = "Clases"
 
-COMBINADAS_PATH = os.path.join(ROOT, "src", "clases_combinadas.json")
+COMBINADAS_PATH = os.path.join(ROOT, "src", "clases_peligro.json")
 ID_DICT_PATH = os.path.join(ROOT, "src", "clases.json")
 
 parser = argparse.ArgumentParser(description="Añadir clase al sistema")
-parser.add_argument("nombre_clase", help="Nombre de la clase en formato {planta}___{nombre_comun}")
+parser.add_argument("nombre_clase", help="Nombre de la clase de peligro (Inofensiva, Neutra, Peligrosa, ...)")
 args = parser.parse_args()
 
 nombre_clase = args.nombre_clase
-planta, nombre_comun = nombre_clase.split("___", 1)
 
 # Conectar a Mongo
 client = MongoClient("mongodb://localhost:27017/")
@@ -34,7 +33,7 @@ with open(ID_DICT_PATH, "r", encoding="utf-8") as f:
     clase_id_dict = json.load(f)
 
 # Revisar si ya existe
-existe = next((c for c in clases_combinadas if c["planta"] == planta and c["nombre_comun"] == nombre_comun), None)
+existe = next((c for c in clases_combinadas if c.get("clase") == nombre_clase or c.get("nombre") == nombre_clase), None)
 
 if existe:
     print(f"La clase '{nombre_clase}' ya existe en clases_combinadas.json con ID {existe['_id']}")
@@ -52,9 +51,9 @@ nuevo_id = max([c["_id"] for c in clases_combinadas] + [-1]) + 1
 
 nueva_clase = {
     "_id": nuevo_id,
-    "planta": planta,
+    "nombre": nombre_clase,
+    "clase": nombre_clase,
     "clasificacion": "",
-    "nombre_comun": nombre_comun,
     "nombre_cientifico": ""
 }
 
@@ -64,7 +63,7 @@ with open(COMBINADAS_PATH, "w", encoding="utf-8") as f:
     json.dump(clases_combinadas, f, indent=2, ensure_ascii=False)
 
 # Actualizar clases.json
-clave = f"{planta.replace(' ', '_')}___{nombre_comun.replace(' ', '_')}"
+clave = nombre_clase.replace(' ', '_')
 clase_id_dict[clave] = nuevo_id
 with open(ID_DICT_PATH, "w", encoding="utf-8") as f:
     json.dump(clase_id_dict, f, indent=2, ensure_ascii=False)
