@@ -1,5 +1,7 @@
 .venv/
-build/
 stage/
+/build
 dist/
 *.tar.gz
+__pycache__/
+.env

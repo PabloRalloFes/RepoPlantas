@@ -48,14 +48,15 @@ class LogicaApp:
         except Exception:
             return {"success": False, "error": f"Respuesta no válida: {res.text}"}
 
-    def subida_masiva(self, fuente, procesar):
+    def subida_masiva(self, fuente, procesar, validada=False):
         url_subida = self.crear_url("/subida_masiva", self.url_api)
         payload = {
             "fuente": fuente,
             "procesar": procesar,
-            "usuario": self.usuario["nombre"]
+            "usuario": self.usuario["nombre"],
+            "validada": validada,
         }
-        res = self._post(url_subida, json=payload, verify=False, timeout=600)
+        res = self._post(url_subida, json=payload, verify=False, timeout=10000)
         return res.json()
 
     def listar_fuentes_importadas(self):
@@ -73,7 +74,7 @@ class LogicaApp:
             'nombre_fuente': nombre_fuente,
         }
         
-        res = self._post(url_subida, files=files, data=data, verify=False, timeout=600)
+        res = self._post(url_subida, files=files, data=data, verify=False, timeout=10000)
         return res.json()
 
     def obtener_opciones_plantas(self):
@@ -596,11 +597,34 @@ class LogicaApp:
                     id_etiqueta = etiqueta["_id"]
                     pass
 
+        try:
+            id_etiqueta = int(id_etiqueta) if id_etiqueta is not None else id_etiqueta
+        except (TypeError, ValueError):
+            return {"success": False, "error": "Identificador de etiqueta inválido"}
+
+        try:
+            formato = int(formato) if formato is not None else 0
+        except (TypeError, ValueError):
+            formato = 0
+
+        try:
+            fuente = int(fuente) if fuente is not None else 0
+        except (TypeError, ValueError):
+            fuente = 0
+
         url_subir_foto = self.crear_url("/subir_imagen", self.url_api)
 
         res = self._post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}, "usuario": self.usuario["nombre"]}, verify=False)
 
-        return res.json()
+        try:
+            return res.json()
+        except Exception:
+            body = (res.text or "").strip()
+            return {
+                "success": False,
+                "error": f"Respuesta no JSON del servidor ({res.status_code})",
+                "detail": body[:500] if body else "Respuesta vacía",
+            }
     
     def logos(self):
         url_logos = self.crear_url("/logos", self.url_api)
