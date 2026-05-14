@@ -418,5 +418,12 @@
     "clasificacion": "Virus",
     "nombre_comun": "Madera_Rizada_Madera_Acorchada",
     "nombre_cientifico": ""
+  },
+  {
+    "_id": 60,
+    "planta": "Vid",
+    "clasificacion": "",
+    "nombre_comun": "Clorosis",
+    "nombre_cientifico": ""
   }
 ]

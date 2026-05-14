@@ -25,6 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=0, help="Índice inicial por clase (batch)")
     parser.add_argument("--limit", type=int, default=None, help="Número máximo de imágenes por clase (batch)")
     parser.add_argument("--no_auto_process", action="store_true", help="No procesar automáticamente si faltan carpetas")
+    parser.add_argument("--validada", action="store_true", help="Marcar los documentos creados como validados")
 
     args = parser.parse_args()
 
@@ -48,6 +49,7 @@ if __name__ == "__main__":
         cmd = ["python", os.path.join(ROOT, "scripts", "upload_images.py"), formato, "--fuente", fuente, "--usuario", usuario]
         if start: cmd += ["--start", str(start)]
         if limit: cmd += ["--limit", str(limit)]
+        if args.validada: cmd.append("--validada")
         if args.no_auto_process:
             cmd.append("--no_auto_process")
         run_subprocess(cmd)

@@ -5,6 +5,12 @@ from pymongo import MongoClient
 import sys
 from pathlib import Path
 
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
@@ -74,5 +80,5 @@ coleccion.insert_one(nueva_clase)
 
 # Mensaje final
 print(f"Clase '{nombre_clase}' añadida con ID {nuevo_id}")
-print("️Esta clase se ha guardado con campos vacíos. Si deseas completarlos, hazlo desde la app o ejecuta:")
+print("Esta clase se ha guardado con campos vacíos. Si deseas completarlos, hazlo desde la app o ejecuta:")
 print("    python editar_clases.py")

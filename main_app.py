@@ -412,6 +412,38 @@ if __name__ == "__main__":
                 fuente_dropdown.options = []
             page.update()
 
+        def cargar_formatos_dropdown(formato_dropdown):
+            try:
+                resultado = logica_app.obtener_opciones_formatos()
+                # Resultado puede ser lista o dict
+                if isinstance(resultado, dict):
+                    formatos = resultado.get("formatos") or resultado.get("options") or resultado
+                else:
+                    formatos = resultado
+
+                opciones = []
+                if isinstance(formatos, list):
+                    for f in formatos:
+                        if isinstance(f, dict):
+                            key = f.get("_id", f.get("id", f.get("key", f.get("nombre", str(f)))))
+                            text = f.get("nombre") or f.get("text") or str(f)
+                        else:
+                            key = f
+                            text = str(f)
+                        opciones.append(ft.dropdown.Option(key=key, text=text))
+
+                formato_dropdown.options = opciones
+                if opciones:
+                    available_keys = {opt.key for opt in opciones}
+                    if formato_dropdown.value not in available_keys:
+                        formato_dropdown.value = opciones[0].key
+                else:
+                    formato_dropdown.value = None
+            except Exception:
+                formato_dropdown.options = []
+                formato_dropdown.value = None
+            page.update()
+
         def subir_zip(page, logica_app, zip_picker, nombre_fuente_input, fuente_dropdown):
             """Sube el ZIP al servidor y lo descomprime"""
             if not zip_picker.result or not zip_picker.result.files:
@@ -477,9 +509,10 @@ if __name__ == "__main__":
             
             page.update()
 
-        def ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch):
+        def ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch, validada_switch):
             fuente = fuente_input.value.strip()
             procesar = procesar_switch.value
+            validada = validada_switch.value
 
             if not fuente:
                 page.open(ft.AlertDialog(
@@ -499,7 +532,7 @@ if __name__ == "__main__":
             page.update()
 
             try:
-                data = logica_app.subida_masiva(fuente, procesar)
+                data = logica_app.subida_masiva(fuente, procesar, validada)
                 if data.get("success"):
                     page.open(ft.AlertDialog(
                         modal=True,
@@ -1178,6 +1211,22 @@ if __name__ == "__main__":
         )
 
 
+        dropdown_formato = ft.Dropdown(
+            label="Formato",
+            hint_text=None,
+            width=250,
+            options=[
+                ft.dropdown.Option(key=0, text="Color"),
+                ft.dropdown.Option(key=1, text="Grayscale"),
+                ft.dropdown.Option(key=2, text="Segmented"),
+            ],
+            value=0,
+            border_color=ft.Colors.WHITE,
+            focused_border_color=ft.Colors.GREEN,
+            label_style=ft.TextStyle(color=ft.Colors.WHITE),
+        )
+
+
         alerta_imagen_etiquetada = ft.AlertDialog(
             modal = True,
             title = ft.Text("Imagen etiquetada correctamente"),
@@ -1248,9 +1297,27 @@ if __name__ == "__main__":
                     actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
                 ))
                 return
-            subida_correcta = logica_app.subir_foto(dropdown_etiquetar.value)
-            
-            if subida_correcta:
+
+            try:
+                id_etiqueta_sel = int(dropdown_etiquetar.value)
+            except (TypeError, ValueError):
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Etiqueta inválida"),
+                    content=ft.Text("La etiqueta seleccionada no tiene un identificador válido."),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+
+            # Obtener formato seleccionado (por defecto 0 = Color)
+            try:
+                formato_sel = int(dropdown_formato.value) if (dropdown_formato and dropdown_formato.value is not None) else 0
+            except (TypeError, ValueError):
+                formato_sel = 0
+
+            subida_correcta = logica_app.subir_foto(id_etiqueta_sel, formato=formato_sel)
+
+            if isinstance(subida_correcta, dict) and subida_correcta.get("success"):
                 page.open(ft.AlertDialog(
                     modal = True,
                     title = ft.Text("Imagen subida correctamente"),
@@ -1262,9 +1329,12 @@ if __name__ == "__main__":
                     ]
                 ))
             else:
+                mensaje_error = subida_correcta.get("error") if isinstance(subida_correcta, dict) else "No se ha podido subir la imagen"
+                detalle_error = subida_correcta.get("detail") if isinstance(subida_correcta, dict) else None
                 page.open(ft.AlertDialog(
                     modal = True,
                     title = ft.Text("No se ha podido subir la imagen"),
+                    content=ft.Text(f"{mensaje_error}\n{detalle_error}" if detalle_error else mensaje_error),
                     actions = [
                         ft.TextButton(
                             "Aceptar",
@@ -1302,6 +1372,7 @@ if __name__ == "__main__":
             )
 
         def route_change(route):
+            nonlocal dropdown_etiquetar, dropdown_formato
             page.views.clear()
             page.views.append(
                ft.View(
@@ -3212,6 +3283,20 @@ if __name__ == "__main__":
                 file_picker = ft.FilePicker(on_result=on_image_selected)
                 page.overlay.append(file_picker)
 
+                def open_file_picker(_=None):
+                    # Ensure the FilePicker control is attached to the page before invoking pick_files()
+                    if file_picker.page is None:
+                        page.overlay.append(file_picker)
+                        page.update()
+                    try:
+                        file_picker.pick_files(allow_multiple=False)
+                    except AssertionError:
+                        # Retry once after ensuring attachment
+                        if file_picker.page is None:
+                            page.overlay.append(file_picker)
+                            page.update()
+                        file_picker.pick_files(allow_multiple=False)
+
                 page.views.append(
                     ft.View(
                         "/main_usuario",
@@ -3290,7 +3375,7 @@ if __name__ == "__main__":
                                                                     color=ft.Colors.WHITE,
                                                                     bgcolor=ft.Colors.GREEN,
                                                                     width=280,
-                                                                    on_click=lambda _: file_picker.pick_files(allow_multiple=False)
+                                                                    on_click=open_file_picker
                                                                 ),
                                                             ]
                                                         )
@@ -3374,7 +3459,7 @@ if __name__ == "__main__":
                                                                     color=ft.Colors.WHITE,
                                                                     bgcolor=ft.Colors.ORANGE,
                                                                     width=280,
-                                                                    on_click=lambda _: page.go("/main_usuario/subida_masiva")
+                                                                    on_click=lambda _: (mostrar_cargando(page, True), page.go("/main_usuario/subida_masiva"))
                                                                 ),
                                                             ]
                                                         )
@@ -3528,6 +3613,7 @@ if __name__ == "__main__":
                                                                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                                                     controls=[
                                                                         dropdown_etiquetar,
+                                                                        dropdown_formato,
                                                                         ft.Container(height=4),
                                                                         ft.Column(
                                                                             spacing=6,
@@ -3603,7 +3689,8 @@ if __name__ == "__main__":
                         )
                     )
                     page.update()
-                    dropdown_etiquetar_options()
+                    dropdown_etiquetar_options(getattr(logica_app, 'archivo_seleccionado', {}).get('clase') if getattr(logica_app, 'archivo_seleccionado', None) else None)
+                    cargar_formatos_dropdown(dropdown_formato)
 
             if page.route == "/main_usuario/prediccion":
                 modelos = logica_app.obtener_modelos()
@@ -3841,6 +3928,7 @@ if __name__ == "__main__":
                     
             if page.route == "/main_usuario/subida_masiva":
                     if not logica_app.verificar_rol("usuario+"):
+                        mostrar_cargando(page, False)
                         page.open(ft.AlertDialog(
                             modal=True,
                             title=ft.Text("Acceso denegado"),
@@ -3874,6 +3962,20 @@ if __name__ == "__main__":
                     # Controles para PASO 1: Subir ZIP
                     zip_picker = ft.FilePicker(on_result=on_zip_selected)
                     page.overlay.append(zip_picker)
+
+                    def open_zip_picker(_=None):
+                        # Ensure the FilePicker control is attached to the page before invoking pick_files()
+                        if zip_picker.page is None:
+                            page.overlay.append(zip_picker)
+                            page.update()
+                        try:
+                            zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
+                        except AssertionError:
+                            # Retry once after ensuring attachment
+                            if zip_picker.page is None:
+                                page.overlay.append(zip_picker)
+                                page.update()
+                            zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
                     
                     nombre_fuente_input = ft.TextField(
                         label="Nombre de la fuente",
@@ -3889,7 +3991,12 @@ if __name__ == "__main__":
                     )
                     
                     procesar_switch = ft.Switch(
-                        label="Procesar imágenes (escala de grises y segmentadas)",
+                        label="Procesar imágenes",
+                        value=False
+                    )
+
+                    validada_switch = ft.Switch(
+                        label="Validar imágenes",
                         value=False
                     )
 
@@ -3959,10 +4066,7 @@ if __name__ == "__main__":
                                                                                 ft.ElevatedButton(
                                                                                     text="Seleccionar ZIP",
                                                                                     icon=ft.Icons.FOLDER_OPEN,
-                                                                                    on_click=lambda _: zip_picker.pick_files(
-                                                                                        allowed_extensions=["zip"],
-                                                                                        dialog_title="Selecciona ZIP"
-                                                                                    )
+                                                                                    on_click=open_zip_picker
                                                                                 ),
                                                                                 archivo_seleccionado_text,
                                                                             ]
@@ -3984,7 +4088,7 @@ if __name__ == "__main__":
                                                 
                                                 # PASO 2: Configurar subida
                                                 ft.Container(
-                                                    width=500,
+                                                    width=620,
                                                     height=320,
                                                     padding=20,
                                                     border_radius=10,
@@ -3995,7 +4099,7 @@ if __name__ == "__main__":
                                                         controls=[
                                                             ft.Text("PASO 2: Configurar subida a la base de datos", size=16, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE),
                                                             ft.Text(
-                                                                "Selecciona una fuente y configura el procesamiento",
+                                                                "Selecciona la fuente y decide cómo guardar la subida.",
                                                                 size=11,
                                                                 color=ft.Colors.GREY_400
                                                             ),
@@ -4014,15 +4118,39 @@ if __name__ == "__main__":
                                                                             ]
                                                                         ),
                                                                         ft.Divider(),
-                                                                        ft.Column(
-                                                                            spacing=8,
+                                                                        ft.Row(
+                                                                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                                                            vertical_alignment=ft.CrossAxisAlignment.START,
                                                                             controls=[
-                                                                                procesar_switch,
-                                                                                ft.Text(
-                                                                                    "Si activas esto, se crearán automáticamente variaciones en escala de grises y segmentadas",
-                                                                                    size=10,
-                                                                                    color=ft.Colors.GREY_500,
-                                                                                    italic=True
+                                                                                ft.Container(
+                                                                                    width=255,
+                                                                                    content=ft.Column(
+                                                                                        spacing=6,
+                                                                                        controls=[
+                                                                                            procesar_switch,
+                                                                                            ft.Text(
+                                                                                                "Genera imágenes en formato grises y segmentadas.",
+                                                                                                size=10,
+                                                                                                color=ft.Colors.GREY_500,
+                                                                                                italic=True
+                                                                                            ),
+                                                                                        ]
+                                                                                    )
+                                                                                ),
+                                                                                ft.Container(
+                                                                                    width=255,
+                                                                                    content=ft.Column(
+                                                                                        spacing=6,
+                                                                                        controls=[
+                                                                                            validada_switch,
+                                                                                            ft.Text(
+                                                                                                "Activar si estás seguro de que las clases son correctas.",
+                                                                                                size=10,
+                                                                                                color=ft.Colors.GREY_500,
+                                                                                                italic=True
+                                                                                            ),
+                                                                                        ]
+                                                                                    )
                                                                                 ),
                                                                             ]
                                                                         ),
@@ -4049,33 +4177,36 @@ if __name__ == "__main__":
                                                     shape=ft.RoundedRectangleBorder(radius=10),
                                                     text_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD),
                                                 ),
-                                                on_click=lambda _: ejecutar_subida_masiva(page, logica_app, fuente_dropdown, procesar_switch)
+                                                on_click=lambda _: ejecutar_subida_masiva(page, logica_app, fuente_dropdown, procesar_switch, validada_switch)
                                             )
                                         ),
                                     ]
                                 ),
                                 ft.BottomAppBar(
-                                height = 70.0,
-                                bgcolor = ft.Colors.GREEN,
-                                content = ft.Row(
-                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                                    controls= [
-                                        ft.IconButton(
-                                            icon=ft.Icons.HOME,
-                                            icon_color=ft.Colors.WHITE,
-                                            icon_size=30,
-                                            tooltip="Volver al inicio",
-                                            on_click=lambda _: page.open(alerta_cerrar_sesion)
-                                        ),
-                                        icono_about,
-                                        icono_usuario
+                                    height=70.0,
+                                    bgcolor=ft.Colors.GREEN,
+                                    content=ft.Row(
+                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                        controls=[
+                                            ft.IconButton(
+                                                icon=ft.Icons.HOME,
+                                                icon_color=ft.Colors.WHITE,
+                                                icon_size=30,
+                                                tooltip="Volver al inicio",
+                                                on_click=lambda _: page.open(alerta_cerrar_sesion)
+                                            ),
+                                            icono_about,
+                                            icono_usuario,
                                         ]
                                     )
                                 )
                             ]
                         )
                     )
-                    
+
+                    mostrar_cargando(page, False)
+                    page.update()
+
                     # Cargar dropdown de fuentes al abrir la vista
                     cargar_fuentes_dropdown(fuente_dropdown)
 

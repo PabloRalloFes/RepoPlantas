@@ -690,6 +690,7 @@ def subida_masiva():
     data = request.get_json(force=True)
     fuente = data.get("fuente")
     procesar = data.get("procesar", False)
+    validada = data.get("validada", False)
     usuario = data.get("usuario")
 
     if not fuente:
@@ -700,13 +701,22 @@ def subida_masiva():
     cmd = ["python", script_path, "--fuente", fuente, "--usuario", usuario or "desconocido"]
     if procesar:
         cmd.append("--procesar")
+    if validada:
+        cmd.append("--validada")
+
+    # Propagar el token del usuario autenticado a los scripts internos.
+    token = _extract_bearer_token()
+    subprocess_env = os.environ.copy()
+    if token:
+        subprocess_env["API_BEARER_TOKEN"] = token
 
     try:
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
+            env=subprocess_env,
         )
 
         log_dir = os.path.join(ROOT, "logs")
@@ -1629,7 +1639,15 @@ def add_dato():
                     else:
                         etiqueta = db[campo_almacenado["coleccion"]].find_one({"_id": valor})
                         if etiqueta is None:
-                            abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
+                            # Para campos como "formato", crear automáticamente si no existe
+                            if nombre_campo == "formato":
+                                # Mapeo de IDs de formato a nombres (basado en upload_images.py)
+                                formato_map = {0: "Color", 1: "Grayscale", 2: "Segmented"}
+                                nombre_formato = formato_map.get(valor, f"Formato_{valor}")
+                                db[campo_almacenado["coleccion"]].insert_one({"_id": valor, "formato": nombre_formato, "nombre": nombre_formato})
+                                print(f"Formato '{nombre_formato}' (id={valor}) creado automáticamente.")
+                            else:
+                                abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
         for nombre_imagen, imagen in imagenes_extra:
             os.makedirs(IMAGES_DIR, exist_ok=True)
@@ -1817,6 +1835,7 @@ def subir_imagen():
 
     clase = int(data["clase"])
     usuario = data.get("usuario")
+    validada = bool(data.get("validada", False))
 
     nombre_imagen = str(uuid.uuid3(uuid.NAMESPACE_URL, data["imagen_b64"])) + ".png"
     image_path = os.path.join(IMAGES_DIR, nombre_imagen)
@@ -1830,7 +1849,7 @@ def subir_imagen():
 
     doc = {
         "imagen_rgb": image_url,
-        "validada": False,
+        "validada": validada,
         "usuario": usuario,
         "clase": clase
     }
