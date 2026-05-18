@@ -1,17 +1,14 @@
 [
   {
     "_id": 0,
-    "nombre": "Inofensiva",
-    "clase": "Inofensiva"
+    "class_label": "Inofensiva"
   },
   {
     "_id": 1,
-    "nombre": "Neutra",
-    "clase": "Neutra"
+    "class_label": "Neutra"
   },
   {
     "_id": 2,
-    "nombre": "Peligrosa",
-    "clase": "Peligrosa"
+    "class_label": "Peligrosa"
   }
 ]

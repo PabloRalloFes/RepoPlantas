@@ -1,6 +1,10 @@
 import json
 import os
 import subprocess
+import sys
+
+print("Este script quedó obsoleto: la colección Clases ahora usa solo class_label y se edita desde la app.")
+sys.exit(0)
 
 JSON_PATH = os.path.join("src", "clases_peligro.json")
 REEMPLAZAR_SCRIPT = "scripts/reemplazar_clases.py"

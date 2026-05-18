@@ -27,14 +27,12 @@ with open("src/clases_peligro.json", "r", encoding="utf-8") as f:
     clases = json.load(f)
 
 for clase in sorted(clases, key=lambda c: c["_id"]):
+    class_label = clase.get("class_label", clase.get("clase", clase.get("nombre", "")))
     payload = {
         "coleccion": "Clases",
         "etiqueta": {
-            "nombre": clase.get("nombre", clase.get("clase", "")),
-            "clase": clase.get("clase", clase.get("nombre", "")),
-            "clasificacion": clase.get("clasificacion", ""),
-            "nombre_cientifico": clase.get("nombre_cientifico", ""),
+            "class_label": class_label,
         }
     }
     r = requests.post(f"{URL}/add_etiqueta", json=payload)
-    print(f'{clase["_id"]:>3} {payload["etiqueta"]["nombre"]} → {r.status_code}')
+    print(f'{clase["_id"]:>3} {class_label} → {r.status_code}')

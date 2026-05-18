@@ -37,9 +37,9 @@ DEFAULT_FIELDS = [
     },
     {
         "_id": 2,
-        "nombre": "clase",
+        "nombre": "class_label",
         "cod": 0,
-        "campos_etiqueta": {"nombre": "str", "clase": "str"},
+        "campos_etiqueta": {"class_label": "str"},
         "coleccion": "Clases",
     },
 ]
@@ -73,7 +73,21 @@ def load_base_config() -> dict:
 
 
 def select_class_dirs(max_classes: int) -> list[Path]:
-    class_dirs = [path for path in SOURCE_DIR.iterdir() if path.is_dir() and "___" in path.name]
+    """Selecciona carpetas de clase que contengan imágenes. 
+    Compatible tanto con nombres Planta___Enfermedad como nombres simples."""
+    class_dirs = []
+    for path in SOURCE_DIR.iterdir():
+        if not path.is_dir():
+            continue
+        # Revisar si la carpeta contiene imágenes
+        has_images = any(
+            img_file.suffix.lower() in {".jpg", ".jpeg", ".png"}
+            for img_file in path.rglob("*")
+            if img_file.is_file()
+        )
+        if has_images:
+            class_dirs.append(path)
+    
     class_dirs.sort(key=lambda path: path.name.lower())
     if max_classes > 0:
         return class_dirs[:max_classes]
@@ -94,10 +108,11 @@ def upsert_field(db, field_def: dict):
 
 
 def upsert_class(db, class_name: str):
-    existing = db.Clases.find_one({"nombre": class_name, "clase": class_name})
+    existing = db.Clases.find_one({"class_label": class_name})
     if existing:
         return existing
-    return db.Clases.insert_one({"nombre": class_name, "clase": class_name}) and db.Clases.find_one({"nombre": class_name, "clase": class_name})
+    db.Clases.insert_one({"class_label": class_name})
+    return db.Clases.find_one({"class_label": class_name})
 
 
 def seed_demo_data(db, class_dirs: list[Path], source_name: str, class_names: list[str], images_per_class: int):
@@ -113,7 +128,10 @@ def seed_demo_data(db, class_dirs: list[Path], source_name: str, class_names: li
     inserted_classes = []
     next_doc_id = 0
     for class_index, (class_dir, class_name) in enumerate(zip(class_dirs, class_names), start=0):
-        class_doc = {"_id": class_index, "nombre": class_name, "clase": class_name}
+        class_doc = {
+            "_id": class_index,
+            "class_label": class_name  # Campo requerido por el pipeline de entrenamiento
+        }
         db.Clases.replace_one({"_id": class_index}, class_doc, upsert=True)
         inserted_classes.append(class_doc)
 
@@ -143,7 +161,7 @@ def seed_demo_data(db, class_dirs: list[Path], source_name: str, class_names: li
             )
             next_doc_id += 1
 
-    return [doc["clase"] for doc in inserted_classes]
+    return [doc["class_label"] for doc in inserted_classes]
 
 
 def main():

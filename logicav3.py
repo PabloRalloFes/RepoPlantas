@@ -51,14 +51,15 @@ class LogicaApp:
         except Exception:
             return {"success": False, "error": f"Respuesta no válida: {res.text}"}
 
-    def subida_masiva(self, fuente, procesar):
+    def subida_masiva(self, fuente, procesar, validada=False):
         url_subida = self.crear_url("/subida_masiva", self.url_api)
         payload = {
             "fuente": fuente,
             "procesar": procesar,
-            "usuario": self.usuario["nombre"]
+            "usuario": self.usuario["nombre"],
+            "validada": validada,
         }
-        res = self._post(url_subida, json=payload, verify=False, timeout=600)
+        res = self._post(url_subida, json=payload, verify=False, timeout=10000)
         return res.json()
 
     def listar_fuentes_importadas(self):
@@ -76,7 +77,7 @@ class LogicaApp:
             'nombre_fuente': nombre_fuente,
         }
         
-        res = self._post(url_subida, files=files, data=data, verify=False, timeout=600)
+        res = self._post(url_subida, files=files, data=data, verify=False, timeout=10000)
         return res.json()
 
     def get_classification_classes(self):
@@ -552,6 +553,17 @@ class LogicaApp:
     def seleccionar_archivo(self, archivo):
         self.archivo_seleccionado = archivo
         return True
+
+    def avanzar_puntero_repo(self, reverso=False):
+        if not reverso and len(self.batch_archivos) == self.max_archivos:
+            self.puntero_repo += self.max_archivos
+            return True
+
+        if reverso and self.puntero_repo > 0:
+            self.puntero_repo -= self.max_archivos
+            return True
+
+        return False
     
     def procesar_nombre_key_etiquetas(self):
         etiquetas = self.recuperar_etiquetas()
@@ -596,6 +608,21 @@ class LogicaApp:
                 if etiqueta.get("clase") == "Sin_clasificar" or etiqueta.get("nombre") == "Sin_clasificar":
                     id_etiqueta = etiqueta["_id"]
                     break
+
+        try:
+            id_etiqueta = int(id_etiqueta) if id_etiqueta is not None else id_etiqueta
+        except (TypeError, ValueError):
+            return {"success": False, "error": "Identificador de etiqueta inválido"}
+
+        try:
+            formato = int(formato) if formato is not None else 0
+        except (TypeError, ValueError):
+            formato = 0
+
+        try:
+            fuente = int(fuente) if fuente is not None else 0
+        except (TypeError, ValueError):
+            fuente = 0
 
         url_subir_foto = self.crear_url("/subir_imagen", self.url_api)
 

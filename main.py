@@ -699,12 +699,19 @@ def subida_masiva():
     if procesar:
         cmd.append("--procesar")
 
+    # Propagar el token del usuario autenticado a los scripts internos.
+    token = _extract_bearer_token()
+    subprocess_env = os.environ.copy()
+    if token:
+        subprocess_env["API_BEARER_TOKEN"] = token
+
     try:
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
+            env=subprocess_env,
         )
 
         log_dir = os.path.join(ROOT, "logs")
@@ -756,11 +763,19 @@ def listar_fuentes_importadas():
                 return True
             if not os.path.isdir(path_fuente):
                 return False
-            # Compatibilidad: permitir fuentes sin carpeta color si contienen clases directamente.
-            return any(
-                os.path.isdir(os.path.join(path_fuente, d)) and "___" in d
-                for d in os.listdir(path_fuente)
-            )
+            # Compatibilidad: permitir fuentes con carpetas de clases directamente.
+            # Busca cualquier subcarpeta que contenga imágenes, sin restricción de nombre.
+            try:
+                for item in os.listdir(path_fuente):
+                    item_path = os.path.join(path_fuente, item)
+                    if os.path.isdir(item_path) and item not in {"__MACOSX", ".DS_Store"}:
+                        # Revisar si contiene imágenes
+                        for _, _, files in os.walk(item_path):
+                            if any(f.lower().endswith((".jpg", ".jpeg", ".png")) for f in files):
+                                return True
+            except:
+                pass
+            return False
         
         # Listar solo carpetas de datasets (no archivos ni carpetas internas del proyecto)
         carpetas = [
@@ -830,44 +845,47 @@ def subida_masiva_zip():
             with zipfile.ZipFile(zip_file, 'r') as zip_ref:
                 zip_ref.extractall(dest_dir)
 
-            # Detectar base de clases válida:
-            # 1) data/<fuente>/color/<Planta___Enfermedad>/...
-            # 2) data/<fuente>/<Planta___Enfermedad>/...
-            # 3) con carpeta contenedora adicional en el ZIP
+            # Detectar base de clases válida. Soporta:
+            # 1) data/<fuente>/color/<clase>/... (estructura normalizada)
+            # 2) data/<fuente>/<clase>/... (raíz directa)
+            # 3) data/<fuente>/<contenedor>/<clase>/... (contenedor simple en el ZIP)
+            # También soporta compatibilidad con nombres Planta___Enfermedad si existen.
             color_path = os.path.join(dest_dir, "color")
             candidate_base = None
 
             if os.path.isdir(color_path):
                 candidate_base = color_path
             else:
-                root_dirs = [d for d in os.listdir(dest_dir) if os.path.isdir(os.path.join(dest_dir, d)) and d != "__MACOSX"]
-                root_class_dirs = [d for d in root_dirs if "___" in d]
-
-                if root_class_dirs:
-                    candidate_base = dest_dir
-                elif len(root_dirs) == 1:
-                    wrapper_dir = os.path.join(dest_dir, root_dirs[0])
-                    wrapper_color = os.path.join(wrapper_dir, "color")
-                    if os.path.isdir(wrapper_color):
-                        candidate_base = wrapper_color
-                    else:
-                        wrapper_dirs = [d for d in os.listdir(wrapper_dir) if os.path.isdir(os.path.join(wrapper_dir, d)) and d != "__MACOSX"]
-                        wrapper_class_dirs = [d for d in wrapper_dirs if "___" in d]
-                        if wrapper_class_dirs:
-                            candidate_base = wrapper_dir
+                root_dirs = [d for d in os.listdir(dest_dir) if os.path.isdir(os.path.join(dest_dir, d)) and d not in {"__MACOSX", ".DS_Store"}]
+                # Priorizar estructura con carpetas que contengan imágenes en raíz
+                if root_dirs:
+                    # Si hay una sola carpeta, podría ser un contenedor wrapper
+                    if len(root_dirs) == 1:
+                        wrapper_dir = os.path.join(dest_dir, root_dirs[0])
+                        wrapper_color = os.path.join(wrapper_dir, "color")
+                        if os.path.isdir(wrapper_color):
+                            candidate_base = wrapper_color
+                        else:
+                            wrapper_dirs = [d for d in os.listdir(wrapper_dir) if os.path.isdir(os.path.join(wrapper_dir, d)) and d not in {"__MACOSX", ".DS_Store"}]
+                            if wrapper_dirs:
+                                candidate_base = wrapper_dir
+                    
+                    # Si no encontramos contenedor, directamente en la raíz
+                    if candidate_base is None:
+                        candidate_base = dest_dir
 
             if not candidate_base:
                 shutil.rmtree(dest_dir, ignore_errors=True)
                 return jsonify({
                     "success": False,
-                    "error": "Estructura inválida. El ZIP debe contener carpetas 'Planta___Enfermedad' (directamente o dentro de 'color/')."
+                    "error": "Estructura inválida. El ZIP debe contener carpetas con imágenes (directamente o dentro de 'color/')."
                 }), 400
 
-            # Validar carpetas Planta___Enfermedad con imágenes
+            # Validar carpetas con imágenes (sin restricción de nombre)
             subdirs = [d for d in os.listdir(candidate_base) if os.path.isdir(os.path.join(candidate_base, d))]
             valid_class_dirs = []
             for subdir in subdirs:
-                if "___" not in subdir:
+                if subdir.startswith("."):  # Ignorar carpetas ocultas
                     continue
                 subdir_path = os.path.join(candidate_base, subdir)
                 contains_images = False
@@ -882,10 +900,10 @@ def subida_masiva_zip():
                 shutil.rmtree(dest_dir, ignore_errors=True)
                 return jsonify({
                     "success": False,
-                    "error": "No se encontraron carpetas válidas 'Planta___Enfermedad' con imágenes .jpg/.jpeg/.png."
+                    "error": "No se encontraron carpetas con imágenes .jpg/.jpeg/.png válidas."
                 }), 400
 
-            # Normalizar siempre a data/<fuente>/color/<Planta___Enfermedad>/...
+            # Normalizar siempre a data/<fuente>/color/<clase>/...
             final_color_path = os.path.join(dest_dir, "color")
             os.makedirs(final_color_path, exist_ok=True)
             if candidate_base != final_color_path:
@@ -933,12 +951,8 @@ def editar_clases():
         clases_cursor = db.Clases.find()
         clases = []
         for c in clases_cursor:
-            doc = {}
-            for k, v in c.items():
-                if isinstance(v, ObjectId):
-                    doc[k] = str(v)
-                else:
-                    doc[k] = v
+            class_label = str(c.get("class_label", c.get("clase", c.get("nombre", "")))).strip()
+            doc = {"_id": c["_id"], "class_label": class_label}
             clases.append(doc)
         return jsonify({"success": True, "clases": clases})
     except Exception as e:
@@ -976,14 +990,18 @@ def reemplazar_clases():
             if "_id" in doc and doc["_id"] in orig_map:
                 idv = doc["_id"]
                 ids_editados.add(idv)
-                new_fields = {k: v for k, v in doc.items() if k != "_id"}
-                if new_fields:
-                    ops.append(UpdateOne({"_id": idv}, {"$set": new_fields}))
+                class_label = str(doc.get("class_label", doc.get("clase", doc.get("nombre", "")))).strip()
+                if not class_label:
+                    return jsonify({"success": False, "error": f"La clase con id {idv} no tiene class_label"}), 400
+                ops.append(UpdateOne({"_id": idv}, {"$set": {"class_label": class_label}, "$unset": {"nombre": "", "clase": ""}}))
             else:
+                class_label = str(doc.get("class_label", doc.get("clase", doc.get("nombre", "")))).strip()
+                if not class_label:
+                    return jsonify({"success": False, "error": "Todas las clases nuevas deben incluir class_label"}), 400
                 if "_id" not in doc:
                     doc["_id"] = get_next_id(db, "clases_counter")
                 ids_editados.add(doc["_id"])
-                ops.append(InsertOne(doc))
+                ops.append(InsertOne({"_id": doc["_id"], "class_label": class_label}))
 
         ids_to_delete = [i for i in orig_map.keys() if i not in ids_editados]
         for i in ids_to_delete:
@@ -1009,12 +1027,11 @@ def reemplazar_clases():
 @app.route("/add_class", methods=["POST"])
 def add_class():
     data = request.get_json()
-    required = ["nombre", "clase"]
-    if not all(k in data for k in required):
-        return jsonify({"success": False, "error": "Faltan campos obligatorios"}), 400
+    class_label = str(data.get("class_label", data.get("clase", data.get("nombre", "")))).strip()
+    if not class_label:
+        return jsonify({"success": False, "error": "Falta el campo obligatorio class_label"}), 400
 
-    new_doc = dict(data)
-    new_doc.setdefault("class_label", str(new_doc.get("clase", "")).strip() or str(new_doc.get("nombre", "")).strip())
+    new_doc = {"class_label": class_label}
 
     max_doc = db.Clases.find_one(sort=[("_id", -1)])
     max_id = max_doc["_id"] if max_doc else -1
@@ -1367,7 +1384,7 @@ def comparar_experimentos():
         if not all_metrics:
             return jsonify({"success": False, "error": "No se encontraron métricas para los experimentos seleccionados."}), 404
 
-        combined_metrics = ["accuracy_planta", "accuracy_enfermedad", "accuracy_combinada"]
+        combined_metrics = ["accuracy", "precision", "recall"]
         x = range(len(experimentos))
 
         plt.figure()
@@ -1378,9 +1395,9 @@ def comparar_experimentos():
             ]
             plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
 
-        plt.title("Comparación de Accuracy")
+        plt.title("Comparación de métricas en test")
         plt.xlabel("Experimentos")
-        plt.ylabel("Accuracy")
+        plt.ylabel("Valor")
         plt.xticks([pos + width for pos in x], experimentos)
         plt.legend()
         plt.grid(True)
@@ -1389,9 +1406,9 @@ def comparar_experimentos():
         plt.savefig(accuracy_path)
         plt.close()
 
-        f1_metrics = ["f1_planta", "f1_enfermedad"]
+        f1_metrics = ["f1"]
         plt.figure()
-        width = 0.3
+        width = 0.35
         for i, metric in enumerate(f1_metrics):
             values = [
                 all_metrics[experiment]["test"].get(metric, 0) for experiment in experimentos
@@ -1461,7 +1478,7 @@ def recuperar_campos():
 @app.route("/etiquetas", methods=["GET"])
 def etiquetas():
     coleccion = db["Clases"]
-    res = list(coleccion.find({}, {"_id": 1, "nombre": 1, "clase": 1}))
+    res = list(coleccion.find({}, {"_id": 1, "class_label": 1, "nombre": 1, "clase": 1}))
 
     etiquetas_vistas = set()
     etiquetas = []
@@ -1470,11 +1487,12 @@ def etiquetas():
         id = str(r.get("_id", ""))
         if id not in etiquetas_vistas:
             etiquetas_vistas.add(id)
-            nombre = str(r.get("nombre", r.get("clase", "")))
+            class_label = str(r.get("class_label", r.get("clase", r.get("nombre", ""))))
             etiquetas.append({
                 "_id": id,
-                "nombre": nombre,
-                "clase": str(r.get("clase", nombre)),
+                "class_label": class_label,
+                "nombre": class_label,
+                "clase": class_label,
             })
 
     return jsonify(etiquetas)
@@ -1639,7 +1657,15 @@ def add_dato():
                     else:
                         etiqueta = db[campo_almacenado["coleccion"]].find_one({"_id": valor})
                         if etiqueta is None:
-                            abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
+                            # Para campos como "formato", crear automáticamente si no existe
+                            if nombre_campo == "formato":
+                                # Mapeo de IDs de formato a nombres (basado en upload_images.py)
+                                formato_map = {0: "Color", 1: "Grayscale", 2: "Segmented"}
+                                nombre_formato = formato_map.get(valor, f"Formato_{valor}")
+                                db[campo_almacenado["coleccion"]].insert_one({"_id": valor, "formato": nombre_formato, "nombre": nombre_formato})
+                                print(f"Formato '{nombre_formato}' (id={valor}) creado automáticamente.")
+                            else:
+                                abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
         for nombre_imagen, imagen in imagenes_extra:
             os.makedirs(IMAGES_DIR, exist_ok=True)
@@ -1902,7 +1928,15 @@ def subir_imagen():
                     else:
                         etiqueta = db[campo_almacenado["coleccion"]].find_one({"_id": valor})
                         if etiqueta is None:
-                            abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
+                            # Para campos como "formato", crear automáticamente si no existe
+                            if nombre_campo == "formato":
+                                # Mapeo de IDs de formato a nombres (basado en upload_images.py)
+                                formato_map = {0: "Color", 1: "Grayscale", 2: "Segmented"}
+                                nombre_formato = formato_map.get(valor, f"Formato_{valor}")
+                                db[campo_almacenado["coleccion"]].insert_one({"_id": valor, "formato": nombre_formato, "nombre": nombre_formato})
+                                print(f"Formato '{nombre_formato}' (id={valor}) creado automáticamente.")
+                            else:
+                                abort(400, f"No existe una etiqueta de {nombre_campo} con el identificador {valor}")
 
         for nombre_imagen, imagen in imagenes_extra:
             os.makedirs(IMAGES_DIR, exist_ok=True)

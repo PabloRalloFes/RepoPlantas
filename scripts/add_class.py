@@ -33,16 +33,31 @@ with open(ID_DICT_PATH, "r", encoding="utf-8") as f:
     clase_id_dict = json.load(f)
 
 # Revisar si ya existe
-existe = next((c for c in clases_combinadas if c.get("clase") == nombre_clase or c.get("nombre") == nombre_clase), None)
+existe = next((c for c in clases_combinadas if c.get("class_label") == nombre_clase or c.get("clase") == nombre_clase or c.get("nombre") == nombre_clase), None)
+
+
+def normalizar_clase(doc):
+    return {
+        "_id": doc["_id"],
+        "class_label": doc.get("class_label", doc.get("clase", doc.get("nombre", nombre_clase)))
+    }
 
 if existe:
-    print(f"La clase '{nombre_clase}' ya existe en clases_combinadas.json con ID {existe['_id']}")
-    if not existe.get("clasificacion") or not existe.get("nombre_cientifico"):
-        print(f"Esta clase tiene información incompleta. Ejecuta 'editar_clases.py' o utiliza la apppara completarla.")
+    print(f"La clase '{nombre_clase}' ya existe en {COMBINADAS_PATH} con ID {existe['_id']}")
+    # Asegurar que el mapa de ids (src/clases.json) contiene la clave para esta clase.
+    clave = nombre_clase.replace(' ', '_')
+    if clave not in clase_id_dict:
+        clase_id_dict[clave] = existe["_id"]
+        with open(ID_DICT_PATH, "w", encoding="utf-8") as f:
+            json.dump(clase_id_dict, f, indent=2, ensure_ascii=False)
+        print(f"Añadida entrada en '{ID_DICT_PATH}': {clave} -> {existe['_id']}")
+
+    existente_normalizada = normalizar_clase(existe)
     if not coleccion.find_one({"_id": existe["_id"]}):
-        coleccion.insert_one(existe)
+        coleccion.insert_one(existente_normalizada)
         print(f"Insertada en MongoDB con ID {existe['_id']}")
     else:
+        coleccion.replace_one({"_id": existe["_id"]}, existente_normalizada, upsert=True)
         print("Ya estaba presente en la base de datos.")
     exit(0)
 
@@ -51,10 +66,7 @@ nuevo_id = max([c["_id"] for c in clases_combinadas] + [-1]) + 1
 
 nueva_clase = {
     "_id": nuevo_id,
-    "nombre": nombre_clase,
-    "clase": nombre_clase,
-    "clasificacion": "",
-    "nombre_cientifico": ""
+    "class_label": nombre_clase
 }
 
 # Actualizar clases_combinadas.json
@@ -73,5 +85,4 @@ coleccion.insert_one(nueva_clase)
 
 # Mensaje final
 print(f"Clase '{nombre_clase}' añadida con ID {nuevo_id}")
-print("️Esta clase se ha guardado con campos vacíos. Si deseas completarlos, hazlo desde la app o ejecuta:")
-print("    python editar_clases.py")
+print("Esta clase se ha guardado con un único campo canónico: class_label.")

@@ -6,13 +6,10 @@
         "coleccion": "Fuente"
     },
     {
-        "nombre": "clase",
+        "nombre": "class_label",
         "cod": 0,
         "campos_etiqueta": {
-            "nombre": "str",
-            "clase": "str",
-            "clasificacion": "str",
-            "nombre_cientifico": "str"
+            "class_label": "str"
         },
         "coleccion": "Clases"
     },
