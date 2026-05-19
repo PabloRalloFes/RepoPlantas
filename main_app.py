@@ -289,6 +289,8 @@ if __name__ == "__main__":
             return [ft.Text(f"Nombre: {name}\nRoles: {roles_text}")]
 
         def crear_columnas(datos: list[dict]):
+            if isinstance(datos, dict):
+                datos = datos.get("usuarios", [])
             if len(datos) == 0: return []
             datos.sort(key=len, reverse=True)
             refe = datos[0]
@@ -308,6 +310,8 @@ if __name__ == "__main__":
             return columnas
         
         def crear_filas(datos: list[dict]):
+            if isinstance(datos, dict):
+                datos = datos.get("usuarios", [])
             filas = []
 
             for entrada in datos:

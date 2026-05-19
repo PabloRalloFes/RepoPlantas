@@ -363,7 +363,8 @@ def predict_image():
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
         # Cargar configuración y modelo
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        from utils.device import get_device
+        device = get_device()
         experiment_path = data.get("experiments", modelo_seleccionado)
         experiment_path = os.path.splitext(experiment_path)[0]
         experiment_path = os.path.join("./experiments", experiment_path)

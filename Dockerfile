@@ -16,6 +16,8 @@ RUN apt-get update \
 
 COPY requirements.txt ./
 RUN pip install --upgrade pip \
+    && pip install --extra-index-url https://download.pytorch.org/whl/cpu/torch_stable.html \
+        torch==2.9.0 torchvision==0.24.0 \
     && pip install -r requirements.txt
 
 COPY . .

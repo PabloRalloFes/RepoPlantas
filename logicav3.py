@@ -402,7 +402,14 @@ class LogicaApp:
 
         respuesta = self._get(url_lista_usuarios, params=params, verify=False, timeout=10.0)
 
-        self.lista_usuarios = respuesta.json()
+        datos = respuesta.json()
+        if isinstance(datos, list):
+            self.lista_usuarios = datos
+        elif isinstance(datos, dict):
+            usuarios = datos.get("usuarios", [])
+            self.lista_usuarios = usuarios if isinstance(usuarios, list) else []
+        else:
+            self.lista_usuarios = []
         return True
         
     def seleccionar_usuario(self, nombre: str):

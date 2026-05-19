@@ -21,10 +21,12 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      URL_BBDD: ${DOCKER_URL_BBDD:-mongodb://mongo:27017/}
-      URL_API: ${URL_API:-http://api:5001}
-      URL_API_INIT: ${URL_API_INIT:-http://api:5001}
+      URL_BBDD: mongodb://mongo:27017/
+      URL_API: http://api:5001
+      URL_API_INIT: http://api:5001
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       GUNICORN_WORKERS: ${GUNICORN_WORKERS:-2}
@@ -53,10 +55,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      URL_API: ${URL_API_INIT:-http://api:5001}
-      API_BASE_URL: ${URL_API_INIT:-http://api:5001}
-      URL_BBDD: ${DOCKER_URL_BBDD:-mongodb://mongo:27017/}
+      URL_API: http://api:5001
+      API_BASE_URL: http://api:5001
+      URL_BBDD: mongodb://mongo:27017/
     command: ["python", "scripts/setup_bbdd.py"]
     restart: "no"
 

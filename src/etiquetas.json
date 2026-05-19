@@ -1,7 +1,7 @@
 [
+    {"coleccion": "Fuente", "etiqueta": {"fuente": "App"}},
     {"coleccion": "Fuente", "etiqueta": {"fuente": "PlantVillage"}},
     {"coleccion": "Fuente", "etiqueta": {"fuente": "VRAIN_Viticultura_Enologia"}},
-    {"coleccion": "Fuente", "etiqueta": {"fuente": "App"}},
     {"coleccion": "Formato", "etiqueta": {"formato": "Color"}},
     {"coleccion": "Formato", "etiqueta": {"formato": "Grayscale"}},
     {"coleccion": "Formato", "etiqueta": {"formato": "Segmented"}}

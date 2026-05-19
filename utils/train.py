@@ -9,7 +9,8 @@ from collections import Counter
 import json  # Importar json para guardar el archivo de imágenes mal clasificadas
 
 def train_model(model, train_loader, val_loader, config, data_dir):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    from utils.device import get_device
+    device = get_device()
     model = model.to(device)
 
     epochs = config["epochs"]
@@ -140,7 +141,8 @@ def train_model(model, train_loader, val_loader, config, data_dir):
 def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="test", device=None):
     # Detectar dispositivo automáticamente si no se especifica
     if device is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        from utils.device import get_device
+        device = get_device()
     
     model = model.to(device)
     model.eval()

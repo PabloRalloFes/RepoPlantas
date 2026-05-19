@@ -15,9 +15,10 @@ sys.path.append(str(ROOT))
 
 from utils.model import build_model
 from utils.database import load_yaml_config, connect_to_database
+from utils.device import get_device
 
 def predict(image_path, experiment_path, known_planta=None):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = get_device()
 
     config_path = os.path.join(experiment_path, "config_final.yaml")
     experiment_name = os.path.basename(os.path.normpath(experiment_path))
