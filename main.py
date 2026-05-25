@@ -58,8 +58,11 @@ def _env_json(name, default):
         return default
 
 
+DB_NAME = os.getenv("DB_NAME", "Repositorio_Plantas")
+DB_USERS = os.getenv("DB_USERS", "Users")
+
 app = Flask(__name__)
-db = connect_to_database(db_name="Repositorio_Plantas")  # por defecto usa "Repositorio_Plantas"
+db = connect_to_database(db_name=DB_NAME)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(ROOT, "imagenes")
@@ -1912,7 +1915,7 @@ def eliminar_imagen():
 
 ### USUARIOS ###
 
-bd_usuarios = connect_to_database(db_name="appPlantas")
+bd_usuarios = connect_to_database(db_name=DB_USERS)
 col_usuarios = bd_usuarios["usuarios"]
 
 @app.route("/iniciar_sesion", methods=["POST"])
