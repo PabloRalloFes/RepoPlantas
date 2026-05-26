@@ -59,7 +59,7 @@ def _env_json(name, default):
 
 
 DB_NAME = os.getenv("DB_NAME", "Repositorio_Plantas")
-DB_USERS = os.getenv("DB_USERS", "Users")
+DB_USERS = os.getenv("DB_USERS", "Usuarios")
 
 app = Flask(__name__)
 db = connect_to_database(db_name=DB_NAME)

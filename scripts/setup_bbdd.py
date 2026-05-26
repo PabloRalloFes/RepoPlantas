@@ -19,7 +19,7 @@ load_dotenv()
 URL = os.getenv("URL_API")
 JWT_SECRET = os.getenv("JWT_SECRET", "CHANGE_ME_IN_PRODUCTION")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-DB_NAME = os.getenv("DB_NAME", "Demo")
+DB_NAME = os.getenv("DB_NAME", "Repositorio_Plantas")
 DB_USERS = os.getenv("DB_USERS", "Usuarios")
 VERIFY_SSL = os.getenv("VERIFY_SSL", "false").strip().lower() in {"1", "true", "yes"}
 
