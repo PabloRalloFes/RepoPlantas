@@ -64,16 +64,19 @@ def _bootstrap_admin_user():
     admin_password_hashed = _app_password_hash(admin_name, admin_password)
 
     try:
+        print("STEP registro ->", f"{URL}/registro")
         registro = _post(
             f"{URL}/registro",
             json={"nombre": admin_name, "password": admin_password_hashed},
         )
-        print(registro.status_code, _json_or_text(registro))
+        print("registro status:", registro.status_code, _json_or_text(registro))
     except Exception as e:
         print("Error creating admin user via /registro:", e)
         return None
 
     try:
+        print("STEP token -> JWT_SECRET len:", len(JWT_SECRET))
+
         # Primer bootstrap: /add_rol exige admin, así que se usa un token de arranque.
         bootstrap_token = jwt.encode(
             {
@@ -84,13 +87,14 @@ def _bootstrap_admin_user():
             JWT_SECRET,
             algorithm=JWT_ALGORITHM,
         )
-
+        print("token generated, len:", len(bootstrap_token))
+        print("STEP add_rol ->", f"{URL}/add_rol")
         add_rol = _post(
             f"{URL}/add_rol",
             json={"nombre": admin_name, "rol": "admin"},
             headers=_auth_headers(bootstrap_token),
         )
-        print(add_rol.status_code, _json_or_text(add_rol))
+        print("add_rol status:", add_rol.status_code, _json_or_text(add_rol))
     except Exception as e:
         print("Error granting admin role via /add_rol:", e)
         return None
@@ -112,12 +116,13 @@ def _bootstrap_admin_user():
         print("Error migrating admin password in Usuarios DB:", e)
 
     try:
+        print("STEP login ->", f"{URL}/iniciar_sesion")
         login = _post(
             f"{URL}/iniciar_sesion",
             json={"nombre": admin_name, "password": admin_password_hashed, "rol": "admin"},
         )
         login_data = _json_or_text(login)
-        print(login.status_code, login_data)
+        print("login status:", login.status_code, login_data)
         if login.status_code != 200 or not isinstance(login_data, dict):
             return None
         return login_data.get("access_token")
