@@ -1,6 +1,6 @@
 # Docker del Servidor + MongoDB (Guia Rapida)
 
-Esta guia levanta **todo el backend** en contenedores:
+Esta guia levanta **todo el backend** en contenedores para que el usuario pueda crear uno con sus propias modificaciones:
 - API Flask (`main.py` via `run_server.py`)
 - MongoDB persistente
 
@@ -99,6 +99,6 @@ Para dejarlo en condiciones de producción:
 2. `docker compose build`.
 3. `docker compose up -d mongo api`.
 4. `docker compose --profile init run --rm initdb`.
-5. Probar endpoint: abrir `http://localhost:5001/opciones_modelos`.
+5. Probar endpoint: abrir `http://localhost:5001/health`.
 6. Subir una imagen desde app/script y confirmar insercion en Mongo.
 

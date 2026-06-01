@@ -71,7 +71,7 @@ URL_BBDD=mongodb://mongo:27017/
 # URL que usan scripts internos de Docker
 URL_API=http://api:5001
 
-# URL base para URLs guardadas en BBDD
+# URL base para URLs guardadas en BBDD (local)
 PUBLIC_API_BASE_URL=http://127.0.0.1:5001
 
 # Gunicorn workers
@@ -86,8 +86,7 @@ MAX_IMAGE_SIZE_MB=10
 
 **Para producción remota:**
 ```env
-PUBLIC_API_BASE_URL=https://tu-dominio.com
-CORS_ORIGINS=https://tu-dominio.com
+PUBLIC_API_BASE_URL=https://plantas.gti-ia.upv.es
 ```
 
 **Para aumentar workers:**
@@ -142,42 +141,11 @@ docker exec plantas-mongo sh -c \
 
 ---
 
-## 🔐 HTTPS en Producción
-
-### Opción 1: Nginx Reverse Proxy (Recomendado)
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name tu-dominio.com;
-    
-    ssl_certificate /etc/letsencrypt/live/tu-dominio.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/tu-dominio.com/privkey.pem;
-    
-    location / {
-        proxy_pass http://localhost:5001;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-El contenedor Docker corre en HTTP interno, Nginx termina TLS.
-
-### Opción 2: Flask HTTPS Nativo
-
-Cambiar CMD en Dockerfile:
-```dockerfile
-CMD ["python", "run_server.py", "--https", "--host", "0.0.0.0", "--port", "5001"]
-```
-
----
 
 ## 📋 Checklist de Producción
 
 - [ ] `.env` configurado para dominio real
 - [ ] Backup automático programado (cron)
-- [ ] HTTPS via Nginx/Reverse Proxy
 - [ ] Monitoreo de logs configurado
 - [ ] Espacio en disco suficiente
 - [ ] MongoDB backup policy clara

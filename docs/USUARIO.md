@@ -22,7 +22,7 @@ Si te entregan una carpeta portable, entra dentro y abre `Plant-AId.exe`.
 
 La aplicación se conecta al servidor de la universidad, así que solo necesita que la URL de la API esté configurada correctamente.
 
-**URL de la API:** {indicar aquí la URL final}
+**URL de la API:** https://plantas.gti-ia.upv.es
 
 ![Pantalla de instalación](imagenes/usuario/instalacion.png)
 
