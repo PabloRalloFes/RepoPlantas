@@ -915,6 +915,11 @@ def subida_masiva_zip():
                             "error": f"Conflicto al normalizar estructura: la carpeta '{class_dir}' ya existe en color/."
                         }), 400
                     shutil.move(src, dst)
+
+                # El ZIP ya fue normalizado; eliminar la carpeta temporal que lo envolvía.
+                cleanup_path = candidate_base if candidate_base == dest_dir else os.path.dirname(candidate_base)
+                if cleanup_path and os.path.isdir(cleanup_path):
+                    shutil.rmtree(cleanup_path, ignore_errors=True)
             
             # Guardar backup del ZIP en logs/zips/
             zips_backup_dir = os.path.join(ROOT, "logs", "zips")
