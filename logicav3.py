@@ -109,7 +109,7 @@ class LogicaApp:
     
     def set_url_api(self, nueva_url: str):
         if not nueva_url.startswith("http://") and not nueva_url.startswith("https://"):
-            nueva_url = "http://" + nueva_url
+            nueva_url = "https://" + nueva_url
         self.url_api = nueva_url.rstrip("/")
         return {"success": True, "message": f"URL de la API actualizada a {self.url_api}"}
     
@@ -402,7 +402,14 @@ class LogicaApp:
 
         respuesta = self._get(url_lista_usuarios, params=params, verify=False, timeout=10.0)
 
-        self.lista_usuarios = respuesta.json()
+        datos = respuesta.json()
+        if isinstance(datos, list):
+            self.lista_usuarios = datos
+        elif isinstance(datos, dict):
+            usuarios = datos.get("usuarios", [])
+            self.lista_usuarios = usuarios if isinstance(usuarios, list) else []
+        else:
+            self.lista_usuarios = []
         return True
         
     def seleccionar_usuario(self, nombre: str):

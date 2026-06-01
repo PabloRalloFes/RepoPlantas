@@ -289,6 +289,8 @@ if __name__ == "__main__":
             return [ft.Text(f"Nombre: {name}\nRoles: {roles_text}")]
 
         def crear_columnas(datos: list[dict]):
+            if isinstance(datos, dict):
+                datos = datos.get("usuarios", [])
             if len(datos) == 0: return []
             datos.sort(key=len, reverse=True)
             refe = datos[0]
@@ -308,6 +310,8 @@ if __name__ == "__main__":
             return columnas
         
         def crear_filas(datos: list[dict]):
+            if isinstance(datos, dict):
+                datos = datos.get("usuarios", [])
             filas = []
 
             for entrada in datos:
@@ -557,37 +561,39 @@ if __name__ == "__main__":
 
             page.update()
 
-        def abrir_dialogo_add_class(e):
-            planta_input = ft.TextField(label="Planta")
-            comun_input = ft.TextField(label="Nombre común")
-            clasif_input = ft.TextField(label="Clasificación")
-            cient_input = ft.TextField(label="Nombre científico")
+        def abrir_dialogo_nueva_clase(on_success=None):
+            planta_input = ft.TextField(label="Planta *")
+            comun_input = ft.TextField(label="Nombre común *")
+            clasif_input = ft.TextField(label="Clasificación (opcional)")
+            cient_input = ft.TextField(label="Nombre científico (opcional)")
 
             def confirmar_add(ev):
+                planta = planta_input.value.strip()
+                nombre_comun = comun_input.value.strip()
+
+                if not planta or not nombre_comun:
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Faltan datos obligatorios"),
+                        content=ft.Text("Debes indicar al menos la planta y el nombre común de la clase."),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+                    return
+
                 nueva = {
-                    "planta": planta_input.value.strip(),
-                    "nombre_comun": comun_input.value.strip(),
+                    "planta": planta,
+                    "nombre_comun": nombre_comun,
                     "clasificacion": clasif_input.value.strip(),
                     "nombre_cientifico": cient_input.value.strip()
                 }
                 res = logica_app.agregar_clase(nueva)
                 if res.get("success"):
                     page.close(dialogo)
-
-                    def recargar(e):
-                        page.close(dialogo_exito)
-                        page.go("/main_etiquetador")
-
-                    dialogo_exito = ft.AlertDialog(
-                        modal=True,
-                        title=ft.Text("Clase añadida"),
-                        content=ft.Text("La nueva clase se ha guardado correctamente."),
-                        actions=[ft.TextButton("Aceptar", on_click=recargar)]
-                    )
-
-                    page.open(dialogo_exito)
+                    if on_success:
+                        on_success(res.get("clase", nueva))
                 else:
                     page.open(ft.AlertDialog(
+                        modal=True,
                         title=ft.Text("Error"),
                         content=ft.Text(res.get("error", "No se pudo añadir la clase.")),
                         actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
@@ -609,6 +615,19 @@ if __name__ == "__main__":
             )
 
             page.open(dialogo)
+
+        def abrir_dialogo_add_class(e):
+            def tras_crear_clase(_clase_creada):
+                dialogo_exito = ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Clase añadida"),
+                    content=ft.Text("La nueva clase se ha guardado correctamente."),
+                    actions=[ft.TextButton("Aceptar", on_click=page.go("/main_etiquetador"))]
+                )
+
+                page.open(dialogo_exito)
+
+            abrir_dialogo_nueva_clase(tras_crear_clase)
 
         def aplicar_filtros_handler(page, dropdown_planta, dropdown_enfermedad, dropdown_formato, dropdown_fuente, dropdown_num_imagenes):
             def _handler(e=None):
@@ -1287,6 +1306,15 @@ if __name__ == "__main__":
 
             logica_app.procesar_foto(img_bytes)
             page.go("/main_usuario/foto")
+
+        def mostrar_clase_creada(clase_creada):
+            dropdown_etiquetar_options(clase_creada.get("_id"))
+            page.open(ft.AlertDialog(
+                modal=True,
+                title=ft.Text("Clase creada"),
+                content=ft.Text("La nueva clase se ha creado y ya está seleccionada."),
+                actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+            ))
 
         def subir_foto():
             if dropdown_etiquetar.value is None or dropdown_etiquetar.value == "none":
@@ -3578,29 +3606,52 @@ if __name__ == "__main__":
                                                                 border_radius=15,
                                                                 border=ft.border.all(2, ft.Colors.GREEN),
                                                                 bgcolor=ft.Colors.with_opacity(0.1, ft.Colors.GREEN),
-                                                                content=ft.Stack(
+                                                                content=ft.Column(
+                                                                    spacing=14,
+                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                    alignment=ft.MainAxisAlignment.CENTER,
                                                                     controls=[
-                                                                        ft.Image(
-                                                                            src_base64=logica_app.foto_b64,
-                                                                            width=300,
-                                                                            height=278,
-                                                                            fit=ft.ImageFit.CONTAIN,
-                                                                        ),
                                                                         ft.Container(
-                                                                            content=ft.Icon(
-                                                                                name=ft.Icons.ZOOM_IN,
-                                                                                color=ft.Colors.WHITE,
-                                                                                size=28,
+                                                                            content=ft.Stack(
+                                                                                controls=[
+                                                                                    ft.Image(
+                                                                                        src_base64=logica_app.foto_b64,
+                                                                                        width=300,
+                                                                                        height=278,
+                                                                                        fit=ft.ImageFit.CONTAIN,
+                                                                                    ),
+                                                                                    ft.Container(
+                                                                                        content=ft.Icon(
+                                                                                            name=ft.Icons.ZOOM_IN,
+                                                                                            color=ft.Colors.WHITE,
+                                                                                            size=28,
+                                                                                        ),
+                                                                                        alignment=ft.alignment.top_right,
+                                                                                        padding=8,
+                                                                                    ),
+                                                                                ],
+                                                                                alignment=ft.alignment.center,
                                                                             ),
-                                                                            alignment=ft.alignment.top_right,
-                                                                            padding=8,
+                                                                            alignment=ft.alignment.center,
+                                                                            ink=True,
+                                                                            on_click=lambda _: mostrar_imagen_ampliada(logica_app.foto_b64),
                                                                         ),
-                                                                    ],
-                                                                    alignment=ft.alignment.center,
+                                                                        ft.ElevatedButton(
+                                                                            adaptive=True,
+                                                                            bgcolor=ft.Colors.BLUE,
+                                                                            color=ft.Colors.WHITE,
+                                                                            text="PREDECIR CLASE",
+                                                                            width=220,
+                                                                            on_click=lambda _: (mostrar_cargando(page, True), page.go("/main_usuario/prediccion"))
+                                                                        ),
+                                                                        ft.Text(
+                                                                            "Obtén una predicción sin guardar la imagen en la base de datos.",
+                                                                            size=14,
+                                                                            color=ft.Colors.GREY_300,
+                                                                            text_align=ft.TextAlign.CENTER,
+                                                                        ),
+                                                                    ]
                                                                 ),
-                                                                alignment=ft.alignment.center,
-                                                                ink=True,
-                                                                on_click=lambda _: mostrar_imagen_ampliada(logica_app.foto_b64),
                                                             ),
                                                             ft.Container(
                                                                 width=420,
@@ -3614,6 +3665,20 @@ if __name__ == "__main__":
                                                                     controls=[
                                                                         dropdown_etiquetar,
                                                                         dropdown_formato,
+                                                                        ft.ElevatedButton(
+                                                                            adaptive=True,
+                                                                            bgcolor=ft.Colors.ORANGE,
+                                                                            color=ft.Colors.WHITE,
+                                                                            text="NUEVA CLASE",
+                                                                            width=200,
+                                                                            on_click=lambda _: abrir_dialogo_nueva_clase(mostrar_clase_creada)
+                                                                        ),
+                                                                        ft.Text(
+                                                                            "Crea una clase nueva si la tuya no existe todavía",
+                                                                            size=14,
+                                                                            color=ft.Colors.GREY_300,
+                                                                            text_align=ft.TextAlign.CENTER,
+                                                                        ),
                                                                         ft.Container(height=4),
                                                                         ft.Column(
                                                                             spacing=6,
@@ -3628,28 +3693,7 @@ if __name__ == "__main__":
                                                                                     on_click=lambda _: subir_foto()
                                                                                 ),
                                                                                 ft.Text(
-                                                                                    "Guarda la imagen en la base de datos con la etiqueta seleccionada",
-                                                                                    size=15,
-                                                                                    color=ft.Colors.GREY_300,
-                                                                                    text_align=ft.TextAlign.CENTER
-                                                                                ),
-                                                                            ]
-                                                                        ),
-                                                                        ft.Divider(height=1),
-                                                                        ft.Column(
-                                                                            spacing=6,
-                                                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                                                                            controls=[
-                                                                                ft.ElevatedButton(
-                                                                                    adaptive=True,
-                                                                                    bgcolor=ft.Colors.BLUE,
-                                                                                    color=ft.Colors.WHITE,
-                                                                                    text="PREDECIR CLASE",
-                                                                                    width=200,
-                                                                                    on_click=lambda _: (mostrar_cargando(page, True), page.go("/main_usuario/prediccion"))
-                                                                                ),
-                                                                                ft.Text(
-                                                                                    "Obtén una predicción sin guardar la imagen en la base de datos",
+                                                                                    "Guarda la imagen en la base de datos con la etiqueta seleccionada.",
                                                                                     size=15,
                                                                                     color=ft.Colors.GREY_300,
                                                                                     text_align=ft.TextAlign.CENTER
