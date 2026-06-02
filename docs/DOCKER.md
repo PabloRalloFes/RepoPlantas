@@ -46,6 +46,8 @@ docker compose ps
 
 La API estará accesible en: **`http://localhost:5001`**
 
+La raíz del dominio o del servidor puede servir una landing pública con enlaces de descarga y texto de uso. Los enlaces pueden apuntar a endpoints tipo `/download/windows`, `/download/linux` y `/download/android`, que devuelven directamente los ZIP almacenados en la máquina virtual.
+
 ---
 
 ## 📊 Servicios
@@ -93,6 +95,16 @@ PUBLIC_API_BASE_URL=https://plantas.gti-ia.upv.es
 ```env
 GUNICORN_WORKERS=8
 ```
+
+**Para publicar las descargas de la app desde la VM:**
+```env
+DOWNLOADS_DIR=/ruta/local/a/downloads
+DOWNLOAD_WINDOWS_FILE=PlantAID-Windows.zip
+DOWNLOAD_LINUX_FILE=PlantAID-Linux.zip
+DOWNLOAD_ANDROID_FILE=PlantAID-Android.zip
+```
+
+Coloca esos ZIP en la ruta indicada y la landing los servirá como descargas directas.
 
 ---
 

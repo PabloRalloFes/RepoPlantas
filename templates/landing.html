@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }}</title>
+  <style>
+    :root {
+      --bg: #07130f;
+      --panel: rgba(10, 24, 18, 0.88);
+      --panel-2: rgba(18, 42, 30, 0.9);
+      --line: rgba(130, 198, 154, 0.18);
+      --text: #eef7f1;
+      --muted: #b7c8bd;
+      --accent: #4fd18a;
+      --accent-2: #1f9d62;
+      --warning: #f1c75b;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(79, 209, 138, 0.18), transparent 35%),
+        radial-gradient(circle at top right, rgba(31, 157, 98, 0.16), transparent 28%),
+        linear-gradient(180deg, #081510 0%, #06100d 100%);
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 20px;
+      align-items: stretch;
+      margin-top: 10px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-copy {
+      padding: 32px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(79, 209, 138, 0.1);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(2.4rem, 4vw, 4.2rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+    }
+
+    .lead {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 62ch;
+    }
+
+    .hero-aside {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: space-between;
+    }
+
+    .download-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .download-card {
+      background: var(--panel-2);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .download-card strong {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .download-card small {
+      display: block;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 122px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      color: #07130f;
+      background: linear-gradient(135deg, var(--accent), #8ef0b6);
+      transition: transform 0.15s ease, filter 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .btn.disabled {
+      pointer-events: none;
+      background: #395446;
+      color: #b8c9bf;
+    }
+
+    .section-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .section-card {
+      padding: 20px;
+      background: rgba(10, 24, 18, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      min-height: 170px;
+    }
+
+    .section-card h2 {
+      margin: 0 0 10px;
+      font-size: 1.08rem;
+    }
+
+    .section-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .footer {
+      margin-top: 20px;
+      padding: 18px 2px 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--warning);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy,
+      .hero-aside {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <article class="panel hero-copy">
+        <div class="eyebrow">Descargas y uso</div>
+        <h1>{{ app_name }}</h1>
+        <p class="lead">
+          Una herramienta para subir imágenes de plantas, gestionar clases y usar modelos de clasificación de enfermedades.
+          Aquí tienes las versiones de la app y una guía rápida para empezar.
+        </p>
+        <div class="section-grid">
+          {% for section in sections %}
+          <div class="section-card">
+            <h2>{{ section.title }}</h2>
+            <p>{{ section.body }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+
+      <aside class="panel hero-aside">
+        <div>
+          <div class="eyebrow">Descargas</div>
+          <h2 style="margin: 14px 0 8px; font-size: 1.5rem;">Elige tu plataforma</h2>
+          <p class="lead" style="font-size: 0.98rem; margin-bottom: 0;">
+            Cada enlace descarga directamente el archivo ZIP de la versión correspondiente.
+          </p>
+        </div>
+
+        <div class="download-grid">
+          {% for item in downloads %}
+          <div class="download-card">
+            <div>
+              <strong>{{ item.label }}</strong>
+              <small>{{ item.filename }}</small>
+            </div>
+            {% if item.available %}
+            <a class="btn" href="{{ item.url }}">Descargar</a>
+            {% else %}
+            <span class="btn disabled">No disponible</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="note">
+          Si alguna versión no aparece disponible, coloca el ZIP en la carpeta local configurada en la VM.
+        </div>
+      </aside>
+    </section>
+
+    <div class="footer panel" style="padding: 18px 22px; margin-top: 20px;">
+      Esta página sirve solo como entrada pública. La API sigue disponible en sus rutas actuales para la app y el backend.
+    </div>
+  </main>
+</body>
+</html>

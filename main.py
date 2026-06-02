@@ -1,7 +1,7 @@
 import base64
 import io
 from PIL import Image
-from flask import Flask, request, jsonify, abort, g
+from flask import Flask, request, jsonify, abort, g, render_template
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -66,6 +66,12 @@ db = connect_to_database(db_name=DB_NAME)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(ROOT, "imagenes")
+DOWNLOADS_DIR = Path(os.getenv("DOWNLOADS_DIR", str(Path(ROOT) / "downloads"))).resolve()
+DOWNLOAD_FILES = {
+    "windows": os.getenv("DOWNLOAD_WINDOWS_FILE", "PlantAID-Windows.zip"),
+    "linux": os.getenv("DOWNLOAD_LINUX_FILE", "PlantAID-Linux.zip"),
+    "android": os.getenv("DOWNLOAD_ANDROID_FILE", "PlantAID-Android.zip"),
+}
 
 MAX_IMAGE_SIZE_MB = _env_int("MAX_IMAGE_SIZE_MB", 10)
 MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
@@ -294,6 +300,56 @@ def serialize_value(v):
 def jsonify_serialized(obj):
     """Conveniencia: serializa recursivamente y devuelve jsonify."""
     return jsonify(serialize_value(obj))
+
+
+@app.route("/", methods=["GET"])
+def landing_page():
+    downloads = []
+    labels = {
+        "windows": "Windows",
+        "linux": "Linux",
+        "android": "Android",
+    }
+
+    for platform, filename in DOWNLOAD_FILES.items():
+        file_path = DOWNLOADS_DIR / filename
+        downloads.append({
+            "platform": platform,
+            "label": labels.get(platform, platform.title()),
+            "filename": filename,
+            "available": file_path.is_file(),
+            "url": f"/download/{platform}",
+        })
+
+    sections = [
+        {
+            "title": "Qué hace la app",
+            "body": "PLANT-AID permite subir imágenes de plantas, asignarles una clase y usar modelos para predecir enfermedades.",
+        },
+        {
+            "title": "Cómo usarla",
+            "body": "Instala la versión adecuada, abre sesión, sube una foto y elige si quieres guardar la imagen o solo predecirla.",
+        },
+        {
+            "title": "Etiquetado y administración",
+            "body": "Los etiquetadores validan imágenes y clases, y los administradores gestionan usuarios, roles y configuración.",
+        },
+    ]
+
+    return render_template("landing.html", downloads=downloads, sections=sections, app_name="PLANT-AID")
+
+
+@app.route("/download/<platform>", methods=["GET"])
+def download_app(platform):
+    filename = DOWNLOAD_FILES.get(platform.lower())
+    if not filename:
+        return jsonify({"success": False, "error": "Versión no encontrada"}), 404
+
+    file_path = (DOWNLOADS_DIR / filename).resolve()
+    if not file_path.is_file() or DOWNLOADS_DIR not in file_path.parents:
+        return jsonify({"success": False, "error": "Archivo no disponible"}), 404
+
+    return send_file(file_path, as_attachment=True, download_name=filename)
 
 
 ### IMÁGENES ###
