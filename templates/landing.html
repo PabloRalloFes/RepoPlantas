@@ -208,14 +208,20 @@
         <div class="eyebrow">Descargas y uso</div>
         <h1>{{ app_name }}</h1>
         <p class="lead">
-          Una herramienta para subir imágenes de plantas, gestionar clases y usar modelos de clasificación de enfermedades.
+          Una herramienta para subir imágenes de plantas sanas o enfermas y usar modelos de clasificación.
           Aquí tienes las versiones de la app y una guía rápida para empezar.
         </p>
         <div class="section-grid">
           {% for section in sections %}
           <div class="section-card">
             <h2>{{ section.title }}</h2>
-            <p>{{ section.body }}</p>
+            <p>{{ section.body }}</p><br>
+
+            {% if section.pdf_url %}
+            <a href="{{ section.pdf_url }}" target="_blank" class="btn btn-primary">
+                Abrir guía
+            </a>
+            {% endif %}
           </div>
           {% endfor %}
         </div>
@@ -226,7 +232,7 @@
           <div class="eyebrow">Descargas</div>
           <h2 style="margin: 14px 0 8px; font-size: 1.5rem;">Elige tu plataforma</h2>
           <p class="lead" style="font-size: 0.98rem; margin-bottom: 0;">
-            Cada enlace descarga directamente el archivo ZIP de la versión correspondiente.
+            Cada enlace descarga directamente el archivo de la versión correspondiente.
           </p>
         </div>
 
@@ -246,9 +252,6 @@
           {% endfor %}
         </div>
 
-        <div class="note">
-          Si alguna versión no aparece disponible, coloca el ZIP en la carpeta local configurada en la VM.
-        </div>
       </aside>
     </section>
 

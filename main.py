@@ -1,7 +1,7 @@
 import base64
 import io
 from PIL import Image
-from flask import Flask, request, jsonify, abort, g, render_template
+from flask import Flask, request, jsonify, abort, g, render_template, send_file
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -329,7 +329,8 @@ def landing_page():
         },
         {
             "title": "Cómo usarla",
-            "body": "Instala la versión adecuada, abre sesión, sube una foto y elige si quieres guardar la imagen o solo predecirla.",
+            "body": "Sigue las instrucciones en la siguiente guía de usuario: ",
+            "pdf_url": "/guia-usuario",
         },
         {
             "title": "Etiquetado y administración",
@@ -339,6 +340,10 @@ def landing_page():
 
     return render_template("landing.html", downloads=downloads, sections=sections, app_name="PLANT-AID")
 
+@app.route("/guia-usuario")
+def guia_usuario():
+    GUIA_PATH = os.path.join(ROOT, "docs", "guia_usuario.pdf")
+    return send_file(GUIA_PATH)
 
 @app.route("/download/<platform>", methods=["GET"])
 def download_app(platform):
