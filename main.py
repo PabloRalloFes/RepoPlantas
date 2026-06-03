@@ -70,7 +70,7 @@ DOWNLOADS_DIR = Path(os.getenv("DOWNLOADS_DIR", str(Path(ROOT) / "downloads"))).
 DOWNLOAD_FILES = {
     "windows": os.getenv("DOWNLOAD_WINDOWS_FILE", "PlantAID-Windows.zip"),
     "linux": os.getenv("DOWNLOAD_LINUX_FILE", "PlantAID-Linux.zip"),
-    "android": os.getenv("DOWNLOAD_ANDROID_FILE", "PlantAID-Android.zip"),
+    "android": os.getenv("DOWNLOAD_ANDROID_FILE", "PlantAID-Android.apk"),
 }
 
 MAX_IMAGE_SIZE_MB = _env_int("MAX_IMAGE_SIZE_MB", 10)
@@ -80,6 +80,7 @@ JWT_SECRET = os.getenv("JWT_SECRET", "CHANGE_ME_IN_PRODUCTION")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_EXP_MINUTES = _env_int("JWT_EXP_MINUTES", 120)
 PUBLIC_API_BASE_URL = os.getenv("PUBLIC_API_BASE_URL", "").strip().rstrip("/")
+
 
 cors_origins_env = os.getenv("CORS_ORIGINS", "").strip()
 if cors_origins_env == "*":
