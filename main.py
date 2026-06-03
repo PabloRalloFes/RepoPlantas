@@ -69,7 +69,7 @@ IMAGES_DIR = os.path.join(ROOT, "imagenes")
 DOWNLOADS_DIR = Path(os.getenv("DOWNLOADS_DIR", str(Path(ROOT) / "downloads"))).resolve()
 DOWNLOAD_FILES = {
     "windows": os.getenv("DOWNLOAD_WINDOWS_FILE", "PlantAID-Windows.zip"),
-    "linux": os.getenv("DOWNLOAD_LINUX_FILE", "PlantAID-Linux.zip"),
+    "linux": os.getenv("DOWNLOAD_LINUX_FILE", "PlantAID-Linux.deb"),
     "android": os.getenv("DOWNLOAD_ANDROID_FILE", "PlantAID-Android.apk"),
 }
 
