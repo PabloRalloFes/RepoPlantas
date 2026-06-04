@@ -2,4 +2,6 @@
 build/
 stage/
 dist/
+scripts/
 *.tar.gz
+__pycache__/
