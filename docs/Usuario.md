@@ -1,4 +1,4 @@
-# Usuario — Instalar Plant-AId en Linux (sin terminal)
+# Usuario — Instalar Foliarium en Linux (sin terminal)
 
 Este documento esta pensado para usuarios sin conocimientos tecnicos.
 
@@ -6,23 +6,23 @@ Este documento esta pensado para usuarios sin conocimientos tecnicos.
 
 Te deben enviar un archivo llamado parecido a:
 
-- `Plant-AId_<version>_amd64.deb`
+- `Foliarium_<version>_amd64.deb`
 
 Pasos:
 
 1. Haz doble clic en ese archivo.
 2. Pulsa **Instalar**.
 3. Cuando termine, abre el menu de aplicaciones.
-4. Busca **Plant-AId** y abre la app.
+4. Busca **Foliarium** y abre la app.
 
 ## Si quieres abrirla desde Windows usando WSL
 
 Si ya tienes el archivo `.deb` en tu PC, puedes instalarlo y abrirlo sin entrar en el escritorio de Linux manualmente:
 
 ```powershell
-wsl -d Ubuntu -- sudo dpkg -i "/mnt/c/Users/Pablo/Documents/Universidad/TFG/Repositorios/Linux/dist/linux/Plant-AId_1.0.0_amd64.deb"
+wsl -d Ubuntu -- sudo dpkg -i "/mnt/c/Users/Pablo/Documents/Universidad/TFG/Repositorios/Linux/dist/linux/Foliarium_1.0.0_amd64.deb"
 wsl -d Ubuntu -- sudo apt-get -f install -y
-wsl -d Ubuntu -- plant-aid
+wsl -d Ubuntu -- Foliarium
 ```
 
 La primera linea instala o actualiza la app. La ultima linea la ejecuta.
@@ -35,7 +35,7 @@ En algunos equipos la instalacion de programas puede estar bloqueada por permiso
 En ese caso, pide al responsable informatico una de estas dos cosas:
 
 1. Permiso para instalar el paquete `.deb`.
-2. Version portable de la app (`Plant-AId-linux.tar.gz`).
+2. Version portable de la app (`Foliarium-linux.tar.gz`).
 
 ## Requisito del sistema
 

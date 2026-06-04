@@ -22,8 +22,8 @@ function Convert-WindowsPathToWsl {
 $RepoWsl = Convert-WindowsPathToWsl $RepoWindows
 $SourceRepoWsl = $SourceRepoWsl.TrimEnd('/')
 
-$OutputBundleWindows = Join-Path $RepoWindows "dist/linux/Plant-AId-linux"
-$OutputArchiveWindows = Join-Path $RepoWindows "dist/linux/Plant-AId-linux.tar.gz"
+$OutputBundleWindows = Join-Path $RepoWindows "dist/linux/Foliarium-linux"
+$OutputArchiveWindows = Join-Path $RepoWindows "dist/linux/Foliarium-linux.tar.gz"
 $OutputBundleWsl = Convert-WindowsPathToWsl $OutputBundleWindows
 $OutputArchiveWsl = Convert-WindowsPathToWsl $OutputArchiveWindows
 $SourceSitePackages = "$SourceRepoWsl/build/linux/site-packages"
@@ -36,5 +36,5 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-Write-Host "Linux package created at dist/linux/Plant-AId-linux"
-Write-Host "Compressed archive created at dist/linux/Plant-AId-linux.tar.gz"
+Write-Host "Linux package created at dist/linux/Foliarium-linux"
+Write-Host "Compressed archive created at dist/linux/Foliarium-linux.tar.gz"

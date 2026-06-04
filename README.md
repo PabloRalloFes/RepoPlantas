@@ -7,9 +7,9 @@ Objetivo: entregar la app a usuarios Linux sin terminal.
 Enviar un instalador `.deb`.
 
 El usuario final solo hace:
-1. Doble clic en `Plant-AId_<version>_amd64.deb`.
+1. Doble clic en `Foliarium_<version>_amd64.deb`.
 2. Clic en **Instalar**.
-3. Abrir **Plant-AId** desde el menu de aplicaciones.
+3. Abrir **Foliarium** desde el menu de aplicaciones.
 
 No necesita PowerShell, WSL ni comandos.
 
@@ -20,17 +20,17 @@ Si la app ya esta empaquetada como `.deb`, desde Windows puedes instalarla y abr
 Instalar o actualizar el paquete:
 
 ```powershell
-wsl -d Ubuntu -- sudo dpkg -i "/mnt/c/Users/Pablo/Documents/Universidad/TFG/Repositorios/Linux/dist/linux/Plant-AId_1.0.0_amd64.deb"
+wsl -d Ubuntu -- sudo dpkg -i "/mnt/c/Users/Pablo/Documents/Universidad/TFG/Repositorios/Linux/dist/linux/Foliarium_1.0.0_amd64.deb"
 wsl -d Ubuntu -- sudo apt-get -f install -y
 ```
 
 Ejecutar la app instalada:
 
 ```powershell
-wsl -d Ubuntu -- plant-aid
+wsl -d Ubuntu -- foliarium
 ```
 
-Si quieres probar la version portable en vez del `.deb`, usa el archivo `dist/linux/Plant-AId-linux.tar.gz`.
+Si quieres probar la version portable en vez del `.deb`, usa el archivo `dist/linux/Foliarium-linux.tar.gz`.
 
 ## Como generar el `.deb` (desde este repo)
 
@@ -43,11 +43,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\package-linux-deb.ps1 -Ver
 ```
 
 Salida generada:
-- `dist/linux/Plant-AId_<version>_amd64.deb`
+- `dist/linux/Foliarium_<version>_amd64.deb`
 
 Notas:
 - El script usa `package-linux.ps1` internamente para regenerar el bundle Linux.
-- Si ya tienes el bundle en `dist/linux/Plant-AId-linux`, puedes acelerar:
+- Si ya tienes el bundle en `dist/linux/Foliarium-linux`, puedes acelerar:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\package-linux-deb.ps1 -SkipBundleBuild -Version 1.0.0
@@ -56,7 +56,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\package-linux-deb.ps1 -Ski
 ## Fallback (solo si el `.deb` no aplica)
 
 Si el equipo no es Debian/Ubuntu o no permite instalar `.deb`, usa el paquete portable:
-- `dist/linux/Plant-AId-linux.tar.gz`
+- `dist/linux/Foliarium-linux.tar.gz`
 
 En ese caso, consulta `docs/Usuario.md`.
 

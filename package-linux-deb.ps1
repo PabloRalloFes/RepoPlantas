@@ -26,23 +26,23 @@ if (-not $SkipBundleBuild) {
   }
 }
 
-$BundleWindows = Join-Path $RepoWindows "dist/linux/Plant-AId-linux"
+$BundleWindows = Join-Path $RepoWindows "dist/linux/Foliarium-linux"
 if (-not (Test-Path $BundleWindows)) {
-  throw "No se encontro el bundle en dist/linux/Plant-AId-linux. Ejecuta package-linux.ps1 primero."
+  throw "No se encontro el bundle en dist/linux/Foliarium-linux. Ejecuta package-linux.ps1 primero."
 }
 
 $RepoWsl = Convert-WindowsPathToWsl $RepoWindows
 $BundleWsl = Convert-WindowsPathToWsl $BundleWindows
 $OutDirWsl = "$RepoWsl/dist/linux"
-$PkgName = "plant-aid"
-$DebName = "Plant-AId_${Version}_amd64.deb"
+$PkgName = "foliarium"
+$DebName = "Foliarium_${Version}_amd64.deb"
 
 $TempScriptWindows = Join-Path $RepoWindows "dist/linux/build-deb.sh"
 $TempScriptWsl = Convert-WindowsPathToWsl $TempScriptWindows
 
 $BuildScript = @'
 set -e
-PKG_ROOT="/tmp/plant-aid-deb-root"
+PKG_ROOT="/tmp/foliarium-deb-root"
 BUNDLE="__BUNDLE__"
 OUT_DEB="__OUTDIR__/__DEBNAME__"
 
@@ -51,24 +51,24 @@ mkdir -p "$PKG_ROOT/DEBIAN" "$PKG_ROOT/opt/__PKGNAME__" "$PKG_ROOT/usr/bin" "$PK
 chmod 755 "$PKG_ROOT/DEBIAN"
 
 cp -r "$BUNDLE/." "$PKG_ROOT/opt/__PKGNAME__/"
-chmod +x "$PKG_ROOT/opt/__PKGNAME__/plant_aid"
+chmod +x "$PKG_ROOT/opt/__PKGNAME__/foliarium"
 
-cat > "$PKG_ROOT/usr/bin/plant-aid" << 'EOF'
+cat > "$PKG_ROOT/usr/bin/foliarium" << 'EOF'
 #!/bin/sh
-exec /opt/__PKGNAME__/plant_aid
+exec /opt/__PKGNAME__/foliarium
 EOF
-chmod 755 "$PKG_ROOT/usr/bin/plant-aid"
+chmod 755 "$PKG_ROOT/usr/bin/foliarium"
 
-cat > "$PKG_ROOT/usr/share/applications/plant-aid.desktop" << 'EOF'
+cat > "$PKG_ROOT/usr/share/applications/foliarium.desktop" << 'EOF'
 [Desktop Entry]
 Type=Application
-Name=Plant-AId
-Comment=Plant-AId
-Exec=plant-aid
+Name=Foliarium
+Comment=Foliarium
+Exec=foliarium
 Terminal=false
 Categories=Education;Utility;
 EOF
-chmod 644 "$PKG_ROOT/usr/share/applications/plant-aid.desktop"
+chmod 644 "$PKG_ROOT/usr/share/applications/foliarium.desktop"
 
 cat > "$PKG_ROOT/DEBIAN/control" << 'EOF'
 Package: __PKGNAME__
@@ -76,16 +76,16 @@ Version: __VERSION__
 Section: utils
 Priority: optional
 Architecture: amd64
-Maintainer: Plant-AId Team
+Maintainer: Foliarium Team
 Depends: libgtk-3-0, libglib2.0-0
-Description: Plant-AId desktop app
+Description: Foliarium desktop app
 EOF
 chmod 644 "$PKG_ROOT/DEBIAN/control"
 
 cat > "$PKG_ROOT/DEBIAN/postinst" << 'EOF'
 #!/bin/sh
 set -e
-chmod +x /opt/__PKGNAME__/plant_aid || true
+chmod +x /opt/__PKGNAME__/foliarium || true
 exit 0
 EOF
 chmod 755 "$PKG_ROOT/DEBIAN/postinst"
