@@ -48,14 +48,15 @@ class LogicaApp:
         except Exception:
             return {"success": False, "error": f"Respuesta no válida: {res.text}"}
 
-    def subida_masiva(self, fuente, procesar):
+    def subida_masiva(self, fuente, procesar, validada=False):
         url_subida = self.crear_url("/subida_masiva", self.url_api)
         payload = {
             "fuente": fuente,
             "procesar": procesar,
-            "usuario": self.usuario["nombre"]
+            "usuario": self.usuario["nombre"],
+            "validada": validada,
         }
-        res = self._post(url_subida, json=payload, verify=False, timeout=600)
+        res = self._post(url_subida, json=payload, verify=False, timeout=10000)
         return res.json()
 
     def listar_fuentes_importadas(self):
@@ -73,7 +74,7 @@ class LogicaApp:
             'nombre_fuente': nombre_fuente,
         }
         
-        res = self._post(url_subida, files=files, data=data, verify=False, timeout=600)
+        res = self._post(url_subida, files=files, data=data, verify=False, timeout=10000)
         return res.json()
 
     def obtener_opciones_plantas(self):
@@ -107,32 +108,8 @@ class LogicaApp:
         return res.json()
     
     def set_url_api(self, nueva_url: str):
-        nueva_url = (nueva_url or "").strip()
-        if not nueva_url:
-            return {"success": False, "message": "La URL de la API no puede estar vacia"}
-
         if not nueva_url.startswith("http://") and not nueva_url.startswith("https://"):
-            # Si no se especifica esquema, heredar el actual (por defecto es https).
-            esquema_actual = "https"
-            try:
-                parsed_actual = urlparse(self.url_api)
-                if parsed_actual.scheme in ("http", "https"):
-                    esquema_actual = parsed_actual.scheme
-            except Exception:
-                pass
-            nueva_url = f"{esquema_actual}://{nueva_url}"
-
-        parsed = urlparse(nueva_url)
-        # En entorno web con certificado local suele funcionar con localhost,
-        # mientras que 127.0.0.1 puede fallar por SAN/CN del certificado.
-        if parsed.scheme == "https" and parsed.hostname == "127.0.0.1":
-            host_port = parsed.netloc
-            if parsed.port is not None:
-                host_port = f"localhost:{parsed.port}"
-            else:
-                host_port = "localhost"
-            nueva_url = f"https://{host_port}"
-
+            nueva_url = "https://" + nueva_url
         self.url_api = nueva_url.rstrip("/")
         return {"success": True, "message": f"URL de la API actualizada a {self.url_api}"}
     
@@ -425,7 +402,14 @@ class LogicaApp:
 
         respuesta = self._get(url_lista_usuarios, params=params, verify=False, timeout=10.0)
 
-        self.lista_usuarios = respuesta.json()
+        datos = respuesta.json()
+        if isinstance(datos, list):
+            self.lista_usuarios = datos
+        elif isinstance(datos, dict):
+            usuarios = datos.get("usuarios", [])
+            self.lista_usuarios = usuarios if isinstance(usuarios, list) else []
+        else:
+            self.lista_usuarios = []
         return True
         
     def seleccionar_usuario(self, nombre: str):
@@ -620,11 +604,34 @@ class LogicaApp:
                     id_etiqueta = etiqueta["_id"]
                     pass
 
+        try:
+            id_etiqueta = int(id_etiqueta) if id_etiqueta is not None else id_etiqueta
+        except (TypeError, ValueError):
+            return {"success": False, "error": "Identificador de etiqueta inválido"}
+
+        try:
+            formato = int(formato) if formato is not None else 0
+        except (TypeError, ValueError):
+            formato = 0
+
+        try:
+            fuente = int(fuente) if fuente is not None else 0
+        except (TypeError, ValueError):
+            fuente = 0
+
         url_subir_foto = self.crear_url("/subir_imagen", self.url_api)
 
         res = self._post(url_subir_foto, json={"imagen_b64": self.foto_b64, "clase": id_etiqueta, "campos_extra": {"fuente": fuente, "formato": formato}, "usuario": self.usuario["nombre"]}, verify=False)
 
-        return res.json()
+        try:
+            return res.json()
+        except Exception:
+            body = (res.text or "").strip()
+            return {
+                "success": False,
+                "error": f"Respuesta no JSON del servidor ({res.status_code})",
+                "detail": body[:500] if body else "Respuesta vacía",
+            }
     
     def logos(self):
         url_logos = self.crear_url("/logos", self.url_api)
