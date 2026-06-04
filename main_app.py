@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-nombre_app = "PLANT-AID"
+nombre_app = "FOLIARIUM"
 
 
 if __name__ == "__main__":
@@ -1066,7 +1066,7 @@ if __name__ == "__main__":
                         content=ft.Column(
                             scroll=ft.ScrollMode.AUTO,
                             controls=[
-                                ft.Text("PLANT-AID", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN),
+                                ft.Text("FOLIARIUM", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN),
                                 ft.Divider(),
                                 ft.Text("Sobre nosotros", size=18, weight=ft.FontWeight.BOLD),
                                 ft.Divider(),

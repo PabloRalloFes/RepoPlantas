@@ -68,9 +68,9 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(ROOT, "imagenes")
 DOWNLOADS_DIR = Path(os.getenv("DOWNLOADS_DIR", str(Path(ROOT) / "downloads"))).resolve()
 DOWNLOAD_FILES = {
-    "windows": os.getenv("DOWNLOAD_WINDOWS_FILE", "PlantAID-Windows.zip"),
-    "linux": os.getenv("DOWNLOAD_LINUX_FILE", "PlantAID-Linux.deb"),
-    "android": os.getenv("DOWNLOAD_ANDROID_FILE", "PlantAID-Android.apk"),
+    "windows": os.getenv("DOWNLOAD_WINDOWS_FILE", "Foliarium-Windows.zip"),
+    "linux": os.getenv("DOWNLOAD_LINUX_FILE", "Foliarium-Linux.deb"),
+    "android": os.getenv("DOWNLOAD_ANDROID_FILE", "Foliarium-Android.apk"),
 }
 
 MAX_IMAGE_SIZE_MB = _env_int("MAX_IMAGE_SIZE_MB", 10)
@@ -325,7 +325,7 @@ def landing_page():
     sections = [
         {
             "title": "Qué hace la app",
-            "body": "PLANT-AID permite subir imágenes de plantas, asignarles una clase y usar modelos para predecir enfermedades.",
+            "body": "Foliarium permite subir imágenes de plantas, asignarles una clase y usar modelos para predecir enfermedades.",
         },
         {
             "title": "Cómo usarla",
@@ -338,7 +338,7 @@ def landing_page():
         },
     ]
 
-    return render_template("landing.html", downloads=downloads, sections=sections, app_name="PLANT-AID")
+    return render_template("landing.html", downloads=downloads, sections=sections, app_name="Foliarium")
 
 @app.route("/guia-usuario")
 def guia_usuario():

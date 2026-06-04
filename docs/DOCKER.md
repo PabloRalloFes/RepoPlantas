@@ -99,9 +99,9 @@ GUNICORN_WORKERS=8
 **Para publicar las descargas de la app desde la VM:**
 ```env
 DOWNLOADS_DIR=/ruta/local/a/downloads
-DOWNLOAD_WINDOWS_FILE=PlantAID-Windows.zip
-DOWNLOAD_LINUX_FILE=PlantAID-Linux.zip
-DOWNLOAD_ANDROID_FILE=PlantAID-Android.zip
+DOWNLOAD_WINDOWS_FILE=Foliarium-Windows.zip
+DOWNLOAD_LINUX_FILE=Foliarium-Linux.zip
+DOWNLOAD_ANDROID_FILE=Foliarium-Android.zip
 ```
 
 Coloca esos ZIP en la ruta indicada y la landing los servirá como descargas directas.

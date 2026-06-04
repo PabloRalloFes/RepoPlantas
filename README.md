@@ -1,4 +1,4 @@
-# 🌿 PlantAID - Sistema de Clasificación de Enfermedades de Plantas
+# 🌿 Foliarium - Sistema de Clasificación de Enfermedades de Plantas
 
 Herramienta para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas.
 

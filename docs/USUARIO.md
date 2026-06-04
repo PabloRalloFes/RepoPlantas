@@ -18,7 +18,7 @@ En el caso de Windows, el archivo final será un `.exe` que podrás abrir con do
 
 Si te entregan un instalador, ejecútalo y sigue el asistente.
 
-Si te entregan una carpeta portable, entra dentro y abre `Plant-AId.exe`.
+Si te entregan una carpeta portable, entra dentro y abre `Foliarium.exe`.
 
 La aplicación se conecta al servidor de la universidad, así que solo necesita que la URL de la API esté configurada correctamente.
 
@@ -33,7 +33,7 @@ La aplicación se conecta al servidor de la universidad, así que solo necesita 
 ### 3.1. Iniciar la aplicación
 
 - **Windows**: haz doble clic en el icono del escritorio.
-- **Android**: abre `Aplicaciones` y busca `PlantAid`.
+- **Android**: abre `Aplicaciones` y busca `Foliarium`.
 
 En Windows no hace falta abrir Python ni una terminal. La aplicación se abre como cualquier programa instalado.
 
