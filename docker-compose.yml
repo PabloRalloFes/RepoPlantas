@@ -40,6 +40,7 @@ services:
       - ./models:/app/models
       - ./experiments:/app/experiments
       - ./data:/app/data
+      - ./downloads:/app/downloads
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=3)"]
       interval: 20s
