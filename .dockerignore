@@ -19,3 +19,7 @@ experiments/
 models/
 ssl_certs/
 memoria/
+build
+dist
+*.pyc
+node_modules
