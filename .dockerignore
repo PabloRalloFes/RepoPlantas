@@ -16,6 +16,7 @@ logs/
 imagenes/
 data/
 experiments/
+downloads/
 models/
 ssl_certs/
 memoria/
