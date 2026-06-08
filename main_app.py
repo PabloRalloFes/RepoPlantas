@@ -3393,7 +3393,7 @@ if __name__ == "__main__":
                             page.overlay.append(file_picker)
                             page.update()
                         file_picker.pick_files(allow_multiple=False)
-                """if not es_wsl:
+                if not es_wsl:
                     file_picker = ft.FilePicker(on_result=on_image_selected)
                     page.overlay.append(file_picker)
                 else:
@@ -3407,7 +3407,7 @@ if __name__ == "__main__":
                             "Seleccionar imagen",
                             "Introduce la ruta completa de la imagen",
                             procesar_imagen_desde_path,
-                        )"""
+                        )
 
                 page.views.append(
                     ft.View(
@@ -4105,7 +4105,7 @@ if __name__ == "__main__":
                                 page.overlay.append(zip_picker)
                                 page.update()
                             zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
-                    """if not es_wsl:
+                    if not es_wsl:
                         zip_picker = ft.FilePicker(on_result=on_zip_selected)
                         page.overlay.append(zip_picker)
                     else:
@@ -4122,7 +4122,7 @@ if __name__ == "__main__":
                                 "Seleccionar ZIP",
                                 "Introduce la ruta completa del archivo ZIP",
                                 fijar_zip_seleccionado,
-                            )"""
+                            )
                     
                     nombre_fuente_input = ft.TextField(
                         label="Nombre de la fuente",
