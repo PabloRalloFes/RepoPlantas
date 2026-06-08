@@ -3487,8 +3487,8 @@ if __name__ == "__main__":
                                                                     color=ft.Colors.WHITE,
                                                                     bgcolor=ft.Colors.GREEN,
                                                                     width=280,
-                                                                    on_click=open_file_picker
-                                                                    #on_click=seleccionar_foto_accion
+                                                                    #on_click=open_file_picker
+                                                                    on_click=seleccionar_foto_accion
                                                                 ),
                                                             ]
                                                         )
@@ -4240,8 +4240,8 @@ if __name__ == "__main__":
                                                                                 ft.ElevatedButton(
                                                                                     text="Seleccionar ZIP",
                                                                                     icon=ft.Icons.FOLDER_OPEN,
-                                                                                    on_click=open_zip_picker
-                                                                                    #on_click=seleccionar_zip_accion
+                                                                                    #on_click=open_zip_picker
+                                                                                    on_click=seleccionar_zip_accion
                                                                                 ),
                                                                                 archivo_seleccionado_text,
                                                                             ]
