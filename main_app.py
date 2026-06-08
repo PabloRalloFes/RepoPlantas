@@ -8,7 +8,7 @@ import urllib.parse
 from datetime import datetime
 from pathlib import Path
 
-nombre_app = "PLANT-AID"
+nombre_app = "FOLIARIUM"
 
 
 if __name__ == "__main__":
@@ -440,6 +440,38 @@ if __name__ == "__main__":
                 fuente_dropdown.options = []
             page.update()
 
+        def cargar_formatos_dropdown(formato_dropdown):
+            try:
+                resultado = logica_app.obtener_opciones_formatos()
+                # Resultado puede ser lista o dict
+                if isinstance(resultado, dict):
+                    formatos = resultado.get("formatos") or resultado.get("options") or resultado
+                else:
+                    formatos = resultado
+
+                opciones = []
+                if isinstance(formatos, list):
+                    for f in formatos:
+                        if isinstance(f, dict):
+                            key = f.get("_id", f.get("id", f.get("key", f.get("nombre", str(f)))))
+                            text = f.get("nombre") or f.get("text") or str(f)
+                        else:
+                            key = f
+                            text = str(f)
+                        opciones.append(ft.dropdown.Option(key=key, text=text))
+
+                formato_dropdown.options = opciones
+                if opciones:
+                    available_keys = {opt.key for opt in opciones}
+                    if formato_dropdown.value not in available_keys:
+                        formato_dropdown.value = opciones[0].key
+                else:
+                    formato_dropdown.value = None
+            except Exception:
+                formato_dropdown.options = []
+                formato_dropdown.value = None
+            page.update()
+
         def subir_zip(page, logica_app, zip_picker, nombre_fuente_input, fuente_dropdown):
             """Sube el ZIP al servidor y lo descomprime"""
             if not zip_picker.result or not zip_picker.result.files:
@@ -505,9 +537,10 @@ if __name__ == "__main__":
             
             page.update()
 
-        def ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch):
+        def ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch, validada_switch):
             fuente = fuente_input.value.strip()
             procesar = procesar_switch.value
+            validada = validada_switch.value
 
             if not fuente:
                 page.open(ft.AlertDialog(
@@ -527,7 +560,7 @@ if __name__ == "__main__":
             page.update()
 
             try:
-                data = logica_app.subida_masiva(fuente, procesar)
+                data = logica_app.subida_masiva(fuente, procesar, validada)
                 if data.get("success"):
                     page.open(ft.AlertDialog(
                         modal=True,
@@ -552,37 +585,39 @@ if __name__ == "__main__":
 
             page.update()
 
-        def abrir_dialogo_add_class(e):
-            planta_input = ft.TextField(label="Planta")
-            comun_input = ft.TextField(label="Nombre común")
-            clasif_input = ft.TextField(label="Clasificación")
-            cient_input = ft.TextField(label="Nombre científico")
+        def abrir_dialogo_nueva_clase(on_success=None):
+            planta_input = ft.TextField(label="Planta *")
+            comun_input = ft.TextField(label="Nombre común *")
+            clasif_input = ft.TextField(label="Clasificación (opcional)")
+            cient_input = ft.TextField(label="Nombre científico (opcional)")
 
             def confirmar_add(ev):
+                planta = planta_input.value.strip()
+                nombre_comun = comun_input.value.strip()
+
+                if not planta or not nombre_comun:
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Faltan datos obligatorios"),
+                        content=ft.Text("Debes indicar al menos la planta y el nombre común de la clase."),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+                    return
+
                 nueva = {
-                    "planta": planta_input.value.strip(),
-                    "nombre_comun": comun_input.value.strip(),
+                    "planta": planta,
+                    "nombre_comun": nombre_comun,
                     "clasificacion": clasif_input.value.strip(),
                     "nombre_cientifico": cient_input.value.strip()
                 }
                 res = logica_app.agregar_clase(nueva)
                 if res.get("success"):
                     page.close(dialogo)
-
-                    def recargar(e):
-                        page.close(dialogo_exito)
-                        page.go("/main_etiquetador")
-
-                    dialogo_exito = ft.AlertDialog(
-                        modal=True,
-                        title=ft.Text("Clase añadida"),
-                        content=ft.Text("La nueva clase se ha guardado correctamente."),
-                        actions=[ft.TextButton("Aceptar", on_click=recargar)]
-                    )
-
-                    page.open(dialogo_exito)
+                    if on_success:
+                        on_success(res.get("clase", nueva))
                 else:
                     page.open(ft.AlertDialog(
+                        modal=True,
                         title=ft.Text("Error"),
                         content=ft.Text(res.get("error", "No se pudo añadir la clase.")),
                         actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
@@ -604,6 +639,19 @@ if __name__ == "__main__":
             )
 
             page.open(dialogo)
+
+        def abrir_dialogo_add_class(e):
+            def tras_crear_clase(_clase_creada):
+                dialogo_exito = ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Clase añadida"),
+                    content=ft.Text("La nueva clase se ha guardado correctamente."),
+                    actions=[ft.TextButton("Aceptar", on_click=page.go("/main_etiquetador"))]
+                )
+
+                page.open(dialogo_exito)
+
+            abrir_dialogo_nueva_clase(tras_crear_clase)
 
         def aplicar_filtros_handler(page, dropdown_planta, dropdown_enfermedad, dropdown_formato, dropdown_fuente, dropdown_num_imagenes):
             def _handler(e=None):
@@ -1025,6 +1073,69 @@ if __name__ == "__main__":
             )
         )
 
+        def _load_about_info():
+            try:
+                about_path = Path(__file__).parent / "src" / "assets" / "colaboradores.txt"
+                info = {}
+                if about_path.exists():
+                    for line in about_path.read_text(encoding="utf-8").splitlines():
+                        if ":" in line:
+                            k, v = line.split(":", 1)
+                            info[k.strip().upper()] = v.strip()
+                return info
+            except Exception:
+                return {}
+
+        def _open_about(_=None):
+            info = _load_about_info()
+            autor = info.get("AUTOR", "")
+            colaboradores = info.get("COLABORADORES", "")
+            coordinador = info.get("COORDINADOR", "")
+
+            # Determinar altura del BottomSheet (coincidir con límite inferior de ventana)
+            sheet_height = getattr(page, "window_height", None) or getattr(page, "height", None) or 600
+
+            page.open(
+                ft.BottomSheet(
+                    content=ft.Container(
+                        height=sheet_height,
+                        padding=20,
+                        content=ft.Column(
+                            scroll=ft.ScrollMode.AUTO,
+                            controls=[
+                                ft.Text("FOLIARIUM", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN),
+                                ft.Divider(),
+                                ft.Text("Sobre nosotros", size=18, weight=ft.FontWeight.BOLD),
+                                ft.Divider(),
+                                ft.Text("AUTOR:", size=16, weight=ft.FontWeight.BOLD),
+                                ft.Text(autor, size=14),
+                                ft.Container(height=10),
+                                ft.Text("COLABORADORES:", size=16, weight=ft.FontWeight.BOLD),
+                                ft.Text(colaboradores, size=14),
+                                ft.Container(height=10),
+                                ft.Text("COORDINADOR:", size=16, weight=ft.FontWeight.BOLD),
+                                ft.Text(coordinador, size=14),
+                                ft.Container(height=20),
+                                ft.ElevatedButton(
+                                    "Cerrar",
+                                    color=ft.Colors.WHITE,
+                                    bgcolor=ft.Colors.GREEN,
+                                    on_click=lambda e: page.close(e.control.parent.parent.parent),
+                                ),
+                            ],
+                        ),
+                    ),
+                )
+            )
+
+        icono_about = ft.IconButton(
+            icon=ft.Icons.INFO,
+            icon_color=ft.Colors.WHITE,
+            icon_size=30,
+            tooltip="Sobre la aplicación",
+            on_click=_open_about,
+        )
+
         def foto_seleccionada(e: ft.FilePickerResultEvent):
             if seleccionar_foto.result is not None and seleccionar_foto.result is not None:
                 for f in seleccionar_foto.result.files:
@@ -1154,6 +1265,21 @@ if __name__ == "__main__":
             label_style=ft.TextStyle(color=ft.Colors.WHITE),
         )
 
+        dropdown_formato = ft.Dropdown(
+            label="Formato",
+            hint_text=None,
+            width=300,
+            options=[
+                ft.dropdown.Option(key=0, text="Color"),
+                ft.dropdown.Option(key=1, text="Grayscale"),
+                ft.dropdown.Option(key=2, text="Segmented"),
+            ],
+            value=0,
+            border_color=ft.Colors.WHITE,
+            focused_border_color=ft.Colors.GREEN,
+            label_style=ft.TextStyle(color=ft.Colors.WHITE),
+        )
+
 
         alerta_imagen_etiquetada = ft.AlertDialog(
             modal = True,
@@ -1216,6 +1342,15 @@ if __name__ == "__main__":
             logica_app.procesar_foto(img_bytes)
             page.go("/main_usuario/foto")
 
+        def mostrar_clase_creada(clase_creada):
+            dropdown_etiquetar_options(clase_creada.get("_id"))
+            page.open(ft.AlertDialog(
+                modal=True,
+                title=ft.Text("Clase creada"),
+                content=ft.Text("La nueva clase se ha creado y ya está seleccionada."),
+                actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+            ))
+
         def seleccionar_foto_desde_galeria(file_picker: ft.FilePicker):
             file_picker.pick_files(
                 allow_multiple=False,
@@ -1232,9 +1367,25 @@ if __name__ == "__main__":
                     actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
                 ))
                 return
-            subida_correcta = logica_app.subir_foto(dropdown_etiquetar.value)
+            try:
+                id_etiqueta_sel = int(dropdown_etiquetar.value)
+            except (TypeError, ValueError):
+                page.open(ft.AlertDialog(
+                    modal=True,
+                    title=ft.Text("Etiqueta inválida"),
+                    content=ft.Text("La etiqueta seleccionada no tiene un identificador válido."),
+                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                ))
+                return
+
+            try:
+                formato_sel = int(dropdown_formato.value) if dropdown_formato.value is not None else 0
+            except (TypeError, ValueError):
+                formato_sel = 0
+
+            subida_correcta = logica_app.subir_foto(id_etiqueta_sel, formato=formato_sel)
             
-            if subida_correcta:
+            if isinstance(subida_correcta, dict) and subida_correcta.get("success"):
                 page.open(ft.AlertDialog(
                     modal = True,
                     title = ft.Text("Imagen subida correctamente"),
@@ -1246,9 +1397,11 @@ if __name__ == "__main__":
                     ]
                 ))
             else:
+                mensaje_error = subida_correcta.get("error") if isinstance(subida_correcta, dict) else "No se ha podido subir la imagen"
                 page.open(ft.AlertDialog(
                     modal = True,
                     title = ft.Text("No se ha podido subir la imagen"),
+                    content=ft.Text(mensaje_error),
                     actions = [
                         ft.TextButton(
                             "Aceptar",
@@ -1286,6 +1439,7 @@ if __name__ == "__main__":
             )
 
         def route_change(route):
+            nonlocal dropdown_etiquetar, dropdown_formato
             page.views.clear()
             page.views.append(
                ft.View(
@@ -1721,6 +1875,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -1926,6 +2081,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2091,6 +2247,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2324,6 +2481,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2479,6 +2637,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2612,6 +2771,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2725,6 +2885,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -2880,6 +3041,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3193,6 +3355,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3392,6 +3555,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3486,29 +3650,52 @@ if __name__ == "__main__":
                                                                 border_radius=15,
                                                                 border=ft.border.all(2, ft.Colors.GREEN),
                                                                 bgcolor=ft.Colors.with_opacity(0.1, ft.Colors.GREEN),
-                                                                content=ft.Stack(
+                                                                content=ft.Column(
+                                                                    spacing=14,
+                                                                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                                                    alignment=ft.MainAxisAlignment.CENTER,
                                                                     controls=[
-                                                                        ft.Image(
-                                                                            src_base64=logica_app.foto_b64,
-                                                                            width=300,
-                                                                            height=278,
-                                                                            fit=ft.ImageFit.CONTAIN,
-                                                                        ),
                                                                         ft.Container(
-                                                                            content=ft.Icon(
-                                                                                name=ft.Icons.ZOOM_IN,
-                                                                                color=ft.Colors.WHITE,
-                                                                                size=28,
+                                                                            content=ft.Stack(
+                                                                                controls=[
+                                                                                    ft.Image(
+                                                                                        src_base64=logica_app.foto_b64,
+                                                                                        width=300,
+                                                                                        height=278,
+                                                                                        fit=ft.ImageFit.CONTAIN,
+                                                                                    ),
+                                                                                    ft.Container(
+                                                                                        content=ft.Icon(
+                                                                                            name=ft.Icons.ZOOM_IN,
+                                                                                            color=ft.Colors.WHITE,
+                                                                                            size=28,
+                                                                                        ),
+                                                                                        alignment=ft.alignment.top_right,
+                                                                                        padding=8,
+                                                                                    ),
+                                                                                ],
+                                                                                alignment=ft.alignment.center,
                                                                             ),
-                                                                            alignment=ft.alignment.top_right,
-                                                                            padding=8,
+                                                                            alignment=ft.alignment.center,
+                                                                            ink=True,
+                                                                            on_click=lambda _: mostrar_imagen_ampliada(logica_app.foto_b64),
                                                                         ),
-                                                                    ],
-                                                                    alignment=ft.alignment.center,
+                                                                        ft.ElevatedButton(
+                                                                            adaptive=True,
+                                                                            bgcolor=ft.Colors.BLUE,
+                                                                            color=ft.Colors.WHITE,
+                                                                            text="PREDECIR CLASE",
+                                                                            width=220,
+                                                                            on_click=lambda _: (mostrar_cargando(page, True), page.go("/main_usuario/prediccion"))
+                                                                        ),
+                                                                        ft.Text(
+                                                                            "Obtén una predicción sin guardar la imagen en la base de datos.",
+                                                                            size=14,
+                                                                            color=ft.Colors.GREY_300,
+                                                                            text_align=ft.TextAlign.CENTER,
+                                                                        ),
+                                                                    ]
                                                                 ),
-                                                                alignment=ft.alignment.center,
-                                                                ink=True,
-                                                                on_click=lambda _: mostrar_imagen_ampliada(logica_app.foto_b64),
                                                             ),
                                                             ft.Container(
                                                                 width=420,
@@ -3521,11 +3708,27 @@ if __name__ == "__main__":
                                                                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                                                     controls=[
                                                                         dropdown_etiquetar,
+                                                                        dropdown_formato,
                                                                         ft.Container(height=3),
                                                                         ft.Column(
                                                                             spacing=6,
                                                                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                                                             controls=[
+                                                                                ft.ElevatedButton(
+                                                                                    adaptive=True,
+                                                                                    bgcolor=ft.Colors.ORANGE,
+                                                                                    color=ft.Colors.WHITE,
+                                                                                    text="NUEVA CLASE",
+                                                                                    width=200,
+                                                                                    on_click=lambda _: abrir_dialogo_nueva_clase(mostrar_clase_creada)
+                                                                                ),
+                                                                                ft.Text(
+                                                                                    "Crea una clase nueva si la tuya no existe todavía",
+                                                                                    size=14,
+                                                                                    color=ft.Colors.GREY_300,
+                                                                                    text_align=ft.TextAlign.CENTER,
+                                                                                ),
+                                                                                ft.Container(height=3),
                                                                                 ft.ElevatedButton(
                                                                                     adaptive=True,
                                                                                     bgcolor=ft.Colors.GREEN,
@@ -3536,28 +3739,7 @@ if __name__ == "__main__":
                                                                                 ),
                                                                                 ft.Text(
                                                                                     "Guarda la imagen en la base de datos con la etiqueta seleccionada",
-                                                                                    size=12,
-                                                                                    color=ft.Colors.GREY_300,
-                                                                                    text_align=ft.TextAlign.CENTER
-                                                                                ),
-                                                                            ]
-                                                                        ),
-                                                                        ft.Divider(height=1),
-                                                                        ft.Column(
-                                                                            spacing=6,
-                                                                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                                                                            controls=[
-                                                                                ft.ElevatedButton(
-                                                                                    adaptive=True,
-                                                                                    bgcolor=ft.Colors.BLUE,
-                                                                                    color=ft.Colors.WHITE,
-                                                                                    text="PREDECIR CLASE",
-                                                                                    width=200,
-                                                                                    on_click=lambda _: (mostrar_cargando(page, True), page.go("/main_usuario/prediccion"))
-                                                                                ),
-                                                                                ft.Text(
-                                                                                    "Obtén una predicción sin guardar la imagen en la base de datos",
-                                                                                    size=12,
+                                                                                    size=14,
                                                                                     color=ft.Colors.GREY_300,
                                                                                     text_align=ft.TextAlign.CENTER
                                                                                 ),
@@ -3587,6 +3769,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -3596,6 +3779,7 @@ if __name__ == "__main__":
                     )
                     page.update()
                     dropdown_etiquetar_options()
+                    cargar_formatos_dropdown(dropdown_formato)
 
             if page.route == "/main_usuario/prediccion":
                 modelos = logica_app.obtener_modelos()
@@ -3798,6 +3982,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -3814,6 +3999,7 @@ if __name__ == "__main__":
                     
             if page.route == "/main_usuario/subida_masiva":
                     if not logica_app.verificar_rol("usuario+"):
+                        mostrar_cargando(page, False)
                         page.open(ft.AlertDialog(
                             modal=True,
                             title=ft.Text("Acceso denegado"),
@@ -3848,6 +4034,20 @@ if __name__ == "__main__":
                     # Controles para PASO 1: Subir ZIP
                     zip_picker = ft.FilePicker(on_result=on_zip_selected)
                     page.overlay.append(zip_picker)
+
+                    def open_zip_picker(_=None):
+                        # Ensure the FilePicker control is attached to the page before invoking pick_files()
+                        if zip_picker.page is None:
+                            page.overlay.append(zip_picker)
+                            page.update()
+                        try:
+                            zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
+                        except AssertionError:
+                            # Retry once after ensuring attachment
+                            if zip_picker.page is None:
+                                page.overlay.append(zip_picker)
+                                page.update()
+                            zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
                     
                     nombre_fuente_input = ft.TextField(
                         label="Nombre de la fuente",
@@ -3864,6 +4064,11 @@ if __name__ == "__main__":
                     
                     procesar_switch = ft.Switch(
                         label="Procesar imágenes",
+                        value=False
+                    )
+
+                    validada_switch = ft.Switch(
+                        label="Validar imágenes",
                         value=False
                     )
 
@@ -3990,6 +4195,13 @@ if __name__ == "__main__":
                                                                             italic=True,
                                                                             text_align=ft.TextAlign.CENTER
                                                                         ),
+                                                                        validada_switch,
+                                                                        ft.Text(
+                                                                            "Activar si estás seguro de que las clases son correctas.",
+                                                                            size=10,
+                                                                            color=ft.Colors.GREY_500,
+                                                                            italic=True
+                                                                        ),
                                                                     ]
                                                                 ),
                                                             ]
@@ -4013,32 +4225,36 @@ if __name__ == "__main__":
                                                     shape=ft.RoundedRectangleBorder(radius=10),
                                                     text_style=ft.TextStyle(size=14, weight=ft.FontWeight.BOLD),
                                                 ),
-                                                on_click=lambda _: ejecutar_subida_masiva(page, logica_app, fuente_dropdown, procesar_switch)
+                                                on_click=lambda _: ejecutar_subida_masiva(page, logica_app, fuente_dropdown, procesar_switch, validada_switch)
                                             )
                                         ),
                                     ]
                                 ),
                                 ft.BottomAppBar(
-                                height = 70.0,
-                                bgcolor = ft.Colors.GREEN,
-                                content = ft.Row(
-                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                                    controls= [
-                                        ft.IconButton(
-                                            icon=ft.Icons.HOME,
-                                            icon_color=ft.Colors.WHITE,
-                                            icon_size=30,
-                                            tooltip="Volver al inicio",
-                                            on_click=lambda _: page.open(alerta_cerrar_sesion)
-                                        ),
-                                        icono_usuario
+                                    height=70.0,
+                                    bgcolor=ft.Colors.GREEN,
+                                    content=ft.Row(
+                                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                        controls=[
+                                            ft.IconButton(
+                                                icon=ft.Icons.HOME,
+                                                icon_color=ft.Colors.WHITE,
+                                                icon_size=30,
+                                                tooltip="Volver al inicio",
+                                                on_click=lambda _: page.open(alerta_cerrar_sesion)
+                                            ),
+                                            icono_about,
+                                            icono_usuario,
                                         ]
                                     )
                                 )
                             ]
                         )
                     )
-                    
+
+                    mostrar_cargando(page, False)
+                    page.update()
+
                     # Cargar dropdown de fuentes al abrir la vista
                     cargar_fuentes_dropdown(fuente_dropdown)
 
@@ -4332,6 +4548,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -4692,6 +4909,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -4877,6 +5095,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
@@ -5132,6 +5351,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                         ]
                                     )
@@ -5361,6 +5581,7 @@ if __name__ == "__main__":
                                             tooltip="Volver al inicio",
                                             on_click=lambda _: page.open(alerta_cerrar_sesion)
                                         ),
+                                        icono_about,
                                         icono_usuario
                                     ]
                                 )
