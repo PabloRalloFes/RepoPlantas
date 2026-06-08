@@ -6,10 +6,10 @@
 
 \title{PlantAID: Sistema de Clasificación de Enfermedades de Plantas}
 \author{Pablo Rallo Fes}
-\tutor{Por definir}
+\tutor{Carlos Carrascosa Casamayor}
 \curs{2025-2026}
 
-\keywords{clasificación de plantas, enfermedades de plantas, aprendizaje profundo, MobileNetV2, visión por computadora}
+\keywords{classificació de plantes, malalties de les plantes, aprenentatge profund, MobileNetV2, visió per computador}
            {clasificación de plantas, enfermedades de plantas, aprendizaje profundo, MobileNetV2, visión por computadora}
            {plant classification, plant diseases, deep learning, MobileNetV2, computer vision}
 
@@ -17,10 +17,11 @@
 
 \begin{abstract}
 PlantAID es un sistema para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas mediante aprendizaje profundo. La memoria documenta el problema, la solución propuesta, la arquitectura software, la experimentación realizada y la evaluación de los resultados.
+
 \end{abstract}
 
-\begin{abstract}[spanish]
-PlantAID es un sistema para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas mediante aprendizaje profundo. La memoria documenta el problema, la solución propuesta, la arquitectura software, la experimentación realizada y la evaluación de los resultados.
+\begin{abstract}[catalan]
+PlantAID és un sistema per recollir, etiquetar i classificar imatges de fulles de plantes sanes i malaltes mitjançant l'aprenentatge profund. Aquest article documenta el problema, la solució proposada, l'arquitectura del programari, els experiments realitzats i l'evaluació dels resultats.
 \end{abstract}
 
 \begin{abstract}[english]
@@ -34,7 +35,36 @@ PlantAID is a system for collecting, labeling, and classifying images of healthy
 Explicar la importancia de la detección temprana de enfermedades en plantas y el interés práctico del proyecto.
 
 \section{Objetivos generales y específicos}
-Describir qué se pretende conseguir con el sistema y qué metas concretas se persiguen.
+El objetivo principal de este Trabajo de Fin de Grado es mejorar la capacidad de generalización de un modelo de clasificación de enfermedades en hojas de plantas mediante el uso combinado de imágenes obtenidas en laboratorio (PlantVillage) e imágenes tomadas en condiciones reales. Para obtener esta segunda clase de imágenes se desarrollará una aplicación a través de la que se pueda ejecutar casi todas las funcionalidades del proyecto.
+
+Para lograr este objetivo general, se plantean los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item Adaptar la arquitectura MobileNetV2 al problema de clasificación de hojas de plantas sanas y enfermas, utilizando como base el conjunto de datos PlantVillage.
+    \item Incorporar imágenes reales tomadas en condiciones no controladas al proceso de entrenamiento y validación del modelo.
+    \item Evaluar el impacto de la inclusión de imágenes reales en el rendimiento del modelo, especialmente en cuanto a su capacidad de generalización.
+    \item Aplicar técnicas de \textit{data augmentation} y transferencia de aprendizaje para compensar la escasez de datos reales.
+    \item Desarrollar un \textit{pipeline} reproducible que combine datos sintéticos y reales, y que sea compatible con su futura integración en aplicaciones móviles de diagnóstico.
+\end{itemize}
+
+\section*{Enfoque adoptado}
+
+Aunque el objetivo general de este Trabajo de Fin de Grado es abordar la clasificación automática de enfermedades en hojas de plantas, es importante subrayar que el enfoque seguido no se centra únicamente en maximizar la precisión del modelo sobre imágenes reales, al menos no en esta fase inicial.
+
+Actualmente se dispone de un volumen muy limitado de imágenes bien clasificadas y tomadas en condiciones reales (luz natural, fondo no neutro, variedad de dispositivos, etc.), lo cual impide extraer conclusiones sólidas mediante técnicas de aprendizaje profundo. Ante esta limitación, el enfoque adoptado en este TFG se orienta a construir un marco de trabajo robusto, extensible y reproducible que permita:
+
+\begin{itemize}
+  \item Integrar y gestionar imágenes de distintas fuentes con facilidad.
+  \item Estandarizar el preprocesamiento de las imágenes (conversión a escala de grises, segmentación de hojas, etc.).
+  \item Almacenar y anotar las imágenes con metadatos estructurados en una base de datos consultable.
+  \item Preparar el sistema para futuras ampliaciones del conjunto de datos, ya sea mediante aplicaciones móviles, datasets externos o colaboración con terceros.
+\end{itemize}
+
+Este marco está diseñado con visión a largo plazo, priorizando la escalabilidad del sistema, la heterogeneidad de fuentes y la validación futura de modelos con conjuntos de datos más representativos.
+
+Por otro lado, se reconoce explícitamente que las imágenes reales disponibles en esta etapa pueden presentar nuevas clases, desbalance severo o condiciones significativamente distintas a las del dataset base (PlantVillage). Por tanto, las pruebas realizadas con estas imágenes deben interpretarse como exploratorias y no como una evaluación definitiva del rendimiento del modelo en escenarios reales.
+
+En resumen, este TFG busca aportar valor no solo mediante experimentos concretos, sino también a través de la construcción de una base técnica que facilite el desarrollo futuro de soluciones más generalizables y útiles en contextos agrícolas reales.
 
 \section{Alcance del trabajo y limitaciones}
 Delimitar qué incluye la solución y qué queda fuera del alcance del TFG.
@@ -195,19 +225,6 @@ Reconocer las restricciones del sistema y del estudio experimental.
 \section{Trabajo futuro}
 Proponer extensiones técnicas y funcionales.
 
-\chapter{Apéndices}
-\section{Instrucciones de instalación y ejecución}
-Recoger los pasos necesarios para preparar el entorno y levantar el sistema.
-
-\section{Comandos de reproducción de experimentos}
-Listar los comandos o procedimientos para replicar resultados.
-
-\section{Fragmentos de código clave}
-Incluir extractos útiles de los módulos más importantes.
-
-\section{Figuras y tablas complementarias}
-Añadir material de apoyo que no conviene llevar al cuerpo principal.
-
 \backmatter
 \begin{thebibliography}{10}
 \bibitem{mohanty2016}
@@ -219,6 +236,42 @@ S. P. Mohanty, D. P. Hughes y M. Salathé.
 M. Sandler et al.
 \newblock MobileNetV2: Inverted Residuals and Linear Bottlenecks.
 \newblock \textit{CVPR}, 2018.
+
 \end{thebibliography}
+\cleardoublepage
+
+
+\APPENDIX
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                         LA CONFIGURACIO DEL SISTEMA                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Configuració del sistema}
+
+????? ????????????? ????????????? ????????????? ????????????? ?????????????
+
+\section{Fase d'inicialització}
+
+????? ????????????? ????????????? ????????????? ????????????? ?????????????
+
+\section{Identificació de dispositius}
+
+????? ????????????? ????????????? ????????????? ????????????? ?????????????
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               ALTRES  APÈNDIXS                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\chapter{??? ???????????? ????}
+
+????? ????????????? ????????????? ????????????? ????????????? ????????????? 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                              FI DEL DOCUMENT                                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}

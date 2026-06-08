@@ -1,0 +1,597 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\setlength{\parskip}{0.8em}
+\setlength{\parindent}{0pt}
+
+\title{Trabajo Fin de Grado\\
+Clasificación de enfermedades en hojas de plantas mediante aprendizaje profundo con imágenes reales y de laboratorio
+
+SUBTÍTULO???}
+
+\author{Pablo Rallo Fes\\
+Tutor - Carlos Carrascosa Casamayor}
+\date{Mayo 2026}
+
+
+\begin{document}
+
+
+\maketitle
+
+\begin{itemize}
+    \item Dedicatoria
+    \item Agradecimientos
+    \item RESUMEN
+    \item PALABRAS CLAVE
+    \item Prefacio
+\end{itemize}
+
+\newpage
+\tableofcontents
+
+Índices de elementos
+
+AUTENTICIDAD DE LA INFORMACIÓN
+
+NARRATIVA Y VISUALIZACIÓN
+
+
+\newpage
+
+\section{Objetivos}
+
+El objetivo principal de este Trabajo de Fin de Grado es mejorar la capacidad de generalización de un modelo de clasificación de enfermedades en hojas de plantas mediante el uso combinado de imágenes obtenidas en laboratorio (PlantVillage) e imágenes tomadas en condiciones reales. Para obtener esta segunda clase de imágenes se desarrollará una aplicación a través de la que se pueda ejecutar casi todas las funcionalidades del proyecto.
+
+Para lograr este objetivo general, se plantean los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item Adaptar la arquitectura MobileNetV2 al problema de clasificación de hojas de plantas sanas y enfermas, utilizando como base el conjunto de datos PlantVillage.
+    \item Incorporar imágenes reales tomadas en condiciones no controladas al proceso de entrenamiento y validación del modelo.
+    \item Evaluar el impacto de la inclusión de imágenes reales en el rendimiento del modelo, especialmente en cuanto a su capacidad de generalización.
+    \item Aplicar técnicas de \textit{data augmentation} y transferencia de aprendizaje para compensar la escasez de datos reales.
+    \item Desarrollar un \textit{pipeline} reproducible que combine datos sintéticos y reales, y que sea compatible con su futura integración en aplicaciones móviles de diagnóstico.
+\end{itemize}
+
+\section*{Enfoque adoptado}
+
+Aunque el objetivo general de este Trabajo de Fin de Grado es abordar la clasificación automática de enfermedades en hojas de plantas, es importante subrayar que el enfoque seguido no se centra únicamente en maximizar la precisión del modelo sobre imágenes reales, al menos no en esta fase inicial.
+
+Actualmente se dispone de un volumen muy limitado de imágenes tomadas en condiciones reales (luz natural, fondo no neutro, variedad de dispositivos, etc.), lo cual impide extraer conclusiones sólidas mediante técnicas de aprendizaje profundo. Ante esta limitación, el enfoque adoptado en este TFG se orienta a construir un marco de trabajo robusto, extensible y reproducible que permita:
+
+\begin{itemize}
+  \item Integrar y gestionar imágenes de distintas fuentes con facilidad.
+  \item Estandarizar el preprocesamiento de las imágenes (conversión a escala de grises, segmentación de hojas, etc.).
+  \item Almacenar y anotar las imágenes con metadatos estructurados en una base de datos consultable.
+  \item Preparar el sistema para futuras ampliaciones del conjunto de datos, ya sea mediante aplicaciones móviles, datasets externos o colaboración con terceros.
+\end{itemize}
+
+Este marco está diseñado con visión a largo plazo, priorizando la escalabilidad del sistema, la heterogeneidad de fuentes y la validación futura de modelos con conjuntos de datos más representativos.
+
+Por otro lado, se reconoce explícitamente que las imágenes reales disponibles en esta etapa pueden presentar nuevas clases, desbalance severo o condiciones significativamente distintas a las del dataset base (PlantVillage). Por tanto, las pruebas realizadas con estas imágenes deben interpretarse como exploratorias y no como una evaluación definitiva del rendimiento del modelo en escenarios reales.
+
+En resumen, este TFG busca aportar valor no solo mediante experimentos concretos, sino también a través de la construcción de una base técnica que facilite el desarrollo futuro de soluciones más generalizables y útiles en contextos agrícolas reales.
+
+
+\section{Hipótesis}
+
+A lo largo del trabajo se pretende contrastar las siguientes hipótesis:
+
+\begin{itemize}
+    \item \textbf{Hipótesis principal:} La incorporación de imágenes reales, aunque en menor cantidad, al entrenamiento de modelos previamente entrenados con el conjunto de datos PlantVillage mejora significativamente su capacidad de generalización frente a nuevas imágenes tomadas en condiciones naturales.
+
+    \item \textbf{Hipótesis secundarias:}
+    \begin{itemize}
+        \item El modelo MobileNetV2, debido a su bajo número de parámetros y eficiencia computacional, es adecuado para su uso en dispositivos móviles sin comprometer significativamente la precisión.
+        \item El uso de técnicas de \textit{data augmentation} puede mejorar el rendimiento del modelo en escenarios de escasez de datos reales.
+        \item La precisión de modelos entrenados exclusivamente con imágenes tomadas en condiciones de laboratorio disminuye notablemente cuando se enfrentan a imágenes reales sin adaptación.
+    \end{itemize}
+\end{itemize}
+
+\section{Estado del arte}
+
+\subsection{Introducción}
+
+La detección automática de enfermedades en plantas mediante técnicas de visión por computador ha experimentado un crecimiento significativo en los últimos años, impulsado por los avances en aprendizaje profundo y la disponibilidad de grandes conjuntos de datos. Este problema presenta un alto interés práctico en el ámbito agrícola, donde la identificación temprana de enfermedades puede contribuir a mejorar la productividad y reducir pérdidas.
+
+En esta sección se revisan los principales trabajos y enfoques existentes en la literatura, así como aplicaciones y sistemas desarrollados en entornos reales. Finalmente, se analizan las limitaciones actuales con el objetivo de identificar el espacio de contribución del presente Trabajo de Fin de Grado.
+
+\subsection{Uso de aprendizaje profundo en la detección de enfermedades}
+
+Uno de los trabajos más influyentes en este ámbito es el de Mohanty et al. (2016), en el que se emplean redes neuronales convolucionales profundas (CNN), como AlexNet y GoogLeNet, sobre el conjunto de datos PlantVillage. Este dataset contiene más de 50.000 imágenes de hojas de plantas sanas y enfermas, capturadas en condiciones controladas, con iluminación uniforme y fondo neutro.
+
+Los resultados obtenidos en dicho estudio fueron altamente prometedores, alcanzando precisiones superiores al 99\% en tareas de clasificación. Además, se analizaron distintas variantes del conjunto de datos, incluyendo imágenes en color, en escala de grises y versiones segmentadas en las que se elimina el fondo.
+
+Sin embargo, uno de los hallazgos más relevantes de este trabajo es la significativa reducción del rendimiento al evaluar los modelos sobre imágenes tomadas en condiciones reales, donde la precisión descendía hasta valores cercanos al 30\%. Este fenómeno pone de manifiesto la dificultad de generalizar los modelos entrenados en entornos controlados a situaciones reales, problema conocido como \textit{domain shift} o cambio de dominio.
+
+\subsection{Datasets disponibles y sus limitaciones}
+
+El conjunto de datos PlantVillage ha sido ampliamente utilizado como referencia en la literatura, debido a su tamaño y calidad de anotación. No obstante, su principal limitación radica en que las imágenes han sido adquiridas en condiciones de laboratorio, lo que reduce su representatividad respecto a escenarios reales.
+
+Con el objetivo de abordar esta limitación, han surgido datasets más recientes como PlantDoc (Singh et al., 2020), que incorpora imágenes capturadas en campo con condiciones más realistas, incluyendo variabilidad en iluminación, fondos complejos y diferentes orientaciones. A pesar de ello, estos datasets presentan limitaciones importantes, como un menor tamaño, desbalanceo entre clases y una mayor dificultad en el proceso de anotación.
+
+Otros conjuntos de datos disponibles en plataformas abiertas presentan características similares, con variabilidad en la calidad, falta de estandarización y, en muchos casos, ausencia de mantenimiento o actualización. En consecuencia, no existe en la actualidad un dataset público ampliamente aceptado que combine gran escala, alta calidad de anotación y condiciones realistas de captura.
+
+\subsection{Arquitecturas y técnicas empleadas}
+
+En cuanto a las arquitecturas utilizadas, las redes neuronales convolucionales siguen siendo el enfoque predominante. Modelos como ResNet, EfficientNet o MobileNet han sido ampliamente empleados en tareas de clasificación de imágenes en el ámbito agrícola.
+
+En particular, arquitecturas ligeras como MobileNetV2 han ganado relevancia en aplicaciones prácticas debido a su bajo coste computacional y su idoneidad para dispositivos móviles. Este tipo de modelos permite plantear sistemas de inferencia en tiempo real directamente en el dispositivo, aunque generalmente implica un compromiso entre eficiencia y precisión.
+
+Además de la elección de la arquitectura, diversos trabajos han explorado técnicas para mejorar la capacidad de generalización de los modelos, entre las que destacan el uso de \textit{transfer learning}, la generación de datos sintéticos mediante \textit{data augmentation} y enfoques más avanzados como la adaptación de dominio (\textit{domain adaptation}). Estas técnicas buscan reducir la diferencia entre los datos de entrenamiento y los datos reales, aunque no resuelven completamente el problema en escenarios prácticos.
+
+\subsection{Aplicaciones y sistemas reales}
+
+Más allá del ámbito académico, se han desarrollado diversas aplicaciones móviles orientadas a la detección de enfermedades en plantas, como Plantix o PlantVillage Nuru. Estas herramientas permiten a los usuarios capturar imágenes y obtener un diagnóstico automático mediante modelos de aprendizaje profundo.
+
+Sin embargo, en la mayoría de los casos, los datos utilizados para entrenar estos sistemas no son públicos, lo que limita la reproducibilidad de los resultados y dificulta la comparación entre diferentes enfoques. Asimismo, estos sistemas suelen estar diseñados para un dominio específico, lo que reduce su capacidad de adaptación a otros problemas de clasificación de imágenes.
+
+\subsection{Crítica al estado del arte}
+
+A partir del análisis realizado, se pueden identificar varias limitaciones relevantes en el estado actual de la tecnología:
+
+\begin{itemize}
+    \item \textbf{Falta de generalización}: los modelos entrenados con datasets en condiciones controladas presentan una caída significativa de rendimiento al aplicarse en entornos reales.
+    
+    \item \textbf{Escasez de datos reales}: aunque existen datasets más recientes, estos son limitados en tamaño y calidad, lo que dificulta el entrenamiento de modelos robustos.
+    
+    \item \textbf{Falta de estandarización}: no existe un dataset de referencia en condiciones reales que permita comparar de forma consistente distintos métodos.
+    
+    \item \textbf{Sistemas poco flexibles}: muchas soluciones están diseñadas para problemas específicos y no contemplan su reutilización en otros dominios o tareas de clasificación.
+    
+    \item \textbf{Limitaciones en reproducibilidad}: el uso de datasets privados en aplicaciones comerciales dificulta la validación de los resultados.
+\end{itemize}
+
+Estas limitaciones ponen de manifiesto la necesidad de enfoques que no solo aborden el problema de la clasificación, sino que también faciliten la recopilación de datos en condiciones reales y permitan una mayor flexibilidad en la experimentación.
+
+\subsection{Posicionamiento del trabajo}
+
+En este contexto, el presente Trabajo de Fin de Grado propone un enfoque orientado a reducir la brecha existente entre los entornos controlados y las condiciones reales. Para ello, se plantea la integración de un sistema completo que permite la adquisición, almacenamiento y gestión de imágenes reales mediante una aplicación, así como el entrenamiento y evaluación de modelos de clasificación.
+
+Asimismo, se adopta una arquitectura ligera basada en modelos como MobileNetV2, con el objetivo de facilitar su posible despliegue en dispositivos con recursos limitados. De forma complementaria, el sistema se diseña con un enfoque modular que permite su adaptación a otros problemas de clasificación de imágenes, más allá del ámbito agrícola.
+
+De este modo, el trabajo no se limita al desarrollo de un modelo concreto, sino que propone una infraestructura que facilita la experimentación y la mejora progresiva a medida que se disponga de nuevos datos.
+
+\section{Procesamiento previo de imágenes reales}
+\label{sec:preprocesado}
+
+Las imágenes obtenidas mediante la aplicación móvil desarrollada en el proyecto representan condiciones de captura realistas: iluminación natural, fondos heterogéneos, presencia de sombras, variaciones en distancia y enfoque, entre otros factores. Esta variabilidad contrasta fuertemente con las condiciones controladas en las que se capturaron las imágenes del dataset PlantVillage, donde se utilizó un fondo blanco uniforme, iluminación constante y encuadres centrados. Esta diferencia introduce un \textit{domain shift} que puede afectar negativamente al rendimiento del modelo si no se tiene en cuenta durante el entrenamiento.
+
+Con el fin de reducir este desajuste entre dominios, se ha desarrollado un sistema de procesamiento que transforma las imágenes reales a formatos alternativos: \textbf{escala de grises} y \textbf{segmentación de la hoja}. Esta decisión tiene dos objetivos principales:
+\begin{itemize}
+    \item \textbf{Reducir el sesgo visual asociado a la fuente de las imágenes}, eliminando color o fondo para evitar que el modelo aprenda a distinguir entre dominios en lugar de entre clases de enfermedad.
+    \item \textbf{Permitir una comparación coherente con PlantVillage}, que también incluye versiones en gris y segmentadas en los experimentos del artículo original. (Aunque se utilizará el mismo proceso de transformación de imágenes a las procedentes de PlantVillage y de otras fuentes)
+\end{itemize}
+
+\subsection{Conversión a escala de grises}
+
+La conversión a escala de grises permite eliminar la componente cromática de las imágenes, manteniendo únicamente la información estructural: bordes, forma y textura de la hoja. Esta transformación se ha implementado utilizando la función \texttt{cv2.cvtColor()} de la librería OpenCV, que convierte cada píxel RGB en un valor de intensidad en escala de grises mediante una media ponderada de los tres canales, simulando la percepción visual humana.
+
+Este procesamiento permite estudiar el impacto del color en la clasificación. Si el modelo sigue funcionando bien sobre imágenes grises, puede inferirse que las características estructurales son suficientes para la tarea, y que el modelo generaliza mejor entre dominios.
+
+\subsection{Segmentación de la hoja}
+
+La segmentación busca eliminar el fondo de la imagen y conservar únicamente la región correspondiente a la hoja. Esta técnica, utilizada también en el artículo original de PlantVillage, tiene como objetivo evitar que el modelo aprenda patrones del fondo (color, textura, iluminación) que podrían sesgar el aprendizaje. 
+
+Dado que el código original de segmentación no está disponible públicamente, se ha implementado una versión propia inspirada en la metodología descrita por los autores. Tras evaluar visualmente los resultados, se ha decidido aplicar este mismo proceso tanto a las imágenes reales capturadas mediante la aplicación móvil como a las imágenes en color del dataset PlantVillage. Esto garantiza una consistencia visual entre fuentes y evita introducir sesgos derivados de diferencias en el preprocesamiento.
+
+Aunque la segmentación obtenida con este método no reproduce con exactitud la precisión de los contornos de las imágenes segmentadas originales de PlantVillage, se considera suficientemente fiable para los objetivos del proyecto. En particular, se ha observado que el algoritmo es efectivo eliminando el fondo, aunque los contornos pueden ser menos definidos.
+
+El algoritmo desarrollado se basa en un enfoque heurístico en el espacio de color \textit{Lab}. El proceso consiste en:
+
+\begin{enumerate}
+    \item \textbf{Conversión a espacio Lab:} se transforma la imagen desde RGB a Lab, donde $L$ representa la luminosidad, y $a$, $b$ codifican la cromaticidad.
+    
+    \item \textbf{Mejora de contraste y suavizado:} el canal $L$ se ecualiza para aumentar el contraste global, y los canales $L$, $a$ y $b$ se suavizan con un filtro gaussiano para reducir el ruido.
+
+    \item \textbf{Estimación del color de fondo:} se asume que los bordes de la imagen contienen fondo, por lo que se toma la mediana de los valores de los bordes en $a$ y $b$ como referencia cromática del fondo.
+
+    \item \textbf{Construcción de máscaras:}
+    \begin{itemize}
+        \item \textbf{Máscara de color:} marca como fondo aquellos píxeles cuya distancia euclídea en el plano $(a,b)$ sea pequeña respecto al color de fondo.
+        \item \textbf{Máscara de sombras:} identifica regiones oscuras que podrían ser fondo en sombra, basándose en valores bajos de $L$ y color similar al fondo.
+    \end{itemize}
+
+    \item \textbf{Combinación y limpieza de máscaras:} se combinan ambas máscaras eliminando las sombras de la máscara principal. Se aplican operaciones morfológicas (apertura y cierre) para eliminar regiones pequeñas erróneas.
+
+    \item \textbf{Relleno del fondo y refinamiento:} se utiliza una operación de \textit{flood-fill} desde las esquinas para asegurar que todo el fondo queda cubierto. Además, se conserva únicamente la región conectada más grande de la máscara para evitar errores en imágenes con múltiples objetos o ruido.
+
+    \item \textbf{Aplicación de la máscara:} la máscara binaria resultante se aplica a la imagen original, conservando la hoja y poniendo el fondo completamente negro.
+\end{enumerate}
+
+Este procedimiento permite generar un conjunto coherente de imágenes segmentadas a partir de ambas fuentes de datos, con un estilo visual uniforme y controlado. Esto facilita la creación de conjuntos de entrenamiento mixtos y permite realizar comparaciones más justas entre modelos entrenados con distintos formatos de entrada.
+
+\subsection*{Gestión del almacenamiento de imágenes}
+
+Es importante destacar que las imágenes utilizadas en el proyecto se almacenan físicamente en carpetas locales del proyecto (por ejemplo, \texttt{data/} o \texttt{imagenes/}). En la base de datos únicamente se guardan los campos asociados y las rutas relativas a las imágenes, lo que optimiza el almacenamiento y facilita la gestión de grandes volúmenes de datos.
+
+\section{Integración de imágenes externas en la base de datos}
+
+El sistema permite incorporar nuevas imágenes al conjunto de datos desde fuentes externas (por ejemplo, usuarios reales, capturas de una app móvil, otros proyectos, etc.). Para ello se ha desarrollado un \textit{pipeline} automatizado que gestiona desde el preprocesado de las imágenes hasta su registro en la base de datos MongoDB mediante una API REST.
+
+\subsection{Estructura de directorios esperada}
+
+Las imágenes externas deben organizarse manualmente en la siguiente estructura de carpetas:
+
+\begin{verbatim}
+data/Imported/{fuente}/color/{clase}/imagen.jpg
+\end{verbatim}
+
+\begin{itemize}
+    \item \texttt{\{fuente\}} es un identificador único de la fuente (por ejemplo, \texttt{agricultor\_01} o \texttt{ensayo\_brasil}).
+    \item \texttt{\{clase\}} debe coincidir exactamente con el formato de clase usados en PlantVillage: \{planta\}\_\_\_\{nombre\_comun\}. Por ejemplo: \texttt{Tomato\_\_\_Early\_blight}, \texttt{Apple\_\_\_healthy}, etc. 
+\end{itemize}
+
+Esto es necesario para asociar cada imagen con su clase durante la subida.
+
+\subsection{Procesamiento automático}
+
+A partir de las imágenes en color, se generan dos versiones adicionales:
+
+\begin{itemize}
+    \item \textbf{Escala de grises} (\texttt{grayscale/}): usando conversión a escala de grises y reconversión a formato BGR.
+    \item \textbf{Segmentación} (\texttt{segmented/}): mediante un algoritmo heurístico basado en diferencias de color en el espacio Lab, inspirado en el enfoque de PlantVillage.
+\end{itemize}
+
+Este procesamiento se realiza ejecutando el script \texttt{utils/process\_imported\_images.py}, que a su vez llama internamente a:
+
+\begin{itemize}
+    \item \texttt{utils/convert\_to\_grayscale.py}
+    \item \texttt{utils/segment\_leaves.py}
+\end{itemize}
+
+Las nuevas carpetas generadas siguen esta estructura:
+
+\begin{verbatim}
+data/Imported/{fuente}/grayscale/{clase}/imagen.jpg
+data/Imported/{fuente}/segmented/{clase}/imagen.jpg
+\end{verbatim}
+
+Cada imagen es redimensionada a 256$\times$256 píxeles y guardada como \texttt{.jpg} o \texttt{.png}.
+
+\subsection{Subida de imágenes a la base de datos}
+
+La subida se realiza con el script \texttt{utils/upload\_images.py}, que:
+
+\begin{itemize}
+    \item Detecta automáticamente si faltan las versiones procesadas y las genera si es necesario.
+    \item Codifica cada imagen en base64.
+    \item Envía una petición \texttt{POST} a la API local (Flask) para registrar la imagen en MongoDB, incluyendo los campos:
+    \begin{itemize}
+        \item \texttt{imagen\_b64}: imagen codificada.
+        \item \texttt{clase}: identificador entero de la clase.
+        \item \texttt{campos\_extra}:
+        \begin{itemize}
+            \item \texttt{fuente}: identificador entero de la fuente.
+            \item \texttt{formato}: tipo de imagen (\texttt{Color}, \texttt{Grayscale}, \texttt{Segmented}).
+        \end{itemize}
+    \end{itemize}
+    \item Guarda un log por cada formato (\texttt{upload\_log\_\{formato\}\_\{fuente\}.txt}) para evitar duplicados.
+\end{itemize}
+
+\subsection{Automatización del proceso}
+
+Para simplificar el uso, se ha creado el script \texttt{subir\_imagenes\_nueva\_fuente.py}, que ejecuta los pasos anteriores automáticamente:
+
+\begin{verbatim}
+python subir_imagenes_nueva_fuente.py --fuente nombre_fuente
+\end{verbatim}
+
+Este script:
+
+\begin{itemize}
+    \item Registra la fuente en la base de datos si aún no existe.
+    \item Procesa las imágenes si es necesario.
+    \item Llama tres veces a \texttt{upload\_images.py} para subir las imágenes en los tres formatos.
+\end{itemize}
+
+El sistema es robusto frente a interrupciones y puede retomar la subida desde donde se quedó gracias al uso de registros de imágenes ya procesadas.
+
+\subsection{Herramientas auxiliares y análisis de resultados}
+
+Durante el desarrollo del proyecto se han implementado diversos scripts y notebooks auxiliares que facilitan el análisis y la interpretación de los experimentos realizados. Entre ellos destacan:
+
+\begin{itemize}
+    \item \textbf{analyze\_experiments.py}: Script que permite comparar métricas entre varios experimentos realizados. Facilita la visualización y comparación de resultados mediante gráficos, lo que ayuda a identificar configuraciones óptimas y analizar el impacto de diferentes parámetros. Se recomienda mejorar los gráficos para una interpretación más clara y comparativa.
+    \item \textbf{Notebook o script para imágenes mal clasificadas y top-k predicciones}: Herramienta que permite mostrar visualmente las imágenes que el modelo ha clasificado incorrectamente, así como consultar las top-k predicciones para una imagen concreta. Esto resulta especialmente útil para el análisis cualitativo y la depuración de errores del modelo.
+\end{itemize}
+
+Estos recursos se encuentran en las carpetas \texttt{scripts/} y \texttt{notebooks/} del repositorio y sirven de apoyo para el análisis de los resultados obtenidos.
+
+
+\section{Automatización del pipeline experimental}
+
+Durante el desarrollo del proyecto, se diseñó un sistema modular que permite lanzar experimentos de forma automática y reproducible a partir de archivos de configuración.
+
+Cada experimento se encapsula en una carpeta independiente con su propio archivo \texttt{config.yaml}, donde se definen parámetros como las clases incluidas, el formato de imagen, el número de muestras por clase y los hiperparámetros de entrenamiento.
+
+Un script principal, \texttt{run\_experiment.py}, lee esta configuración y lanza todo el pipeline: consulta a la base de datos, generación de los conjuntos \texttt{train/val/test}, entrenamiento, evaluación y guardado de resultados. Estos incluyen tanto métricas (accuracy, F1, precision, recall) como gráficos (historial de pérdidas, métricas en test, matrices de confusión), y se almacenan en la carpeta \texttt{results/} del experimento. También se guarda el modelo final en \texttt{models/best\_model.pth} y la configuración utilizada en \texttt{config\_final.yaml}.
+
+La estructura modular del código permite mantener una separación clara entre funciones reutilizables (almacenadas en \texttt{utils/}), scripts principales y carpetas de resultados, lo que facilita la comparación sistemática entre variantes.
+
+Además, se implementó un sistema de evaluación extendido que calcula métricas detalladas tanto en validación como en test, permitiendo analizar en profundidad el rendimiento del modelo.
+
+\section{Clasificación multitarea: planta y enfermedad}
+
+En la versión original del sistema, el modelo de clasificación era monoclase: cada imagen tenía una única etiqueta compuesta del tipo \texttt{planta\_\_\_enfermedad} (por ejemplo, \texttt{Tomato\_\_\_Late\_blight}). El objetivo de esta fase fue adaptar el sistema para resolver el problema como una clasificación \textbf{multitarea}, prediciendo de forma independiente la \textbf{planta} y la \textbf{enfermedad} de cada imagen.
+
+\subsection{Modificaciones en el dataset}
+
+Se usó la función \texttt{prepare\_data\_splits} para extraer, desde la base de datos, las columnas \texttt{planta} y \texttt{enfermedad} por separado. Estas dos columnas se guardan en los ficheros \texttt{train.csv}, \texttt{val.csv} y \texttt{test.csv}, junto con el identificador original de la clase para trazabilidad.
+
+Durante este proceso, se filtran automáticamente las clases que no tienen imágenes disponibles, actualizando el archivo \texttt{config.yaml} en memoria. El conjunto filtrado se guarda como \texttt{config\_final.yaml} para garantizar la reproducibilidad de los experimentos.
+
+\subsection{Modificaciones en la arquitectura}
+
+Se reemplazó la capa final de la MobileNetV2 por dos cabezas de clasificación independientes, una para planta y otra para enfermedad. Para ello se creó una clase \texttt{MultiTaskMobileNetV2}:
+
+\begin{itemize}
+  \item La parte convolucional (\texttt{features}) se mantiene compartida.
+  \item Se aplica \texttt{avgpool} y \texttt{dropout} comunes.
+  \item Se añaden dos capas lineales: una de tamaño $N_c$ (número de plantas) y otra de tamaño $N_e$ (número de enfermedades).
+\end{itemize}
+
+\subsection{Función de pérdida multitarea ponderada}
+
+Durante el entrenamiento se utilizan dos funciones de pérdida independientes (\texttt{CrossEntropyLoss}), una por cada tarea. La pérdida total se calcula como:
+
+\[
+\mathcal{L}_{\text{total}} = w_p \cdot \mathcal{L}_{\text{planta}} + w_e \cdot \mathcal{L}_{\text{enfermedad}}
+\]
+
+Los pesos $w_p$ y $w_e$ se pueden definir en el archivo de configuración o dejar por defecto a 1.0.
+
+Además, se implementó la opción de aplicar \textbf{ponderación automática por clase} para contrarrestar el desbalanceo en la distribución de imágenes. Esta opción calcula pesos inversos a la frecuencia de cada clase, normalizados para tener media 1. Esto evita que el modelo se sesgue hacia las clases más frecuentes, sin necesidad de modificar el muestreo del dataset.
+
+\subsection{Evaluación y predicción compatibles con restricciones}
+
+En la fase de evaluación y en la predicción de imágenes individuales, se asegura que las combinaciones \texttt{(planta, enfermedad)} predichas sean válidas según el conjunto de entrenamiento. Si se detecta una combinación inválida, el sistema selecciona la mejor combinación válida basada en las probabilidades predichas.
+
+Esto permite mantener la coherencia entre clases y evita errores comunes en predicción multitarea sin dependencias.
+
+
+\section{Desarrollo y puesta en marcha de la aplicación de captura y gestión de imágenes}
+
+En paralelo al desarrollo del modelo de clasificación, se implementó una aplicación de apoyo cuyo objetivo es permitir la recopilación y validación de imágenes reales por parte de los usuarios. Esta aplicación constituye el punto de entrada de datos al sistema y se conecta con dos servicios independientes: uno para la gestión de usuarios y roles, y otro para el almacenamiento y clasificación de imágenes.
+
+\subsection{Punto de partida}
+
+El repositorio inicial estaba formado por tres scripts principales:
+\begin{itemize}
+    \item \texttt{accesobd.py}, que define una API \texttt{FastAPI} para el registro, inicio de sesión y gestión de roles de usuario.
+    \item \texttt{main.py}, que implementa la interfaz de la aplicación mediante la librería \texttt{Flet}, diferenciando las vistas de usuario, etiquetador y administrador.
+    \item \texttt{logicav3.py}, que actúa como capa intermedia de comunicación con las APIs de usuarios y de clasificación, gestionando el estado de la sesión y las peticiones HTTP.
+\end{itemize}
+
+El código provenía de un desarrollo previo en el que la aplicación se conectaba a dos servicios remotos:
+\begin{itemize}
+    \item Un \textit{worker} remoto para la autenticación de usuarios en la dirección \url{https://db-usuarios-plantas.jcl112000.workers.dev}.
+    \item Un servidor Flask en la dirección \texttt{http://158.42.184.169:5001} para el manejo de imágenes.
+\end{itemize}
+
+En esta configuración original, la base de datos de usuarios no era accesible localmente y las rutas de los servicios estaban fijadas a direcciones externas de la universidad.
+
+
+
+\subsection{Adaptación a entorno local}
+
+El primer paso consistió en configurar ambas APIs para funcionar en local:
+\begin{itemize}
+    \item La API de usuarios se ejecutó en el puerto 8000 con \texttt{Uvicorn} (\texttt{http://127.0.0.1:8000}), conectada a una instancia local de MongoDB.
+    \item La API de clasificación e imágenes se ejecutó en el puerto 5001 con \texttt{Flask} (\texttt{http://127.0.0.1:5001}).
+\end{itemize}
+
+La aplicación Flet fue actualizada para apuntar a estas nuevas rutas:
+\begin{verbatim}
+self.url_usuarios = "http://127.0.0.1:8000"
+self.url_repo = "http://127.0.0.1:5001"
+\end{verbatim}
+
+De esta forma, todas las operaciones (registro, inicio de sesión, subida y etiquetado de imágenes) se ejecutan ahora íntegramente en el entorno local.
+
+
+Una vez analizada la estructura inicial de la aplicación y de las dos APIs que la sustentan, se ha llevado a cabo un proceso exhaustivo de depuración y adaptación del sistema con el objetivo de disponer de un entorno completamente funcional en local. Este proceso ha permitido comprender en detalle el flujo de datos entre los distintos componentes y asegurar una base estable sobre la que continuar el desarrollo del proyecto.
+
+\subsection{Corrección y adaptación del código existente}
+
+La primera fase de trabajo se centró en hacer operativa la aplicación de escritorio (basada en \texttt{Flet}) junto con las APIs de usuarios y de clasificación (implementadas en \texttt{FastAPI} y \texttt{Flask}, respectivamente). Para ello fue necesario ajustar diversos elementos que impedían la ejecución del sistema de forma correcta y coherente en un entorno local:
+
+\begin{itemize}
+    \item Se sustituyeron las direcciones IP antiguas del servidor de la universidad por direcciones locales (\texttt{127.0.0.1} o \texttt{10.x.x.x}), permitiendo ejecutar ambos servicios en el mismo equipo.
+    \item Se resolvieron múltiples errores derivados del uso de la función \texttt{eval()} en el cliente, que provocaba excepciones al interpretar respuestas JSON. Todos estos casos fueron reemplazados por llamadas a \texttt{.json()} o \texttt{json.loads()}, garantizando una gestión segura y consistente de los datos.
+    \item Se implementó la asignación automática de los campos \texttt{fuente} y \texttt{formato} al subir imágenes desde la aplicación, estableciendo los valores por defecto \texttt{fuente = 2} (App) y \texttt{formato = 0} (color).
+    \item Se corrigieron las direcciones almacenadas en la base de datos MongoDB, actualizando los campos \texttt{imagen\_rgb} de todas las imágenes para que apunten al servidor local.
+    \item Se reparó la funcionalidad del rol \textit{Etiquetador}, que inicialmente no mostraba imágenes. Actualmente este rol carga correctamente las imágenes no validadas y permite asignar etiquetas.
+    \item Se reorganizó el sistema de etiquetas, que ahora se muestran en formato \textit{Planta, Clasificación, Enfermedad}. Además, se eliminó la duplicación de opciones en el desplegable y se incluyó el campo de planta en todas las vistas donde aparecen etiquetas.
+    \item Se revisó la lógica del rol \textit{Administrador}, corrigiendo el endpoint de búsqueda de usuarios y el filtrado. La aplicación ya permite listar usuarios y filtrarlos por nombre y/o rol.
+    \item Se comprobó la correcta comunicación entre ambas APIs y la base de datos, de modo que las operaciones de registro, inicio de sesión, subida de imágenes y consulta se realizan sin errores.
+\end{itemize}
+
+Con estos cambios, el sistema existente se encuentra totalmente operativo en entorno local y reproduce el comportamiento previsto por el diseño original. Esta etapa ha permitido identificar y documentar los principales puntos de integración entre los módulos, así como los aspectos a mejorar de cara al despliegue en un servidor con IP pública.
+
+\subsection{Situación actual y próximos pasos}
+
+En el estado actual, la aplicación admite el registro e inicio de sesión de usuarios con distintos roles, la subida de imágenes reales, la consulta y etiquetado de imágenes no validadas, y la gestión básica de usuarios por parte del administrador. Todo el flujo de comunicación entre cliente, APIs y base de datos funciona de manera estable.
+
+A partir de este punto, el trabajo se centrará en la ampliación del sistema con nuevas funcionalidades y mejoras estructurales. Entre las líneas de trabajo previstas se incluyen:
+
+\begin{itemize}
+    \item Unificación de las dos APIs (usuarios y clasificación) en un único servicio.
+    \item Incorporación de un sistema de validación y control de acceso más seguro, reemplazando el hash MD5 de contraseñas por un algoritmo moderno (como \texttt{bcrypt}).
+    \item Implementación de nuevos endpoints, como la validación de imágenes por parte del etiquetador o la gestión avanzada de usuarios.
+    \item Preparación del entorno de despliegue en un servidor con IP pública, para permitir el acceso desde dispositivos móviles.
+\end{itemize}
+
+Con la puesta a punto finalizada, el sistema se encuentra en un punto de control estable que servirá de base para el desarrollo de nuevas funcionalidades y la integración con el modelo de clasificación de imágenes.
+
+Durante las pruebas en modo web y en entorno móvil, se detectaron limitaciones en la comunicación entre el servidor Flask local y los navegadores móviles, producidas por políticas de red y CORS.
+En entornos de escritorio las funcionalidades se ejecutan correctamente, por lo que el comportamiento anómalo se atribuye a las restricciones del entorno de ejecución (Flet Web en Android) y no al código de la aplicación.
+Para los fines del proyecto, la versión de escritorio y la aplicación empaquetada en Android cubren los flujos principales (captura, registro y administración), mientras que el rol etiquetador se mantiene como línea futura de mejora.
+
+
+\section{Documentación y Gestión del Repositorio Público (Esta sección está demasiado detallada para la importancia que tiene, revisar y actualizar}
+\label{sec:documentacion_repositorio}
+
+\subsection{Contextualización}
+
+Como parte de la finalización del Trabajo de Fin de Grado, se realizó una reorganización completa de la documentación del proyecto con el objetivo de presentar un repositorio público profesional, accesible para usuarios finales, desarrolladores y contribuyentes. Este apartado describe la arquitectura de documentación implementada y las consideraciones de seguridad adoptadas.
+
+\subsection{Estructura de Documentación Multiidioma}
+
+El proyecto implementa una estructura de documentación organizada en tres documentos principales, disponibles en español e inglés:
+
+\begin{itemize}
+    \item \textbf{Documentos raíz (README.md / README\_ES.md)}: Proveen una visión general de la arquitectura del sistema, explicando los dos componentes principales: la aplicación Flask y el módulo de experimentación con modelos de clasificación.
+    
+    \item \textbf{Guía de la aplicación (README\_APP.md / README\_APP\_EN.md)}: Documentan la interfaz gráfica desarrollada con Flet, explicando funcionalidades por rol de usuario (usuario, etiquetador, administrador), requisitos y procedimientos básicos de ejecución.
+    
+    \item \textbf{Guía del servidor (server/README_EN.md / server/README\_ES.md)}: Proporcionan instrucciones detalladas para la ejecución del servidor backend, incluyendo inicio rápido en tres pasos, gestión de certificados SSL, solución de problemas y acceso remoto.
+\end{itemize}
+
+\subsubsection{Navegación Jerárquica}
+
+Se implementó una estructura jerárquica mediante referencias y enlaces cruzados. Los documentos principales incluyen una tabla de navegación que guía a los usuarios según su perfil:
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{|l|l|}
+    \hline
+    \textbf{Perfil de Usuario} & \textbf{Documento Recomendado} \\
+    \hline
+    Usuario final & README\_APP.md \\
+    Desarrollador local & server/README\_ES.md \\
+    Arquitecto del sistema & README.md \\
+    \hline
+    \end{tabular}
+    \caption{Tabla de navegación de documentación por perfil de usuario.}
+    \label{tab:navegacion_docs}
+\end{table}
+
+\subsection{Contenido de Documentación Específica del Servidor}
+
+La guía del servidor incluye secciones críticas para facilitar su despliegue:
+
+\begin{enumerate}
+    \item \textbf{Inicio Rápido}: Tres pasos esenciales (instalación de dependencias, selección de modo de ejecución, verificación de disponibilidad).
+    
+    \item \textbf{Opciones de Ejecución}: Se documentan dos interfaces:
+    \begin{itemize}
+        \item Menú interactivo mediante scripts shell (Windows/Linux/Mac)
+        \item Línea de comandos con flags personalizables (--dev, --https, --port)
+    \end{itemize}
+    
+    \item \textbf{Gestión de Certificados SSL}: Se explica el proceso de generación automática de certificados autofirmados con validez de 365 días, su ubicación en \texttt{ssl\_certs/} y su propósito en entornos locales.
+    
+    \item \textbf{Acceso Remoto}: Se proporciona un procedimiento detallado para conectar la aplicación desde una máquina diferente en la misma red local, incluyendo obtención de IP del servidor y configuración de excepciones de certificado.
+    
+    \item \textbf{Solución de Problemas}: Se documentan 11 problemas comunes (OpenSSL no encontrado, puerto en uso, errores de certificado, etc.) con sus soluciones correspondientes.
+\end{enumerate}
+
+\subsection{Mejoras en Documentación Principal}
+
+Se realizaron dos mejoras significativas en los documentos principales (README.md y README\_ES.md):
+
+\begin{itemize}
+    \item \textbf{Adición de Sección de Estructura de Documentación}: Nueva sección ``Estructura de Documentación'' que proporciona una tabla de referencia rápida y guía de navegación para usuarios nuevos.
+    
+    \item \textbf{Simplificación de Instrucciones de Ejecución}: La sección anterior que contenía instrucciones detalladas de ejecución local fue reemplazada por referencias a documentación específica, eliminando redundancia y mejorando el mantenimiento.
+\end{itemize}
+
+Esta reorganización reduce de 8 líneas a 5 líneas la sección de ejecución mientras mejora la claridad mediante referencias contextuales.
+
+\subsection{Consideraciones de Seguridad: Actualización del .gitignore}
+
+Dada la naturaleza pública del repositorio en GitHub, se realizó un análisis de archivos sensibles y se actualizó el archivo \texttt{.gitignore} con 12 nuevas reglas de exclusión:
+
+\subsubsection{Exclusiones Críticas (Seguridad)}
+
+\begin{itemize}
+    \item \textbf{Certificados y claves criptográficas}: \texttt{ssl\_certs/}, \texttt{*.pem}, \texttt{*.key}, \texttt{*.crt}, \texttt{*.pfx}, \texttt{*.p12}. Estos archivos contienen claves privadas RSA que nunca deben exponerse públicamente.
+    
+    \item \textbf{Variables de entorno locales}: \texttt{.env.local}, \texttt{.env.*.local}, \texttt{.env.production.local}. Estos archivos pueden contener credenciales de MongoDB, IPs de servidor internas y tokens de autenticación.
+\end{itemize}
+
+\subsubsection{Exclusiones de Almacenamiento Temporal}
+
+\begin{itemize}
+    \item \texttt{storage/temp/}: Datos temporales generados durante la ejecución
+    \item \texttt{storage/data/}: Caché de datos
+    \item \texttt{*.tmp}: Archivos temporales diversos
+\end{itemize}
+
+\subsubsection{Exclusiones de Configuración Personal}
+
+\begin{itemize}
+    \item \textbf{IDEs}: \texttt{.vscode/}, \texttt{.idea/}, \texttt{*.sublime-project}, \texttt{.vim/}. Configuraciones específicas del desarrollador que varían entre máquinas.
+    
+    \item \textbf{Sistema operativo}: \texttt{.DS\_Store}, \texttt{Thumbs.db}, \texttt{.\_*}, \texttt{.Spotlight-V100}, \texttt{.Trashes}. Metadatos del SO que no son relevantes para el desarrollo.
+    
+    \item \textbf{Configuraciones locales}: \texttt{local\_config.py}, \texttt{config.local.yaml}. Archivos que pueden contener rutas absolutas o credenciales específicas del desarrollador.
+\end{itemize}
+
+\subsubsection{Decisión sobre Archivos de Modelo}
+
+Se decidió \textbf{NO excluir} archivos con extensión \texttt{.pth} (modelos PyTorch entrenados), dado que:
+
+\begin{itemize}
+    \item El tamaño actual (~9 MB por modelo) es aceptable para GitHub
+    \item Los modelos representan resultados reproducibles y validados del TFG
+    \item Son parte integral de los resultados del proyecto
+    \item Facilitan la reproducibilidad para colaboradores
+\end{itemize}
+
+Se mantuvieron excluidos directorios que ya estaban en el \texttt{.gitignore} original (\texttt{/data}, \texttt{/imagenes}, \texttt{/logs}, \texttt{/experiments}), preservando el enfoque de no subir datos masivos ni resultados temporales no finalizados.
+
+\subsection{Impacto y Beneficios}
+
+La reorganización de documentación aporta los siguientes beneficios:
+
+\begin{enumerate}
+    \item \textbf{Accesibilidad Mejorada}: Usuarios con diferentes perfiles pueden encontrar rápidamente la documentación relevante sin navegar por un único documento extenso.
+    
+    \item \textbf{Mantenimiento Simplificado}: La separación de concernos facilita actualizar documentación específica sin afectar otros análisis.
+    
+    \item \textbf{Soporte Multiidioma}: Disponibilidad en español e inglés amplía el potencial de colaboradores del proyecto.
+    
+    \item \textbf{Seguridad del Repositorio}: Las reglas de \texttt{.gitignore} garantizan que credenciales y claves privadas nunca se exponen públicamente.
+    
+    \item \textbf{Onboarding Eficiente}: La estructura jerárquica y tabla de navegación reducen la curva de aprendizaje para nuevos colaboradores.
+    
+    \item \textbf{Profesionalismo}: Un repositorio público bien documentado y seguro mejora la percepción del proyecto en la comunidad.
+\end{enumerate}
+
+\subsection{Archivos Generados}
+
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{|l|l|l|}
+    \hline
+    \textbf{Archivo} & \textbf{Tipo} & \textbf{Descripción} \\
+    \hline
+    server/README\_ES.md & Creado & Guía servidor en español \\
+    README\_APP\_EN.md & Creado & Guía app en inglés \\
+    README\_ES.md & Modificado & +Estructura docs, -redundancia \\
+    README.md & Modificado & +Estructura docs (English) \\
+    .gitignore & Modificado & +12 reglas de seguridad \\
+    \hline
+    \end{tabular}
+    \caption{Resumen de archivos de documentación generados y modificados.}
+    \label{tab:archivos_generados}
+\end{table}
+
+\subsection{Conclusión}
+
+La reestructuración de la documentación del proyecto proporciona una base sólida para un repositorio público profesional. La organización jerárquica, soporte multiidioma y consideraciones de seguridad implementadas facilitan tanto el acceso de usuarios finales como el potencial para colaboración futura en la investigación sobre clasificación de enfermedades de plantas mediante visión por computador.
+
+
+
+\end{document}

@@ -1,0 +1,311 @@
+\documentclass[11pt,spanish,listoffigures,listoftables]{tfgetsinf}
+
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=cyan}
+
+\title{Clasificación de enfermedades en hojas de plantas mediante aprendizaje profundo con imágenes reales y de laboratorio}
+\author{Pablo Rallo Fes}
+\tutor{Carlos Carrascosa Casamayor}
+\curs{2025-2026}
+
+\keywords{classificació de plantes, malalties de les plantes, aprenentatge profund, MobileNetV2, visió per computador, Foliarium}
+           {clasificación de plantas, enfermedades de plantas, aprendizaje profundo, MobileNetV2, visión por computadora, Foliarium}
+           {plant classification, plant diseases, deep learning, MobileNetV2, computer vision, Foliarium}
+
+\begin{document}
+
+\begin{abstract}
+Foliarium és una plataforma per recollir, etiquetar i classificar imatges de fulles de plantes sanes i malaltes mitjançant aprenentatge profund. El treball combina imatges de laboratori (PlantVillage) i imatges capturades en condicions reals, i desenvolupa un marc de treball reproducible per integrar dades, entrenar models basats en MobileNetV2 i desplegar el sistema en producció. Aquesta memòria documenta el problema, la solució proposada, l'arquitectura del programari, l'experimentació realitzada i l'avaluació dels resultats.
+\end{abstract}
+
+\begin{abstract}[spanish]
+Foliarium es una plataforma para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas mediante aprendizaje profundo. El trabajo combina imágenes de laboratorio (PlantVillage) e imágenes capturadas en condiciones reales, y desarrolla un marco de trabajo reproducible para integrar datos, entrenar modelos basados en MobileNetV2 y desplegar el sistema en producción. Esta memoria documenta el problema, la solución propuesta, la arquitectura software, la experimentación realizada y la evaluación de los resultados.
+\end{abstract}
+
+\begin{abstract}[english]
+Foliarium is a platform for collecting, labeling, and classifying images of healthy and diseased plant leaves using deep learning. This work combines laboratory images (PlantVillage) and images captured under real-world conditions, and develops a reproducible framework to integrate data, train MobileNetV2-based models, and deploy the system in production. This thesis describes the problem, the proposed solution, the software architecture, the experiments, and the evaluation of the results.
+\end{abstract}
+
+\mainmatter
+
+\chapter{Introducción}
+\section{Motivación y contexto del problema}
+Explicar la importancia de la detección temprana de enfermedades en plantas y el interés práctico del proyecto.
+
+\section{Objetivos generales y específicos}
+El objetivo principal de este Trabajo de Fin de Grado es mejorar la capacidad de generalización de un modelo de clasificación de enfermedades en hojas de plantas mediante el uso combinado de imágenes obtenidas en laboratorio (PlantVillage) e imágenes tomadas en condiciones reales. Para obtener esta segunda clase de imágenes se desarrollará una aplicación a través de la que se pueda ejecutar casi todas las funcionalidades del proyecto.
+
+Para lograr este objetivo general, se plantean los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item Adaptar la arquitectura MobileNetV2 al problema de clasificación de hojas de plantas sanas y enfermas, utilizando como base el conjunto de datos PlantVillage.
+    \item Incorporar imágenes reales tomadas en condiciones no controladas al proceso de entrenamiento y validación del modelo.
+    \item Evaluar el impacto de la inclusión de imágenes reales en el rendimiento del modelo, especialmente en cuanto a su capacidad de generalización.
+    \item Aplicar técnicas de \textit{data augmentation} y transferencia de aprendizaje para compensar la escasez de datos reales.
+    \item Desarrollar un \textit{pipeline} reproducible que combine datos sintéticos y reales, y que sea compatible con su futura integración en aplicaciones móviles de diagnóstico.
+\end{itemize}
+
+\section*{Enfoque adoptado}
+
+Aunque el objetivo general de este Trabajo de Fin de Grado es abordar la clasificación automática de enfermedades en hojas de plantas, es importante subrayar que el enfoque seguido no se centra únicamente en maximizar la precisión del modelo sobre imágenes reales, al menos no en esta fase inicial.
+
+Actualmente se dispone de un volumen muy limitado de imágenes bien clasificadas y tomadas en condiciones reales (luz natural, fondo no neutro, variedad de dispositivos, etc.), lo cual impide extraer conclusiones sólidas mediante técnicas de aprendizaje profundo. Ante esta limitación, el enfoque adoptado en este TFG se orienta a construir un marco de trabajo robusto, extensible y reproducible que permita:
+
+\begin{itemize}
+  \item Integrar y gestionar imágenes de distintas fuentes con facilidad.
+  \item Estandarizar el preprocesamiento de las imágenes (conversión a escala de grises, segmentación de hojas, etc.).
+  \item Almacenar y anotar las imágenes con metadatos estructurados en una base de datos consultable.
+  \item Preparar el sistema para futuras ampliaciones del conjunto de datos, ya sea mediante aplicaciones móviles, datasets externos o colaboración con terceros.
+\end{itemize}
+
+Este marco está diseñado con visión a largo plazo, priorizando la escalabilidad del sistema, la heterogeneidad de fuentes y la validación futura de modelos con conjuntos de datos más representativos.
+
+Por otro lado, se reconoce explícitamente que las imágenes reales disponibles en esta etapa pueden presentar nuevas clases, desbalance severo o condiciones significativamente distintas a las del dataset base (PlantVillage). Por tanto, las pruebas realizadas con estas imágenes deben interpretarse como exploratorias y no como una evaluación definitiva del rendimiento del modelo en escenarios reales.
+
+En resumen, este TFG busca aportar valor no solo mediante experimentos concretos, sino también a través de la construcción de una base técnica que facilite el desarrollo futuro de soluciones más generalizables y útiles en contextos agrícolas reales.
+
+\section{Alcance del trabajo y limitaciones}
+Delimitar qué incluye la solución y qué queda fuera del alcance del TFG.
+
+\section{Impacto esperado}
+Justificar el valor técnico y aplicado del sistema en un entorno real o semi-real.
+
+\section{Metodología general de trabajo}
+Resumir la forma de abordar el proyecto: recogida de datos, desarrollo, experimentación y validación.
+
+\section{Estructura de la memoria}
+Explicar brevemente el contenido de cada capítulo.
+
+\section{Colaboradores y agradecimientos}
+Incluir el reconocimiento a las personas que han participado en el desarrollo o la validación del proyecto. Entre ellas: Jaime Carlavilla Lázaro (trabajo previo sobre el que se parte), Marta Rallo Fes (colaboración) y Carlos Carrascosa Casamayor (tutor y coordinación). Redactar el texto definitivo de agradecimientos.
+
+\chapter{Marco teórico y estado del arte}
+\section{Visión por computadora aplicada a agricultura}
+Presentar el contexto científico y técnico del problema.
+
+\section{Aprendizaje profundo y redes convolucionales}
+Explicar los conceptos básicos necesarios para entender la solución.
+
+\section{Transfer learning y MobileNetV2}
+Describir por qué se usa transferencia de aprendizaje y por qué se eligió esta arquitectura.
+
+\section{Clasificación multiclase y enfoque multitarea}
+Justificar la predicción conjunta de cultivo y enfermedad.
+
+\section{Dataset PlantVillage y datasets reales de campo}
+Resumir las fuentes de datos usadas y sus diferencias.
+
+\section{\textit{Duda}: convenciones de notación, abreviaturas y terminología}
+Sección opcional si finalmente conviene explicitar notación o glosario.
+
+\chapter{Análisis del problema y requisitos}
+\section{Casos de uso del sistema}
+Definir los escenarios principales de uso de la aplicación.
+
+\section{Roles de usuario: usuario, etiquetador y administrador}
+Explicar las funciones disponibles para cada rol.
+
+\section{Requisitos funcionales}
+Listar las capacidades que debe ofrecer el sistema.
+
+\section{Requisitos no funcionales}
+Recoger aspectos de seguridad, mantenibilidad, rendimiento y usabilidad.
+
+\section{Criterios de calidad y seguridad}
+Explicar las medidas adoptadas para asegurar un funcionamiento robusto.
+
+\chapter{Diseño y arquitectura de la solución}
+\section{Visión global del sistema}
+Presentar la organización general del proyecto y sus componentes.
+
+\section{Arquitectura backend, frontend y servicios auxiliares}
+Describir la relación entre la API, la aplicación gráfica y los scripts auxiliares.
+
+\section{Diseño de la comunicación entre aplicación y API}
+Explicar el flujo HTTP/JSON y el papel del módulo de conexión.
+
+\section{Modelo de datos y persistencia en MongoDB}
+Describir las colecciones, campos y relaciones principales.
+
+\section{Despliegue y contenedorización con Docker}
+Explicar cómo se empaqueta y despliega el sistema.
+
+\chapter{Datos y preparación experimental}
+\section{Fuentes de datos y organización del repositorio}
+Indicar qué datasets se usan y cómo están organizados en el repositorio.
+
+\section{Taxonomía de plantas y enfermedades}
+Explicar cómo se codifican las clases y sus relaciones.
+
+\section{Limpieza, validación e importación de imágenes}
+Describir el flujo de incorporación de imágenes a la base de datos y al almacenamiento local.
+
+\section{Preprocesamientos: color, grayscale y segmentado}
+Las imágenes obtenidas mediante la aplicación móvil desarrollada en el proyecto representan condiciones de captura realistas: iluminación natural, fondos heterogéneos, presencia de sombras, variaciones en distancia y enfoque, entre otros factores. Esta variabilidad contrasta fuertemente con las condiciones controladas en las que se capturaron las imágenes del dataset PlantVillage, donde se utilizó un fondo blanco uniforme, iluminación constante y encuadres centrados. Esta diferencia introduce un \textit{domain shift} que puede afectar negativamente al rendimiento del modelo si no se tiene en cuenta durante el entrenamiento.
+
+Con el fin de reducir este desajuste entre dominios, se ha desarrollado un sistema de procesamiento que transforma las imágenes reales a formatos alternativos: \textbf{escala de grises} y \textbf{segmentación de la hoja}. Esta decisión tiene dos objetivos principales:
+\begin{itemize}
+    \item \textbf{Reducir el sesgo visual asociado a la fuente de las imágenes}, eliminando color o fondo para evitar que el modelo aprenda a distinguir entre dominios en lugar de entre clases de enfermedad.
+    \item \textbf{Permitir una comparación coherente con PlantVillage}, que también incluye versiones en gris y segmentadas en los experimentos del artículo original. (Aunque se utilizará el mismo proceso de transformación de imágenes a las procedentes de PlantVillage y de otras fuentes)
+\end{itemize}
+
+\subsection{Conversión a escala de grises}
+
+La conversión a escala de grises permite eliminar la componente cromática de las imágenes, manteniendo únicamente la información estructural: bordes, forma y textura de la hoja. Esta transformación se ha implementado utilizando la función \texttt{cv2.cvtColor()} de la librería OpenCV, que convierte cada píxel RGB en un valor de intensidad en escala de grises mediante una media ponderada de los tres canales, simulando la percepción visual humana.
+
+Este procesamiento permite estudiar el impacto del color en la clasificación. Si el modelo sigue funcionando bien sobre imágenes grises, puede inferirse que las características estructurales son suficientes para la tarea, y que el modelo generaliza mejor entre dominios.
+
+\subsection{Segmentación de la hoja}
+
+La segmentación busca eliminar el fondo de la imagen y conservar únicamente la región correspondiente a la hoja. Esta técnica, utilizada también en el artículo original de PlantVillage, tiene como objetivo evitar que el modelo aprenda patrones del fondo (color, textura, iluminación) que podrían sesgar el aprendizaje. 
+
+Dado que el código original de segmentación no está disponible públicamente, se ha implementado una versión propia inspirada en la metodología descrita por los autores. Tras evaluar visualmente los resultados, se ha decidido aplicar este mismo proceso tanto a las imágenes reales capturadas mediante la aplicación móvil como a las imágenes en color del dataset PlantVillage. Esto garantiza una consistencia visual entre fuentes y evita introducir sesgos derivados de diferencias en el preprocesamiento.
+
+Aunque la segmentación obtenida con este método no reproduce con exactitud la precisión de los contornos de las imágenes segmentadas originales de PlantVillage, se considera suficientemente fiable para los objetivos del proyecto. En particular, se ha observado que el algoritmo es efectivo eliminando el fondo, aunque los contornos pueden ser menos definidos.
+
+El algoritmo desarrollado se basa en un enfoque heurístico en el espacio de color \textit{Lab}. El proceso consiste en:
+
+\begin{enumerate}
+    \item \textbf{Conversión a espacio Lab:} se transforma la imagen desde RGB a Lab, donde $L$ representa la luminosidad, y $a$, $b$ codifican la cromaticidad.
+    
+    \item \textbf{Mejora de contraste y suavizado:} el canal $L$ se ecualiza para aumentar el contraste global, y los canales $L$, $a$ y $b$ se suavizan con un filtro gaussiano para reducir el ruido.
+
+    \item \textbf{Estimación del color de fondo:} se asume que los bordes de la imagen contienen fondo, por lo que se toma la mediana de los valores de los bordes en $a$ y $b$ como referencia cromática del fondo.
+
+    \item \textbf{Construcción de máscaras:}
+    \begin{itemize}
+        \item \textbf{Máscara de color:} marca como fondo aquellos píxeles cuya distancia euclídea en el plano $(a,b)$ sea pequeña respecto al color de fondo.
+        \item \textbf{Máscara de sombras:} identifica regiones oscuras que podrían ser fondo en sombra, basándose en valores bajos de $L$ y color similar al fondo.
+    \end{itemize}
+
+    \item \textbf{Combinación y limpieza de máscaras:} se combinan ambas máscaras eliminando las sombras de la máscara principal. Se aplican operaciones morfológicas (apertura y cierre) para eliminar regiones pequeñas erróneas.
+
+    \item \textbf{Relleno del fondo y refinamiento:} se utiliza una operación de \textit{flood-fill} desde las esquinas para asegurar que todo el fondo queda cubierto. Además, se conserva únicamente la región conectada más grande de la máscara para evitar errores en imágenes con múltiples objetos o ruido.
+
+    \item \textbf{Aplicación de la máscara:} la máscara binaria resultante se aplica a la imagen original, conservando la hoja y poniendo el fondo completamente negro.
+\end{enumerate}
+
+Este procedimiento permite generar un conjunto coherente de imágenes segmentadas a partir de ambas fuentes de datos, con un estilo visual uniforme y controlado. Esto facilita la creación de conjuntos de entrenamiento mixtos y permite realizar comparaciones más justas entre modelos entrenados con distintos formatos de entrada.
+
+
+\section{División train/validation/test}
+Justificar el criterio de partición de los datos.
+
+\section{Balanceo de clases y control de sesgos}
+Describir las estrategias para evitar clases dominantes y resultados engañosos.
+
+\chapter{Modelo y metodología de entrenamiento}
+\section{Arquitectura multitarea basada en MobileNetV2}
+Describir la red base, las cabezas de salida y la lógica multitarea.
+
+\section{Estrategias de fine-tuning}
+Comparar congelado parcial, fine-tuning de capas superiores y ajuste completo.
+
+\section{Función de pérdida, optimización y métricas}
+Explicar cómo se entrena el modelo y cómo se evalúa.
+
+\section{Gestión de experimentos y configuración reproducible}
+Describir el sistema de configuración por YAML y el versionado experimental.
+
+\section{Scripts de entrenamiento e inferencia}
+Resumir los scripts utilizados para entrenar, evaluar y predecir.
+
+\chapter{Implementación del sistema}
+\section{Backend Flask y endpoints principales}
+Describir los servicios expuestos por la API.
+
+\section{Interfaz de usuario Flet}
+Explicar la aplicación de escritorio/móvil y sus pantallas principales.
+
+\section{Flujo de autenticación y roles}
+Detallar el acceso y las acciones permitidas según el tipo de usuario.
+
+\section{Herramientas de administración, carga y mantenimiento}
+Recoger los scripts y utilidades para operar el sistema.
+
+\section{Integración con modelos de predicción}
+Explicar cómo se invocan y consumen los modelos entrenados.
+
+\chapter{Experimentación y resultados}
+\section{Experimentos de referencia}
+Presentar los experimentos base y su configuración.
+
+\section{Comparativa entre formatos de imagen}
+Analizar el impacto de color, escala de grises y segmentación.
+
+\section{Comparativa entre configuraciones de entrenamiento}
+Comparar variantes de datos, épocas, fine-tuning y pesos de clase.
+
+\section{Resultados sobre datos reales y generalización}
+Valorar el comportamiento en imágenes más cercanas al caso de uso real.
+
+\section{Análisis de errores y casos mal clasificados}
+Estudiar los fallos más relevantes y sus patrones.
+
+\section{Discusión de resultados}
+Interpretar los hallazgos principales y sus implicaciones.
+
+\chapter{Validación y despliegue}
+\section{Validación funcional del sistema}
+Comprobar que las funciones principales trabajan como se espera.
+
+\section{Validación del despliegue en Docker}
+Verificar el arranque, la persistencia y la operación del sistema en contenedores.
+
+\section{Reproducibilidad de los experimentos}
+Asegurar que las ejecuciones pueden repetirse con la misma configuración.
+
+\section{\textit{Duda}: evidencias de colaboración externa o validación por terceros}
+Sección opcional si finalmente se documentan revisiones externas o validación adicional.
+
+\chapter{Conclusiones y trabajo futuro}
+\section{Conclusiones}
+Sintetizar las aportaciones y aprendizajes principales.
+
+\section{Limitaciones}
+Reconocer las restricciones del sistema y del estudio experimental.
+
+\section{Trabajo futuro}
+Proponer extensiones técnicas y funcionales.
+
+\backmatter
+\begin{thebibliography}{10}
+\bibitem{mohanty2016}
+S. P. Mohanty, D. P. Hughes y M. Salathé.
+\newblock Using deep learning for image-based plant disease detection.
+\newblock \textit{Frontiers in Plant Science}, 2016.
+
+\bibitem{mobilenetv2}
+M. Sandler et al.
+\newblock MobileNetV2: Inverted Residuals and Linear Bottlenecks.
+\newblock \textit{CVPR}, 2018.
+
+\end{thebibliography}
+\cleardoublepage
+
+
+\APPENDIX
+
+\chapter{Instrucciones de instalación y ejecución}
+??????
+\section{Instalación de dependencias}
+Recoger los pasos necesarios para preparar el entorno y levantar el sistema.
+
+\chapter{Comandos de reproducción de experimentos}
+??????
+\section{Cómo reproducir los experimentos}
+Listar los comandos o procedimientos para replicar resultados.
+
+\chapter{Fragmentos de código clave}
+??????
+\section{Módulos principales}
+Incluir extractos útiles de los módulos más importantes.
+
+\chapter{Figuras y tablas complementarias}
+??????
+\section{Material de apoyo}
+Añadir material de apoyo que no conviene llevar al cuerpo principal.
+
+
+\end{document}
