@@ -51,6 +51,8 @@ mkdir -p "$PKG_ROOT/DEBIAN" "$PKG_ROOT/opt/__PKGNAME__" "$PKG_ROOT/usr/bin" "$PK
 chmod 755 "$PKG_ROOT/DEBIAN"
 
 cp -r "$BUNDLE/." "$PKG_ROOT/opt/__PKGNAME__/"
+echo "Contenido copiado:"
+ls -la "$PKG_ROOT/opt/__PKGNAME__/"
 chmod +x "$PKG_ROOT/opt/__PKGNAME__/foliarium"
 
 cat > "$PKG_ROOT/usr/bin/foliarium" << 'EOF'

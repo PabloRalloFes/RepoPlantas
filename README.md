@@ -20,7 +20,7 @@ Si la app ya esta empaquetada como `.deb`, desde Windows puedes instalarla y abr
 Instalar o actualizar el paquete:
 
 ```powershell
-wsl -d Ubuntu -- sudo dpkg -i "/mnt/c/Users/Pablo/Documents/Universidad/TFG/Repositorios/Linux/dist/linux/Foliarium_1.0.0_amd64.deb"
+wsl -d Ubuntu -- sudo dpkg -i "/mnt/c/{ruta_al_deb}"
 wsl -d Ubuntu -- sudo apt-get -f install -y
 ```
 
@@ -37,6 +37,13 @@ Si quieres probar la version portable en vez del `.deb`, usa el archivo `dist/li
 Requisito: tener WSL Ubuntu configurado para compilar (igual que ya usas para `flet build linux`).
 
 Desde PowerShell en la raiz del repo:
+
+Copia el contenido del repo a wsl:
+```powershell
+cp -r /mnt/c/Users/{ruta_al_repo} /home/pablo/Linux-flet
+```
+
+Construye el .deb:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\package-linux-deb.ps1 -Version 1.0.0

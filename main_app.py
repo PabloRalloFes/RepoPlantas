@@ -3377,7 +3377,23 @@ if __name__ == "__main__":
                 mostrar_cargando(page, False)
 
             if page.route == ("/main_usuario"):
-                if not es_wsl:
+                file_picker = ft.FilePicker(on_result=on_image_selected)
+                page.overlay.append(file_picker)
+
+                def open_file_picker(_=None):
+                    # Ensure the FilePicker control is attached to the page before invoking pick_files()
+                    if file_picker.page is None:
+                        page.overlay.append(file_picker)
+                        page.update()
+                    try:
+                        file_picker.pick_files(allow_multiple=False)
+                    except AssertionError:
+                        # Retry once after ensuring attachment
+                        if file_picker.page is None:
+                            page.overlay.append(file_picker)
+                            page.update()
+                        file_picker.pick_files(allow_multiple=False)
+                """if not es_wsl:
                     file_picker = ft.FilePicker(on_result=on_image_selected)
                     page.overlay.append(file_picker)
                 else:
@@ -3391,7 +3407,7 @@ if __name__ == "__main__":
                             "Seleccionar imagen",
                             "Introduce la ruta completa de la imagen",
                             procesar_imagen_desde_path,
-                        )
+                        )"""
 
                 page.views.append(
                     ft.View(
@@ -3471,7 +3487,8 @@ if __name__ == "__main__":
                                                                     color=ft.Colors.WHITE,
                                                                     bgcolor=ft.Colors.GREEN,
                                                                     width=280,
-                                                                    on_click=seleccionar_foto_accion
+                                                                    on_click=open_file_picker
+                                                                    #on_click=seleccionar_foto_accion
                                                                 ),
                                                             ]
                                                         )
@@ -4072,7 +4089,23 @@ if __name__ == "__main__":
                         page.update()
 
                     # Controles para PASO 1: Subir ZIP
-                    if not es_wsl:
+                    zip_picker = ft.FilePicker(on_result=on_zip_selected)
+                    page.overlay.append(zip_picker)
+
+                    def open_zip_picker(_=None):
+                        # Ensure the FilePicker control is attached to the page before invoking pick_files()
+                        if zip_picker.page is None:
+                            page.overlay.append(zip_picker)
+                            page.update()
+                        try:
+                            zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
+                        except AssertionError:
+                            # Retry once after ensuring attachment
+                            if zip_picker.page is None:
+                                page.overlay.append(zip_picker)
+                                page.update()
+                            zip_picker.pick_files(allowed_extensions=["zip"], dialog_title="Selecciona ZIP")
+                    """if not es_wsl:
                         zip_picker = ft.FilePicker(on_result=on_zip_selected)
                         page.overlay.append(zip_picker)
                     else:
@@ -4089,7 +4122,7 @@ if __name__ == "__main__":
                                 "Seleccionar ZIP",
                                 "Introduce la ruta completa del archivo ZIP",
                                 fijar_zip_seleccionado,
-                            )
+                            )"""
                     
                     nombre_fuente_input = ft.TextField(
                         label="Nombre de la fuente",
@@ -4207,7 +4240,8 @@ if __name__ == "__main__":
                                                                                 ft.ElevatedButton(
                                                                                     text="Seleccionar ZIP",
                                                                                     icon=ft.Icons.FOLDER_OPEN,
-                                                                                    on_click=seleccionar_zip_accion
+                                                                                    on_click=open_zip_picker
+                                                                                    #on_click=seleccionar_zip_accion
                                                                                 ),
                                                                                 archivo_seleccionado_text,
                                                                             ]
