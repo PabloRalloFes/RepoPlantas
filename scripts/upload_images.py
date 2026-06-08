@@ -207,7 +207,7 @@ if not os.path.isdir(DATASET_DIR):
     print(f"No existe el directorio de dataset: {DATASET_DIR}")
     sys.exit(1)
 
-with open("src/clases.json", "r", encoding="utf-8") as f:
+with open("src/clases_ids.json", "r", encoding="utf-8") as f:
     clase_id_dict = json.load(f)
 
 # Imágenes ya subidas
@@ -222,7 +222,7 @@ for carpeta in carpetas_detectadas:
         print(f"Clase nueva detectada: {carpeta}. Ejecutando add_class.py")
         subprocess.run(["python", "scripts/add_class.py", carpeta], check=True)
 
-with open("src/clases.json", "r", encoding="utf-8") as f:
+with open("src/clases_ids.json", "r", encoding="utf-8") as f:
     clase_id_dict = json.load(f)
 
 # Generar tareas

@@ -9,13 +9,14 @@ from bson import ObjectId
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-json_path = os.path.join(ROOT, "src", "clases_peligro.json")
+json_path = os.path.join(ROOT, "src", "coleccion_clases.json")
 backup_path = os.path.join(ROOT, "src", "clases_backup.json")
 os.makedirs(os.path.dirname(backup_path), exist_ok=True)
 
 # Conexión a MongoDB
 client = MongoClient("mongodb://localhost:27017/")
-db = client["Demo_Grietas"]
+DB_NAME = os.getenv("DB_NAME", "Demo")
+db = client[DB_NAME]
 coleccion = db["Clases"]
 
 def convertir_ids(doc):

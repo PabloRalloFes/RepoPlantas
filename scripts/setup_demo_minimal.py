@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 
 import yaml
+import os
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
@@ -18,7 +20,7 @@ SOURCE_DIR = ROOT / "data" / "Ejemplo" / "color"
 IMAGES_DIR = ROOT / "imagenes"
 EXPERIMENTS_DIR = ROOT / "experiments"
 BASE_EXPERIMENT_DIR = EXPERIMENTS_DIR / "BASE"
-DEFAULT_DB_NAME = "Demo_Grietas"
+DEFAULT_DB_NAME = os.getenv("DB_NAME", "Demo")
 DEFAULT_CLASS_NAMES = ["Inofensiva", "Neutra", "Peligrosa"]
 DEFAULT_FIELDS = [
     {

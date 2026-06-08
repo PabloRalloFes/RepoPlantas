@@ -1,0 +1,307 @@
+[
+  {
+    "_id": 0,
+    "planta": "Apple",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 1,
+    "planta": "Apple",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 2,
+    "planta": "Apple",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 3,
+    "planta": "Apple",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 4,
+    "planta": "Grape",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 5,
+    "planta": "Grape",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 6,
+    "planta": "Grape",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 7,
+    "planta": "Grape",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 8,
+    "planta": "Grape",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 9,
+    "planta": "Grape",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 10,
+    "planta": "Grape",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 11,
+    "planta": "Grape",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 12,
+    "planta": "Grape",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 13,
+    "planta": "Grape",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 14,
+    "planta": "Grape",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 15,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 16,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 17,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 18,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 19,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 20,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 21,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 22,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 23,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 24,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 25,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 26,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 27,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 28,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 29,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 30,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 31,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 32,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 33,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 34,
+    "planta": "Tomato",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 35,
+    "planta": "Tomato",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 36,
+    "planta": "Tomato",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 37,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 38,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 39,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 40,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 41,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 42,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 43,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 44,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 45,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 46,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 47,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 48,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 49,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 50,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 51,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 52,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 53,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 54,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 55,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 56,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 57,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  },
+  {
+    "_id": 58,
+    "planta": "Vid",
+    "clasificacion": "healthy"
+  },
+  {
+    "_id": 59,
+    "planta": "Vid",
+    "clasificacion": "Carencia"
+  },
+  {
+    "_id": 60,
+    "planta": "Vid",
+    "clasificacion": "Sin_clasificar"
+  }
+]

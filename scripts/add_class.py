@@ -8,11 +8,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-DB_NAME = "Demo_Grietas"
+DB_NAME = os.getenv("DB_NAME", "Demo")
 CLASE_COLECCION = "Clases"
 
-COMBINADAS_PATH = os.path.join(ROOT, "src", "clases_peligro.json")
-ID_DICT_PATH = os.path.join(ROOT, "src", "clases.json")
+COMBINADAS_PATH = os.path.join(ROOT, "src", "coleccion_clases.json")
+ID_DICT_PATH = os.path.join(ROOT, "src", "clases_ids.json")
 
 parser = argparse.ArgumentParser(description="Añadir clase al sistema")
 parser.add_argument("nombre_clase", help="Nombre de la clase de peligro (Inofensiva, Neutra, Peligrosa, ...)")
@@ -44,7 +44,7 @@ def normalizar_clase(doc):
 
 if existe:
     print(f"La clase '{nombre_clase}' ya existe en {COMBINADAS_PATH} con ID {existe['_id']}")
-    # Asegurar que el mapa de ids (src/clases.json) contiene la clave para esta clase.
+    # Asegurar que el mapa de ids (src/clases_ids.json) contiene la clave para esta clase.
     clave = nombre_clase.replace(' ', '_')
     if clave not in clase_id_dict:
         clase_id_dict[clave] = existe["_id"]
@@ -74,7 +74,7 @@ clases_combinadas.append(nueva_clase)
 with open(COMBINADAS_PATH, "w", encoding="utf-8") as f:
     json.dump(clases_combinadas, f, indent=2, ensure_ascii=False)
 
-# Actualizar clases.json
+# Actualizar clases_ids.json
 clave = nombre_clase.replace(' ', '_')
 clase_id_dict[clave] = nuevo_id
 with open(ID_DICT_PATH, "w", encoding="utf-8") as f:

@@ -23,13 +23,24 @@ def _normalize_local_mongo_uri(uri: str) -> str:
 
     return uri
 
-def connect_to_database(uri=None, db_name="Demo_Grietas"):
+def connect_to_database(uri=None, db_name="Demo"):
     """Conecta a MongoDB y devuelve la instancia de base de datos."""
     if uri is None:
         uri = os.getenv("URL_BBDD", "mongodb://localhost:27017/")
     uri = _normalize_local_mongo_uri(uri)
     client = MongoClient(uri)
     return client[db_name]
+
+
+def get_project_config(db=None, db_name="Demo"):
+    """Devuelve la configuración persistida del proyecto, si existe.
+
+    El documento esperado vive en la colección `ProjectConfig` con `_id == "project"`.
+    """
+    if db is None:
+        db = connect_to_database(db_name=db_name)
+    doc = db["ProjectConfig"].find_one({"_id": "project"}) or {}
+    return {k: v for k, v in doc.items() if k != "_id"}
 
 def load_yaml_config(config_path):
     """Carga configuración desde un archivo YAML dado (ruta absoluta o relativa)."""

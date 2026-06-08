@@ -82,7 +82,8 @@ src/
     └── logos.png
 ├── campos.json
 ├── clases_combinadas.json
-├── clases.json
+├── clases_ids.json
+├── coleccion_clases.json
 └── etiquetas.json
 utils/
 ├── data.py
@@ -165,9 +166,31 @@ Si deseas trabajar con tu propia base de datos MongoDB local, sigue estos pasos 
    cd <CARPETA_DEL_REPOSITORIO>
    ```
 
-2. **Configurar la base de datos local:**
-  - Asegúrate de tener MongoDB instalado y corriendo en tu máquina.
-  - Ejecuta el script setup_bbdd.py para inicializar la base de datos:
+2. **Inicializar la base de datos antes de arrancar la app:**
+  - Antes de ejecutar la interfaz o lanzar procesos de subida, ejecuta `setup_bbdd.py` desde la raíz del proyecto.
+  - Este script crea la estructura mínima de la base de datos del proyecto: `Campos`, `Clases`, `Formato`, `Fuente` y `Docs`.
+  - Además crea el usuario inicial `admin` con contraseña `admin` y deja la colección `Fuente` vacía.
+  - El script usa estos ficheros de semilla:
+    - `src/campos.json` contiene la definición de los campos base que la base de datos debe conocer desde el inicio. Aquí se declaran los campos canónicos del proyecto y su tipo.
+    - `src/etiquetas.json` contiene las etiquetas iniciales reutilizables para `Formato`. Los campos y etiquetas de este fichero pueden reutilizarse tal como están en proyectos de plantas, pero su contenido debe ajustarse si la base de datos que quieres crear necesita otros formatos.
+    - `src/coleccion_clases.json` contiene la información completa de las clases que se quieren crear. Este fichero debe adaptarse al proyecto concreto, porque aquí se define el contenido real de la colección `Clases`. `setup_bbdd.py` conserva los campos de este fichero al sembrar la colección, y además añade `class_label` si falta.
+    - `src/clases_ids.json` contiene el mapa nombre-id de las clases. Debe existir siempre y los ids de este fichero deben coincidir exactamente con los ids definidos en `src/coleccion_clases.json`.
+    - `src/project_targets.json` (opcional): si existe, `setup_bbdd.py` lo leerá y persistirá la lista de variables objetivo en la colección `ProjectConfig` de la BBDD. Esta lista no contiene valores de clase, sino nombres de campos que existen en los documentos de `Clases`.
+      - Ejemplo mínimo (`src/project_targets.json`):
+      ```json
+      ["clase"]
+      ```
+      - Si el proyecto guarda más variables en `Clases`, por ejemplo `planta` y `enfermedad`, entonces el JSON podría ser 
+      ```json
+      ["planta","enfermedad"].
+      ```
+  - Los JSON de clases trabajan en pareja: `coleccion_clases.json` define los documentos completos y `clases_ids.json` solo el mapa de ids para scripts y utilidades. Si cambias uno, debes mantener ambos sincronizados.
+  - También necesita que estén disponibles la API y MongoDB localmente.
+  - Configuración mínima esperada:
+    - `URL_API` apuntando al backend que esté en ejecución.
+    - `DB_NAME` con el nombre de la base de datos objetivo si quieres usar una distinta de la demo.
+    - MongoDB accesible desde la URL configurada en `URL_BBDD`.
+  - Ejemplo de ejecución:
   ```bash
   python scripts/setup_bbdd.py
   ```

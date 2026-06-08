@@ -15,6 +15,8 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     epochs = config["epochs"]
     lr = config["lr"]
     opt_name = config["optimizer"].lower()
+    target_fields = config.get("target_fields", [config.get("class_field", "class_label")])
+    multi_target = len(target_fields) > 1
 
     if opt_name == "adam":
         optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -23,29 +25,34 @@ def train_model(model, train_loader, val_loader, config, data_dir):
     else:
         raise ValueError(f" Optimizador no soportado: {opt_name}")
 
-    # Clasificación simple: una sola pérdida y una sola salida.
     df = pd.read_csv(os.path.join(data_dir, "train.csv"))
     class_field = config.get("class_field", "class_label")
     classes = config["classes"]
 
-    if class_field not in df.columns:
-        if {"planta", "nombre_comun"}.issubset(df.columns):
-            df[class_field] = df["planta"].astype(str) + "___" + df["nombre_comun"].astype(str)
-        else:
-            raise ValueError(f"El CSV de entrenamiento no contiene la columna '{class_field}'.")
+    if multi_target:
+        for field_name in target_fields:
+            if field_name not in df.columns:
+                raise ValueError(f"El CSV de entrenamiento no contiene la columna objetivo '{field_name}'.")
+    else:
+        if class_field not in df.columns:
+            if {"planta", "nombre_comun"}.issubset(df.columns):
+                df[class_field] = df["planta"].astype(str) + "___" + df["nombre_comun"].astype(str)
+            else:
+                raise ValueError(f"El CSV de entrenamiento no contiene la columna '{class_field}'.")
 
-    conteo_clases = Counter(df[class_field])
+        conteo_clases = Counter(df[class_field])
 
     use_weights = config.get("use_class_weights", False)
     min_samples = config.get("min_samples_per_class", 10)
 
     # Avisos si hay clases con muy pocas muestras
-    for class_name in classes:
-        if conteo_clases.get(class_name, 0) < min_samples:
-            print(f"Clase '{class_name}' tiene solo {conteo_clases.get(class_name, 0)} imágenes.")
+    if not multi_target:
+        for class_name in classes:
+            if conteo_clases.get(class_name, 0) < min_samples:
+                print(f"Clase '{class_name}' tiene solo {conteo_clases.get(class_name, 0)} imágenes.")
 
     # Crear funciones de pérdida
-    if use_weights:
+    if use_weights and not multi_target:
         print("Usando ponderación automática por frecuencia de clase.")
 
         pesos_clases = [1.0 / conteo_clases.get(class_name, 1) for class_name in classes]
@@ -78,7 +85,12 @@ def train_model(model, train_loader, val_loader, config, data_dir):
 
             optimizer.zero_grad()
             output = model(images)
-            loss = criterion(output, labels)
+            if multi_target:
+                loss = 0.0
+                for head_idx, head_output in enumerate(output):
+                    loss = loss + criterion(head_output, labels[:, head_idx])
+            else:
+                loss = criterion(output, labels)
 
             loss.backward()
             optimizer.step()
@@ -98,7 +110,12 @@ def train_model(model, train_loader, val_loader, config, data_dir):
                 labels = labels.to(device)
 
                 output = model(images)
-                loss = criterion(output, labels)
+                if multi_target:
+                    loss = 0.0
+                    for head_idx, head_output in enumerate(output):
+                        loss = loss + criterion(head_output, labels[:, head_idx])
+                else:
+                    loss = criterion(output, labels)
 
                 val_loss += loss.item()
 
@@ -122,15 +139,22 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="test"
     df = pd.read_csv(os.path.join(DATA_DIR, "train.csv"))
     class_field = config.get("class_field", "class_label")
     classes = config["classes"]
+    target_fields = config.get("target_fields", [class_field])
+    multi_target = len(target_fields) > 1
 
-    if class_field not in df.columns:
-        if {"planta", "nombre_comun"}.issubset(df.columns):
-            df[class_field] = df["planta"].astype(str) + "___" + df["nombre_comun"].astype(str)
-        else:
-            raise ValueError(f"El CSV de entrenamiento no contiene la columna '{class_field}'.")
+    if multi_target:
+        for field_name in target_fields:
+            if field_name not in df.columns:
+                raise ValueError(f"El CSV de entrenamiento no contiene la columna objetivo '{field_name}'.")
+    else:
+        if class_field not in df.columns:
+            if {"planta", "nombre_comun"}.issubset(df.columns):
+                df[class_field] = df["planta"].astype(str) + "___" + df["nombre_comun"].astype(str)
+            else:
+                raise ValueError(f"El CSV de entrenamiento no contiene la columna '{class_field}'.")
 
-    class_to_idx = {c: i for i, c in enumerate(classes)}
-    idx_to_class = {i: c for c, i in class_to_idx.items()}
+        class_to_idx = {c: i for i, c in enumerate(classes)}
+        idx_to_class = {i: c for c, i in class_to_idx.items()}
 
     correct = 0
     total = 0
@@ -139,6 +163,7 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="test"
     all_labels = []
 
     misclassified = []  # Lista para almacenar imágenes mal clasificadas
+    per_target_predictions = {field_name: {"labels": [], "preds": []} for field_name in target_fields} if multi_target else None
 
     with torch.no_grad():
         global_idx = 0
@@ -147,44 +172,96 @@ def evaluate(model, dataloader, config, DATA_DIR, results_dir, split_name="test"
             labels = labels.to(device)
 
             output = model(images)
-            probs = torch.softmax(output, dim=1)
+            if multi_target:
+                probs = [torch.softmax(head_output, dim=1) for head_output in output]
+            else:
+                probs = torch.softmax(output, dim=1)
 
             batch_size = images.size(0)
             total += batch_size
 
             for i in range(batch_size):
-                pred = probs[i].argmax().item()
-                pred_class = idx_to_class[pred]
-                true_class = idx_to_class[labels[i].item()]
-
-                if pred == labels[i].item():
-                    correct += 1
-
-                all_preds.append(pred)
-                all_labels.append(labels[i].item())
-
-                # Usar el índice global real en el dataset
                 real_idx = global_idx + i
-                if pred != labels[i].item():
-                    misclassified.append({
-                        "filename": dataloader.dataset.data.iloc[real_idx]["imagen_rgb"],
-                        "predicted": pred_class,
-                        "actual": true_class
-                    })
+                if multi_target:
+                    sample_correct = True
+                    predicted_fields = {}
+                    actual_fields = {}
+                    for head_idx, field_name in enumerate(target_fields):
+                        pred = probs[head_idx][i].argmax().item()
+                        true = labels[i][head_idx].item()
+                        predicted_fields[field_name] = int(pred)
+                        actual_fields[field_name] = int(true)
+                        per_target_predictions[field_name]["preds"].append(pred)
+                        per_target_predictions[field_name]["labels"].append(true)
+                        all_preds.append(pred)
+                        all_labels.append(true)
+                        if pred != true:
+                            sample_correct = False
+                    if sample_correct:
+                        correct += 1
+                    else:
+                        misclassified.append({
+                            "filename": dataloader.dataset.data.iloc[real_idx]["imagen_rgb"],
+                            "predicted": predicted_fields,
+                            "actual": actual_fields,
+                        })
+                else:
+                    pred = probs[i].argmax().item()
+                    pred_class = idx_to_class[pred]
+                    true_class = idx_to_class[labels[i].item()]
+
+                    if pred == labels[i].item():
+                        correct += 1
+
+                    all_preds.append(pred)
+                    all_labels.append(labels[i].item())
+
+                    if pred != labels[i].item():
+                        misclassified.append({
+                            "filename": dataloader.dataset.data.iloc[real_idx]["imagen_rgb"],
+                            "predicted": pred_class,
+                            "actual": true_class
+                        })
             global_idx += batch_size
 
     acc = correct / total
 
-    # Métricas adicionales
-    metrics = {
-        "accuracy": acc,
-        "f1": f1_score(all_labels, all_preds, average="macro"),
-        "precision": precision_score(all_labels, all_preds, average="macro"),
-        "recall": recall_score(all_labels, all_preds, average="macro"),
-    }
+    if multi_target:
+        per_target_metrics = {}
+        f1_values = []
+        precision_values = []
+        recall_values = []
+        for field_name in target_fields:
+            field_labels = per_target_predictions[field_name]["labels"]
+            field_preds = per_target_predictions[field_name]["preds"]
+            field_metrics = {
+                "accuracy": sum(int(p == t) for p, t in zip(field_preds, field_labels)) / len(field_labels) if field_labels else 0.0,
+                "f1": f1_score(field_labels, field_preds, average="macro") if field_labels else 0.0,
+                "precision": precision_score(field_labels, field_preds, average="macro") if field_labels else 0.0,
+                "recall": recall_score(field_labels, field_preds, average="macro") if field_labels else 0.0,
+            }
+            per_target_metrics[field_name] = field_metrics
+            f1_values.append(field_metrics["f1"])
+            precision_values.append(field_metrics["precision"])
+            recall_values.append(field_metrics["recall"])
+
+        metrics = {
+            "accuracy": acc,
+            "f1": sum(f1_values) / len(f1_values) if f1_values else 0.0,
+            "precision": sum(precision_values) / len(precision_values) if precision_values else 0.0,
+            "recall": sum(recall_values) / len(recall_values) if recall_values else 0.0,
+            "per_target": per_target_metrics,
+        }
+    else:
+        metrics = {
+            "accuracy": acc,
+            "f1": f1_score(all_labels, all_preds, average="macro"),
+            "precision": precision_score(all_labels, all_preds, average="macro"),
+            "recall": recall_score(all_labels, all_preds, average="macro"),
+        }
 
     # Guardar matriz de confusión solo si es split de test
-    if split_name == "test":
+    if split_name == "test" and not multi_target:
         save_confusion_matrix(all_labels, all_preds, list(classes),
                             f"Matriz de confusión - Clase ({split_name})",
                             os.path.join(results_dir, "confusion_class.png"))

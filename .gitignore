@@ -11,6 +11,9 @@ contexto/
 src/clases_a_rellenar.xlsx
 src/codigos_tipo_datos
 
+### Docker, copiado de RepoPlantas, pero la inicialización de la base de datos no funciona
+docker/
+
 
 ##### JAIME'S IGNORE #####
 

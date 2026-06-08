@@ -1,0 +1,5 @@
+[
+    {"coleccion": "Formato", "etiqueta": {"formato": "Color"}},
+    {"coleccion": "Formato", "etiqueta": {"formato": "Grayscale"}},
+    {"coleccion": "Formato", "etiqueta": {"formato": "Segmented"}}
+]

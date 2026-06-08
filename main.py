@@ -13,7 +13,7 @@ from io import BytesIO
 import uuid
 import zipfile
 from utils.model import build_model
-from utils.database import load_yaml_config, connect_to_database
+from utils.database import load_yaml_config, connect_to_database, get_project_config
 from utils.auth import hash_password, check_password
 from torchvision import transforms
 from PIL import Image
@@ -57,9 +57,10 @@ def _env_json(name, default):
     except json.JSONDecodeError:
         return default
 
+DB_NAME = os.getenv("DB_NAME", "Demo")
 
 app = Flask(__name__)
-db = connect_to_database()  # por defecto usa la base demo genérica
+db = connect_to_database(db_name=DB_NAME)  # por defecto usa la base demo genérica
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 IMAGES_DIR = os.path.join(ROOT, "imagenes")
@@ -376,19 +377,34 @@ def predict_image():
         if not os.path.exists(experiment_path):
             return jsonify({"success": False, "error": f"El experimento '{experiment_path}' no existe"}), 404
         config = load_yaml_config(config_path)
+        project_config = get_project_config(db=db)
+        target_fields = config.get("target_fields") or project_config.get("target_fields") or ["class_label"]
+        if not isinstance(target_fields, list):
+            target_fields = [target_fields]
+        target_fields = [str(field).strip() for field in target_fields if str(field).strip()]
+        target_classes = config.get("target_classes") or project_config.get("target_classes") or {}
 
-        # Completar nombres de clases desde la base de datos si están en "all"
-        if config.get("classes") == "all" or config.get("classes") is None:
-            clases_docs = list(db["Clases"].find({}, {"_id": 0, "nombre": 1, "clase": 1, "class_label": 1}))
-            clases_unicas = set()
-            for doc in clases_docs:
-                nombre = str(doc.get("nombre", "")).strip()
-                clase = str(doc.get("clase", "")).strip()
-                if clase:
-                    clases_unicas.add(clase)
-                elif nombre:
-                    clases_unicas.add(nombre)
-            config["classes"] = sorted(clases_unicas)
+        if len(target_fields) == 1:
+            target_field = target_fields[0]
+            if config.get("classes") == "all" or config.get("classes") is None:
+                clases_docs = list(db["Clases"].find({}, {"_id": 0, "nombre": 1, "clase": 1, "class_label": 1, target_field: 1}))
+                clases_unicas = set()
+                for doc in clases_docs:
+                    value = doc.get(target_field)
+                    if value is None or str(value).strip() == "":
+                        value = doc.get("class_label") or doc.get("clase") or doc.get("nombre")
+                    if value is not None and str(value).strip() != "":
+                        clases_unicas.add(str(value).strip())
+                config["classes"] = sorted(clases_unicas)
+
+            config["target_fields"] = target_fields
+            if target_classes:
+                config["target_classes"] = target_classes
+            config["class_field"] = target_field
+        else:
+            config["target_fields"] = target_fields
+            if target_classes:
+                config["target_classes"] = target_classes
 
         # Cargar modelo
         model = build_model(config)
@@ -407,20 +423,38 @@ def predict_image():
         # Inferencia - Clasificación simple (una cabeza, una salida)
         with torch.no_grad():
             output = model(tensor_img)
-            probs = torch.softmax(output, dim=1).squeeze()
+            if len(target_fields) == 1:
+                probs = torch.softmax(output, dim=1).squeeze()
 
-            class_to_idx = {c: i for i, c in enumerate(config["classes"])}
-            idx_to_class = {i: c for c, i in class_to_idx.items()}
+                class_to_idx = {c: i for i, c in enumerate(config["classes"])}
+                idx_to_class = {i: c for c, i in class_to_idx.items()}
 
-            # Predicción: tomar la clase con mayor probabilidad
-            idx_class = probs.argmax().item()
-            class_prediction = idx_to_class[idx_class]
-            confidence = probs[idx_class].item()
+                idx_class = probs.argmax().item()
+                class_prediction = idx_to_class[idx_class]
+                confidence = probs[idx_class].item()
+
+                return jsonify({
+                    "success": True,
+                    "class_predicted": class_prediction,
+                    "confidence": confidence
+                })
+
+            predictions = {}
+            confidences = {}
+            for head_idx, field_name in enumerate(target_fields):
+                probs = torch.softmax(output[head_idx], dim=1).squeeze()
+                field_classes = target_classes.get(field_name)
+                if not field_classes:
+                    raise ValueError(f"No se encontraron clases para el campo objetivo '{field_name}'")
+                idx_class = probs.argmax().item()
+                predictions[field_name] = field_classes[idx_class]
+                confidences[field_name] = probs[idx_class].item()
 
         return jsonify({
             "success": True,
-            "class_predicted": class_prediction,
-            "confidence": confidence
+            "predictions": predictions,
+            "confidences": confidences,
+            "target_fields": target_fields,
         })
 
     except Exception as e:
@@ -917,6 +951,11 @@ def subida_masiva_zip():
                             "error": f"Conflicto al normalizar estructura: la carpeta '{class_dir}' ya existe en color/."
                         }), 400
                     shutil.move(src, dst)
+
+                # El ZIP ya fue normalizado; eliminar la carpeta temporal que lo envolvía.
+                cleanup_path = candidate_base if candidate_base == dest_dir else os.path.dirname(candidate_base)
+                if cleanup_path and os.path.isdir(cleanup_path):
+                    shutil.rmtree(cleanup_path, ignore_errors=True)
             
             # Guardar backup del ZIP en logs/zips/
             zips_backup_dir = os.path.join(ROOT, "logs", "zips")
@@ -1964,8 +2003,8 @@ def eliminar_imagen():
 
 
 ### USUARIOS ###
-
-bd_usuarios = connect_to_database(db_name="appPlantas")
+DB_USERS = os.getenv("DB_USERS", "Usuarios")
+bd_usuarios = connect_to_database(db_name=DB_USERS)
 col_usuarios = bd_usuarios["usuarios"]
 
 @app.route("/iniciar_sesion", methods=["POST"])
