@@ -12,7 +12,7 @@ import urllib3
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from logicav3 import resolve_verify_ssl
 
 API_BASE_CANDIDATES = []
 _api_env = os.getenv("API_BASE_URL", "").strip().rstrip("/")
@@ -33,7 +33,9 @@ def request_api(method, path, **kwargs):
         request_kwargs = dict(kwargs)
         request_kwargs.setdefault("timeout", 30)
         if url.startswith("https://"):
-            request_kwargs.setdefault("verify", False)
+            request_kwargs.setdefault("verify", resolve_verify_ssl(base))
+        if not request_kwargs.get("verify", True):
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         # Añadir headers globales si existen (token de autenticación)
         headers = globals().get("_REQUEST_HEADERS", {}) or {}
         if "headers" in request_kwargs:

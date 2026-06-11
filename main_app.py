@@ -5126,7 +5126,7 @@ if __name__ == "__main__":
                         
                         try:
                             # Descargar imagen usando el cliente autenticado de la app.
-                            response = logica_app._get(imagen_ampliada_url_original, verify=False, timeout=10.0)
+                            response = logica_app._get(imagen_ampliada_url_original, timeout=10.0)
                             print(f"Respuesta descarga: {response.status_code} - {response.reason_phrase}")
                             if response.status_code == 200:
                                 # Obtener ruta de Downloads
@@ -5439,7 +5439,7 @@ if __name__ == "__main__":
                         
                         try:
                             # Descargar imagen usando el cliente autenticado de la app.
-                            response = logica_app._get(imagen_ampliada_url_original, verify=False, timeout=10.0)
+                            response = logica_app._get(imagen_ampliada_url_original, timeout=10.0)
                             if response.status_code == 200:
                                 # Obtener ruta de Downloads
                                 downloads_path = Path(os.path.expanduser("~/Downloads"))

@@ -135,20 +135,59 @@ docker compose down --volumes
 
 ## 💾 Backup y Restore
 
-### Crear Backup
+Foliarium usa dos bases en MongoDB: `Repositorio_Plantas` (datos) y `Usuarios` (credenciales).
+El script `scripts/backup_mongo.sh` vuelca ambas.
+
+### Crear backup manual
+
+Desde el directorio del proyecto, con el stack levantado:
+
 ```bash
 sh scripts/backup_mongo.sh
-# Crea: backups/mongo/<timestamp>/appPlantas.archive
+# Crea: backups/mongo/<timestamp>/Repositorio_Plantas.archive
+#       backups/mongo/<timestamp>/Usuarios.archive
 ```
 
-### Restaurar Backup
+Variables opcionales:
+
+```bash
+BACKUP_ROOT=/var/backups/foliarium/mongo \
+MONGO_CONTAINER_NAME=plantas-mongo \
+BACKUP_RETENTION_DAYS=30 \
+sh scripts/backup_mongo.sh
+```
+
+- `BACKUP_ROOT`: carpeta destino (en producción conviene una ruta fuera del repo).
+- `BACKUP_RETENTION_DAYS`: si es > 0, borra subcarpetas más antiguas.
+
+### Backup automático (cron en la VM)
+
+En el servidor universitario, programa una copia periódica **en el host** (no dentro del contenedor):
+
+```bash
+crontab -e
+```
+
+Ejemplo semanal (domingos a las 03:00):
+
+```cron
+0 3 * * 0 cd /ruta/al/RepoPlantas && BACKUP_ROOT=/var/backups/foliarium/mongo BACKUP_RETENTION_DAYS=30 sh scripts/backup_mongo.sh >> /var/log/foliarium-backup.log 2>&1
+```
+
+Ejecuta también un backup manual **antes** de importaciones masivas o cambios de esquema.
+
+### Restaurar backup
+
 ```bash
 # Copiar archivo al contenedor
-docker cp backups/mongo/<timestamp>/appPlantas.archive plantas-mongo:/tmp/
+docker cp backups/mongo/<timestamp>/Repositorio_Plantas.archive plantas-mongo:/tmp/
+docker cp backups/mongo/<timestamp>/Usuarios.archive plantas-mongo:/tmp/
 
-# Restaurar
+# Restaurar (repetir por cada base)
 docker exec plantas-mongo sh -c \
-  "mongorestore --drop --archive=/tmp/appPlantas.archive"
+  "mongorestore --drop --db Repositorio_Plantas --archive=/tmp/Repositorio_Plantas.archive"
+docker exec plantas-mongo sh -c \
+  "mongorestore --drop --db Usuarios --archive=/tmp/Usuarios.archive"
 ```
 
 ---

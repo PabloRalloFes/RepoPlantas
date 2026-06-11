@@ -408,11 +408,13 @@ El backend implementa las medidas siguientes:
 \begin{itemize}
     \item \textbf{Autenticación JWT}: tras \texttt{/iniciar\_sesion}, el cliente incluye un token Bearer en las peticiones protegidas. La API valida expiración, firma e integridad del token antes de ejecutar la operación.
     \item \textbf{Control por rol}: operaciones administrativas (gestión de usuarios, asignación de roles, etc.) exigen el rol \texttt{admin}. Otros endpoints sensibles pueden restringirse mediante configuración (\texttt{AUTH\_REQUIRED\_ENDPOINTS}, \texttt{ROLE\_REQUIRED\_ENDPOINTS}).
-    \item \textbf{Protección de contraseñas}: el registro y el cambio de contraseña almacenan un hash bcrypt en la base de datos \texttt{Usuarios}. El cliente aplica un preprocesado adicional antes del envío; el detalle de este flujo híbrido se documenta en el capítulo de implementación.
+    \item \textbf{Protección de contraseñas}: el registro y el cambio de contraseña almacenan un hash bcrypt en la base de datos \texttt{Usuarios} (\texttt{utils/auth.py}). El cliente envía la contraseña en texto plano únicamente durante la petición HTTP; en producción el transporte va cifrado por HTTPS y el servidor es el único componente que aplica el hash antes de persistir.
+    \item \textbf{Verificación TLS en el cliente}: el módulo \texttt{logicav3.py} verifica el certificado del servidor cuando la URL apunta a producción (\texttt{https://plantas.gti-ia.upv.es}), pero la desactiva en desarrollo local (\texttt{https://localhost}, certificados autofirmados). La decisión se centraliza en \texttt{resolve\_verify\_ssl()}.
     \item \textbf{Rate limiting}: los endpoints de login y registro limitan el número de peticiones por IP (10 por minuto) para mitigar ataques de fuerza bruta.
     \item \textbf{Validación de entradas}: las imágenes subidas deben ser JPEG o PNG y no superar un tamaño máximo configurable (\texttt{MAX\_IMAGE\_SIZE\_MB}, por defecto 10~MB).
     \item \textbf{CORS}: orígenes configurables (\texttt{CORS\_ORIGINS}) para desarrollo y un futuro cliente web; los clientes nativos actuales (Windows, Linux, Android) no lo requieren.
     \item \textbf{Transporte seguro}: HTTPS en producción (\texttt{https://plantas.gti-ia.upv.es}); certificados autofirmados en desarrollo local.
+    \item \textbf{Token JWT en URL (decisión de diseño)}: además del encabezado \texttt{Authorization: Bearer}, la API admite el JWT como parámetro de consulta (\texttt{access\_token} o \texttt{token}) en endpoints que sirven imágenes. Esto permite abrir enlaces autenticados desde componentes del cliente Flet que delegan la visualización al navegador o al visor del sistema (p. ej. ampliación de imagen en Android). El riesgo teórico ---registro del token en historial o logs--- se mitiga en producción con HTTPS y caducidad del JWT. Se descartó un rediseño con cookies o URLs firmadas de un solo uso por restricciones de tiempo y del framework cliente; se considera un compromiso pragmático aceptable en el ámbito del TFG.
 \end{itemize}
 
 Como criterio de calidad funcional, una imagen registrada por la aplicación debe quedar trazable (usuario, fuente, formato, clase) y, si procede, pasar por validación antes de utilizarse en entrenamientos configurados con la opción \texttt{solo\_validadas}.
@@ -588,7 +590,7 @@ El flujo típico de una operación es el siguiente:
     \item El cliente interpreta la respuesta y actualiza la interfaz.
 \end{enumerate}
 
-La autenticación se basa en tokens JWT. Tras un inicio de sesión correcto, el cliente incluye el token en el encabezado \texttt{Authorization: Bearer ...} en las peticiones a endpoints protegidos. La API aplica control de acceso por rol mediante un filtro previo a la ejecución de cada endpoint sensible.
+La autenticación se basa en tokens JWT. Tras un inicio de sesión correcto, el cliente incluye el token en el encabezado \texttt{Authorization: Bearer ...} en las peticiones a endpoints protegidos. En operaciones que construyen una URL de imagen para abrirse fuera del cliente HTTP habitual (descarga o visor externo), el mismo token puede añadirse como parámetro de consulta; la API lo acepta como alternativa al encabezado (véase el análisis de seguridad en el capítulo~3). La API aplica control de acceso por rol mediante un filtro previo a la ejecución de cada endpoint sensible.
 
 \section{Modelo de datos y persistencia en MongoDB}
 
@@ -671,7 +673,7 @@ El flujo de autenticación sigue estos pasos:
 
 \begin{enumerate}
     \item El usuario introduce nombre, contraseña y rol deseado en la pantalla de inicio de sesión.
-    \item \texttt{LogicaApp} envía una petición \texttt{POST} a \texttt{/iniciar\_sesion} con las credenciales procesadas por el cliente.
+    \item \texttt{LogicaApp} envía una petición \texttt{POST} a \texttt{/iniciar\_sesion} con nombre y contraseña (por HTTPS en producción).
     \item Si la autenticación es correcta, la API devuelve un token JWT, la lista de roles del usuario y el rol activo.
     \item El cliente almacena el token y lo incluye en el encabezado \texttt{Authorization} de las peticiones posteriores.
     \item La API, mediante el hook \texttt{@app.before\_request}, rechaza peticiones no autenticadas a endpoints protegidos y comprueba que el rol del usuario autoriza la operación solicitada.
@@ -689,7 +691,7 @@ Además de las funciones expuestas en la API y accesibles desde Flet, el reposit
     \item \texttt{process\_imported\_images.py}, \texttt{convert\_to\_grayscale.py}, \texttt{segment\_leaves.py}: generación de variantes grayscale y segmentadas.
     \item \texttt{make\_experiment.py}: creación de la estructura de un nuevo experimento a partir de la plantilla \texttt{experiments/BASE/}.
     \item \texttt{compare\_experiments.py}: comparación de métricas entre experimentos.
-    \item \texttt{backup\_mongo.sh}: copia de seguridad de MongoDB.
+    \item \texttt{backup\_mongo.sh}: copia de seguridad de las bases \texttt{Repositorio\_Plantas} y \texttt{Usuarios} (véase capítulo~9).
 \end{itemize}
 
 Desde la propia aplicación, el administrador puede crear copias de seguridad del catálogo de clases y restaurar configuraciones, así como editar y completar metadatos de las clases sin modificar directamente los ficheros JSON del repositorio en tiempo de ejecución.
@@ -911,6 +913,12 @@ La validación funcional comprueba que Foliarium cumple su cometido como platafo
     \item Descarga de clientes y guía de usuario desde la landing pública.
 \end{itemize}
 
+\subsection{Metodología de pruebas}
+
+La verificación del sistema se ha realizado mediante \textbf{pruebas funcionales manuales}, no mediante una suite automatizada (\texttt{pytest}) ni un pipeline de integración continua. En un TFG con alcance centrado en la plataforma desplegada y en la experimentación con datos reales, se priorizó comprobar el comportamiento \textit{end-to-end} en el entorno objetivo ---servidor de la UPV y clientes empaquetados--- frente a la cobertura automatizada exhaustiva.
+
+Los casos comprobados incluyen, como mínimo: autenticación y selección de rol; subida individual y masiva de imágenes; etiquetado y validación; operaciones de administración (usuarios, roles, clases); consulta de experimentos y predicción cuando hay modelos publicados; y conectividad HTTPS del cliente contra \texttt{https://plantas.gti-ia.upv.es}. Esta aproximación es habitual en proyectos de titulación de esta envergadura y se complementa con la evaluación cuantitativa del modelo (capítulo~8), que constituye un eje distinto de validación.
+
 \subsection{Pruebas realizadas hasta la fecha de redacción}
 
 El sistema está \textbf{desplegado y operativo} en el servidor de la universidad. El autor ha comprobado de forma recurrente los flujos principales ---conexión desde clientes empaquetados (Windows, Android), subida de imágenes, navegación por rol y operación contra la API de producción--- con resultado satisfactorio.
@@ -965,6 +973,34 @@ Tanto \texttt{mongo} como \texttt{api} definen \textit{healthchecks} periódicos
 \subsection{Operación habitual}
 
 El ciclo de despliegue documentado en \texttt{docs/DOCKER.md} comprende: \texttt{docker compose build}, \texttt{docker compose up -d}, verificación con \texttt{docker compose ps}, consulta de logs (\texttt{docker compose logs -f api}) y, en la primera puesta en marcha, \texttt{docker compose --profile init run --rm initdb} para inicializar la base de datos.
+
+\subsection{Copias de seguridad de MongoDB}
+
+Los datos persistentes del sistema se reparten entre el volumen Docker de MongoDB (\texttt{mongo\_data}), las bases \texttt{Repositorio\_Plantas} y \texttt{Usuarios}, y los directorios montados \texttt{imagenes/}, \texttt{models/} y \texttt{experiments/}. Para la base de datos documental, el repositorio incluye el script \texttt{scripts/backup\_mongo.sh}, que genera un volcado (\texttt{mongodump}) de \textbf{ambas bases} en ficheros \texttt{.archive} con marca temporal bajo \texttt{backups/mongo/}.
+
+\begin{itemize}
+    \item \textbf{Copia manual}: ejecutar el script desde el host con el stack levantado (\texttt{sh scripts/backup\_mongo.sh}). Conviene hacerlo antes de importaciones masivas, cambios de esquema o actualizaciones arriesgadas.
+    \item \textbf{Copia programada (\texttt{cron})}: Docker Compose no lanza backups por sí solo; en la VM de producción se programa una tarea \texttt{cron} del \textbf{host} (el usuario debe poder ejecutar \texttt{docker exec} sobre el contenedor \texttt{plantas-mongo}). Pasos aplicados en el despliegue:
+    \begin{enumerate}
+        \item Crear el directorio de destino, p. ej. \texttt{/var/backups/foliarium/mongo}.
+        \item Probar una copia manual con \texttt{BACKUP\_ROOT} apuntando a esa ruta.
+        \item Editar la crontab del usuario que opera Docker (\texttt{crontab -e}) e insertar una línea como la siguiente (ejemplo semanal, domingos 03:00):
+    \end{enumerate}
+\end{itemize}
+
+\begin{verbatim}
+0 3 * * 0 cd /ruta/al/repositorio && \
+  BACKUP_ROOT=/var/backups/foliarium/mongo \
+  BACKUP_RETENTION_DAYS=30 \
+  sh scripts/backup_mongo.sh >> /var/log/foliarium-backup.log 2>&1
+\end{verbatim}
+
+\begin{itemize}
+    \item \texttt{BACKUP\_RETENTION\_DAYS=30} elimina carpetas de copia más antiguas de 30 días. La salida queda registrada en el log indicado para comprobar ejecuciones posteriores.
+    \item \textbf{Restauración}: \texttt{mongorestore} desde los archivos \texttt{.archive} generados, base por base (procedimiento en \texttt{docs/DOCKER.md}).
+\end{itemize}
+
+Las imágenes en disco y los modelos entrenados no quedan incluidos en ese volcado; su respaldo depende de la copia de los volúmenes o directorios montados en la VM, según la política del servidor.
 
 \section{Despliegue en el servidor de producción}
 
