@@ -82,24 +82,12 @@ def procesar_fuente_si_falta(fuente):
             sys.exit(1)
 
 
-def _hash_for_login(usuario: str, password: str) -> str:
-    # Misma función de hashing simple usada por la app cliente (logicav3.hash_func)
-    cadena = usuario + "HOLAAAA" + password
-    hash_res = ""
-    for i in range(len(cadena)):
-        c = ord(cadena[i]) * (i+1) * (i+1)
-        hash_res += str(c)
-    hash_res = hash_res.zfill(20)
-    hash_res = hash_res[-20:]
-    return hash_res
-
-
 def perform_login(api_user: str, api_password: str, api_role: str | None = None):
     """Intenta iniciar sesión en la API y guarda el token global para futuras peticiones.
     Devuelve True si el login fue exitoso, False en caso contrario."""
     if not api_user or not api_password:
         return False
-    login_payload = {"nombre": api_user, "password": _hash_for_login(api_user, api_password)}
+    login_payload = {"nombre": api_user, "password": api_password}
     if api_role:
         login_payload["rol"] = api_role
     try:

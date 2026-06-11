@@ -303,27 +303,11 @@ class LogicaApp:
         partes_url[4] = urllib.parse.urlencode(params)
         return urllib.parse.urlunparse(partes_url)
 
-    def hash_func(self, usuario: str, password: str):
-        '''
-        cadena = usuario + "HOLAAAA" + password
-        
-        return str(abs(hash(cadena)))
-        '''
-        cadena = usuario + "HOLAAAA" + password
-        hash_res = ""
-
-        for i in range(len(cadena)):
-            c = ord(cadena[i]) * (i+1) * (i+1)
-            hash_res += str(c)
-        hash_res = hash_res.zfill(20)
-        hash_res = hash_res[-20:]
-        return hash_res
-
     def inicio_sesion(self, nombre: str, password: str, rol: str):
         if nombre == "" or password == "" or rol == None:
             return False
         
-        params = {"nombre": nombre, "password": self.hash_func(nombre, password), "rol": rol}
+        params = {"nombre": nombre, "password": password, "rol": rol}
         url_inciar_sesion = self.crear_url("/iniciar_sesion", self.url_api)
 
         respuesta = self._post(url_inciar_sesion, json=params, verify=False, timeout=10.0)
@@ -349,7 +333,7 @@ class LogicaApp:
 
     def registro(self, nombre: str, password: str):
         
-        params = {"nombre": nombre, "password": self.hash_func(nombre, password)}
+        params = {"nombre": nombre, "password": password}
         url_registro = self.crear_url("/registro", self.url_api)
 
         try:
@@ -440,7 +424,7 @@ class LogicaApp:
         if nuevo_nombre == "" or password == "":
             return False, "Faltan por introducir datos"
 
-        params = {"nombre": self.usuario["nombre"], "nuevo_nombre": nuevo_nombre, "password": self.hash_func(self.usuario["nombre"], password), "nueva_password": self.hash_func(nuevo_nombre, password)}
+        params = {"nombre": self.usuario["nombre"], "nuevo_nombre": nuevo_nombre, "password": password, "nueva_password": password}
 
         url_cambiar_nombre_usuario = self.crear_url("/cambiar_nombre_usuario", self.url_api)
 
@@ -462,7 +446,7 @@ class LogicaApp:
         if nueva_password != nueva_password_repetida:
             return False, "Las contraseñas no coinciden"
         
-        params = {"nombre": self.usuario["nombre"], "password": self.hash_func(self.usuario["nombre"], password), "nueva_password": self.hash_func(self.usuario["nombre"], nueva_password)}
+        params = {"nombre": self.usuario["nombre"], "password": password, "nueva_password": nueva_password}
 
         url_cambiar_password = self.crear_url("/cambiar_password", self.url_api)
 
@@ -684,7 +668,6 @@ class LogicaApp:
 #print(eliminar_rol("hola1", "etiquetador"))
 #print(test.buscar_usuarios(nombre="a", rol="admin"))
 #print(test.lista_usuarios)
-#print(test.hash_func("admin", "admin"))
 
 #test.usuario["nombre"] = "admin"
 #print(test.cambiar_nombre_usuario("admin1", "admin"))

@@ -9,42 +9,66 @@
 \tutor{Carlos Carrascosa Casamayor}
 \curs{2025-2026}
 
-\keywords{classificació de plantes, malalties de les plantes, aprenentatge profund, MobileNetV2, visió per computador, Foliarium}
-           {clasificación de plantas, enfermedades de plantas, aprendizaje profundo, MobileNetV2, visión por computadora, Foliarium}
-           {plant classification, plant diseases, deep learning, MobileNetV2, computer vision, Foliarium}
+\keywords{classificació de plantes, malalties de les plantes, aprenentatge profund, xarxes convolucionals, visió per computador, Foliarium}
+           {clasificación de plantas, enfermedades de plantas, aprendizaje profundo, redes convolucionales, visión por computadora, Foliarium}
+           {plant classification, plant diseases, deep learning, convolutional neural networks, computer vision, Foliarium}
 
 \begin{document}
 
 \begin{abstract}
-Foliarium és una plataforma per recollir, etiquetar i classificar imatges de fulles de plantes sanes i malaltes mitjançant aprenentatge profund. El treball combina imatges de laboratori (PlantVillage) i imatges capturades en condicions reals, i desenvolupa un marc de treball reproducible per integrar dades, entrenar models basats en MobileNetV2 i desplegar el sistema en producció. Aquesta memòria documenta el problema, la solució proposada, l'arquitectura del programari, l'experimentació realitzada i l'avaluació dels resultats.
+Aquest Treball Fi de Grau aborda la classificació de malalties en fulles de plantes mitjançant aprenentatge profund, integrant imatges de laboratori (PlantVillage), conjunts públics de camp i imatges capturades en condicions reals. Per a això s'ha desenvolupat Foliarium, una plataforma que unifica fonts heterogènies, facilita l'etiquetatge col·laboratiu, l'entrenament de models basats en CNN i el desplegament del sistema en producció. El treball se centra en un marc de treball reproducible i extensible que permet seleccionar dinàmicament fonts i classes en experiments configurables. Aquesta memòria documenta el plantejament del problema, el disseny i implementació de la solució, l'experimentació realitzada i l'avaluació dels resultats.
 \end{abstract}
 
 \begin{abstract}[spanish]
-Foliarium es una plataforma para recopilar, etiquetar y clasificar imágenes de hojas de plantas sanas y enfermas mediante aprendizaje profundo. El trabajo combina imágenes de laboratorio (PlantVillage) e imágenes capturadas en condiciones reales, y desarrolla un marco de trabajo reproducible para integrar datos, entrenar modelos basados en MobileNetV2 y desplegar el sistema en producción. Esta memoria documenta el problema, la solución propuesta, la arquitectura software, la experimentación realizada y la evaluación de los resultados.
+Este Trabajo Fin de Grado aborda la clasificación de enfermedades en hojas de plantas mediante aprendizaje profundo, integrando imágenes de laboratorio (PlantVillage), conjuntos públicos de campo e imágenes capturadas en condiciones reales. Para ello se ha desarrollado Foliarium, una plataforma que unifica fuentes heterogéneas, facilita el etiquetado colaborativo, el entrenamiento de modelos basados en CNN y el despliegue del sistema en producción. El trabajo se centra en un marco de trabajo reproducible y extensible que permite seleccionar dinámicamente fuentes y clases en experimentos configurables. Esta memoria documenta el planteamiento del problema, el diseño e implementación de la solución, la experimentación realizada y la evaluación de los resultados.
 \end{abstract}
 
 \begin{abstract}[english]
-Foliarium is a platform for collecting, labeling, and classifying images of healthy and diseased plant leaves using deep learning. This work combines laboratory images (PlantVillage) and images captured under real-world conditions, and develops a reproducible framework to integrate data, train MobileNetV2-based models, and deploy the system in production. This thesis describes the problem, the proposed solution, the software architecture, the experiments, and the evaluation of the results.
+This Bachelor's Thesis addresses the classification of plant leaf diseases using deep learning, integrating laboratory images (PlantVillage), public field datasets and images captured under real-world conditions. To this end, Foliarium has been developed, a platform that unifies heterogeneous sources, supports collaborative labeling, trains CNN-based models and deploys the system in production. The work focuses on a reproducible and extensible framework that allows dynamic selection of sources and classes in configurable experiments. This thesis documents the problem statement, the design and implementation of the solution, the experiments carried out and the evaluation of the results.
 \end{abstract}
 
 \mainmatter
 
 \chapter{Introducción}
 \section{Motivación y contexto del problema}
-Explicar la importancia de la detección temprana de enfermedades en plantas y el interés práctico del proyecto.
+
+\textit{[Nota: completar el párrafo inicial sobre el origen exacto del proyecto después de hablar con Jaime]}
+
+La detección temprana de enfermedades en cultivos es un factor clave para reducir pérdidas de producción, limitar el uso innecesario de fitosanitarios y mejorar la sostenibilidad de la actividad agrícola. En los últimos años, las técnicas de visión por computador y aprendizaje profundo han demostrado un alto rendimiento en la clasificación de imágenes de hojas bajo condiciones controladas, especialmente con conjuntos de datos de gran escala como PlantVillage. No obstante, la transferencia de esos modelos a escenarios reales sigue siendo un reto abierto, como se analiza en el capítulo de estado del arte.
+
+Este Trabajo de Fin de Grado surge en un contexto de colaboración entre el Grupo de Tecnología Informática e Inteligencia Artificial (GTIIA) del VRAIN de la Universitat Politècnica de València y la Facultad de Ciencias Agrarias y del Medio Natural (agrónomos). La idea fue planteada por el tutor del trabajo, Carlos Carrascosa Casamayor, a partir de la necesidad detectada en ese ámbito agronómico: disponer de herramientas que permitan recopilar, unificar y explotar imágenes de hojas tomadas \textit{in situ}, no solo en laboratorio.
+
+Una revisión posterior del estado del arte matiza la premisa inicial del proyecto: \textbf{sí existen conjuntos de datos públicos con imágenes reales o parcialmente realistas} (PlantDoc, PlantCLEF, competiciones en Kaggle, etc.), pero están \textbf{fragmentados, son heterogéneos} entre sí y no existe un \textbf{estándar único} que combine escala, calidad de anotación y representatividad de campo de forma comparable a PlantVillage. Esta situación dificulta la comparación reproducible de métodos y el entrenamiento sobre subconjuntos coherentes de datos procedentes de varias fuentes.
+
+En lugar de abordar únicamente el entrenamiento de un clasificador sobre un dataset fijo, el proyecto se orienta a construir \textbf{Foliarium} como plataforma de integración y gestión de múltiples fuentes heterogéneas: importación y normalización de datasets externos, captura colaborativa mediante la aplicación, experimentación configurable y despliegue centralizado del sistema.
+
+\subsection{Marco COSASS}
+
+El trabajo se enmarca parcialmente en el proyecto de investigación \textbf{COSASS} (\textit{COordinated intelligent Services for Adaptive Smart areaS}), financiado en el marco de la convocatoria estatal de proyectos de I+D+i. Su objetivo general es abordar la coordinación distribuida y la toma de decisiones en entornos adversos mediante dispositivos IoT en el \textit{edge}, con especial atención a \textbf{áreas inteligentes adaptativas} en zonas rurales: entornos con conectividad limitada, restricciones energéticas y necesidad de autonomía ante contingencias habituales en el campo~\cite{upv_cosass}.
+
+En la UPV, COSASS se desarrolla en el GTIIA-VRAIN con Carlos Carrascosa como investigador principal. Entre sus líneas de trabajo figuran gemelos digitales, simulación y aplicación de inteligencia artificial en entornos rurales; el propio proyecto contempla casos de uso relacionados con el ámbito agrícola (por ejemplo, viticultura). Foliarium no implementa por sí misma toda la arquitectura cloud-edge de COSASS, pero contribuye con un componente software ---recopilación de datos, etiquetado, experimentación y despliegue de modelos--- alineado con la necesidad de disponer de servicios inteligentes en contextos agrícolas reales.
+
+\subsection{Marco de la Cátedra Planeta (UPV)}
+
+El desarrollo del sistema también se ha vinculado a la \textbf{Cátedra de Cooperación y Desarrollo Sostenible-Eje Planeta} de la UPV, creada en el marco de un convenio entre la universidad y la Generalitat Valenciana e impulsada en el contexto de la Agenda 2030~\cite{upv_caplanet}. La cátedra, adscrita al Instituto de Ingeniería del Agua y Medio Ambiente (IIAMA), promueve actividades de investigación, formación y divulgación en torno a los ODS del \textit{eje Planeta}: agua limpia y saneamiento (ODS~6), producción y consumo responsables (ODS~12), acción por el clima (ODS~13), vida submarina (ODS~14) y vida de ecosistemas terrestres (ODS~15).
+
+Un sistema de apoyo al diagnóstico fitosanitario basado en imágenes y aprendizaje profundo puede relacionarse de forma directa con el \textbf{ODS~15} (salud de ecosistemas terrestres y uso sostenible de recursos agrícolas) y, de manera indirecta, con el \textbf{ODS~12} (optimización del uso de insumos mediante una detección más temprana y localizada de problemas en cultivos). El anexo de ODS de esta memoria desarrolla esa relación con mayor detalle.
 
 \section{Objetivos generales y específicos}
-El objetivo principal de este Trabajo de Fin de Grado es mejorar la capacidad de generalización de un modelo de clasificación de enfermedades en hojas de plantas mediante el uso combinado de imágenes obtenidas en laboratorio (PlantVillage) e imágenes tomadas en condiciones reales. Para obtener esta segunda clase de imágenes se desarrollará una aplicación a través de la que se pueda ejecutar casi todas las funcionalidades del proyecto.
+
+El objetivo principal de este Trabajo de Fin de Grado es mejorar la capacidad de generalización de un modelo de clasificación de enfermedades en hojas de plantas mediante el uso combinado de imágenes obtenidas en laboratorio (PlantVillage) e imágenes tomadas en condiciones reales. Para obtener esta segunda clase de imágenes se ha desarrollado una aplicación a través de la que pueden ejecutarse las funcionalidades principales del proyecto.
 
 Para lograr este objetivo general, se plantean los siguientes objetivos específicos:
 
 \begin{itemize}
-    \item Adaptar la arquitectura MobileNetV2 al problema de clasificación de hojas de plantas sanas y enfermas, utilizando como base el conjunto de datos PlantVillage.
-    \item Incorporar imágenes reales tomadas en condiciones no controladas al proceso de entrenamiento y validación del modelo.
-    \item Evaluar el impacto de la inclusión de imágenes reales en el rendimiento del modelo, especialmente en cuanto a su capacidad de generalización.
-    \item Aplicar técnicas de \textit{data augmentation} y transferencia de aprendizaje para compensar la escasez de datos reales.
-    \item Desarrollar un \textit{pipeline} reproducible que combine datos sintéticos y reales, y que sea compatible con su futura integración en aplicaciones móviles de diagnóstico.
+    \item Implementar y evaluar un modelo de clasificación basado en CNN multitarea (implementación actual: MobileNetV2), utilizando como base el conjunto de datos PlantVillage.
+    \item Incorporar imágenes reales y fuentes externas (p. ej. PlantDoc) al proceso de entrenamiento y validación del modelo.
+    \item Evaluar el impacto de la inclusión de imágenes de distintas fuentes en el rendimiento del modelo, especialmente en cuanto a su capacidad de generalización.
+    \item Aplicar técnicas de \textit{data augmentation} y transferencia de aprendizaje para compensar el desbalanceo y la heterogeneidad entre fuentes.
+    \item Desarrollar un \textit{pipeline} reproducible que integre múltiples datasets heterogéneos bajo un esquema común de clases y fuentes, compatible con la plataforma Foliarium.
 \end{itemize}
+
+\textit{[Nota para revisión con Carlos: decidir si mantener MobileNetV2 como arquitectura principal, documentarla solo como implementación provisional o incluir una comparativa con otra arquitectura (EfficientNet, ResNet), ya que la inferencia se ejecuta actualmente en el servidor UPV, no en el dispositivo móvil.]}
 
 \section*{Enfoque adoptado}
 
@@ -66,80 +90,686 @@ Por otro lado, se reconoce explícitamente que las imágenes reales disponibles 
 En resumen, este TFG busca aportar valor no solo mediante experimentos concretos, sino también a través de la construcción de una base técnica que facilite el desarrollo futuro de soluciones más generalizables y útiles en contextos agrícolas reales.
 
 \section{Alcance del trabajo y limitaciones}
-Delimitar qué incluye la solución y qué queda fuera del alcance del TFG.
+
+\subsection{Alcance}
+
+Este TFG abarca el diseño, implementación y despliegue de Foliarium como plataforma integrada, incluyendo:
+
+\begin{itemize}
+    \item API REST (Flask), base de datos MongoDB y aplicación cliente multiplataforma (Flet).
+    \item Flujos de subida, validación, administración de usuarios y taxonomía de clases.
+    \item Pipeline de importación y preprocesado de imágenes (color, escala de grises, segmentación).
+    \item Sistema de experimentos configurables (\texttt{config.yaml}) y entrenamiento de modelos CNN multitarea (implementación actual: MobileNetV2).
+    \item Predicción desde la aplicación mediante la API del servidor de la UPV (inferencia centralizada, no en el dispositivo móvil).
+\end{itemize}
+
+Queda dentro del alcance la experimentación con PlantVillage, la integración de al menos un dataset externo de campo (PlantDoc) y, de forma exploratoria, imágenes capturadas mediante la aplicación.
+
+\subsection{Limitaciones}
+
+\begin{itemize}
+    \item \textbf{Volumen de datos reales}: el número de imágenes de campo validadas es aún insuficiente para extraer conclusiones definitivas sobre generalización; las pruebas con datos reales deben interpretarse como exploratorias.
+    \item \textbf{Alcance del modelo}: el sistema se centra en clasificación por imagen de hoja; no aborda detección de objetos, segmentación semántica avanzada ni diagnóstico agronómico integral (síntomas en otras partes de la planta, condiciones edafoclimáticas, etc.).
+    \item \textbf{Validación agronómica}: la corrección de las etiquetas en imágenes reales depende del workflow de etiquetadores y de la colaboración con perfiles agrónomos; no se ha realizado un estudio de campo exhaustivo con expertos en el marco de este TFG.
+    \item \textbf{Alcance de plataforma}: clientes iOS, publicación en Google Play y versión web completa quedan como líneas futuras; las versiones operativas actuales son Windows, Linux y Android empaquetados, con backend centralizado.
+\end{itemize}
 
 \section{Impacto esperado}
-Justificar el valor técnico y aplicado del sistema en un entorno real o semi-real.
+
+Desde el punto de vista \textbf{técnico}, Foliarium aporta un marco reproducible para integrar fuentes heterogéneas de imágenes, entrenar modelos con configuraciones versionadas y desplegar el sistema en producción. Esto reduce la fricción entre recopilación de datos, experimentación y uso operativo del clasificador.
+
+Desde el punto de vista \textbf{aplicado}, la plataforma facilita que agrónomos, estudiantes o colaboradores externos contribuyan con imágenes reales y que datasets públicos dispersos se integren bajo un esquema común, reduciendo la fricción entre recopilación, normalización y experimentación. Incluso con datos limitados en algunas fuentes, el sistema ya permite demostrar el flujo completo de trabajo y preparar estudios futuros con mayor volumen de imágenes.
+
+En el marco de \textbf{COSASS} y de la \textbf{Cátedra Planeta}, el trabajo contribuye a materializar capacidades de IA aplicada a entornos agrícolas y rurales, en coherencia con objetivos de sostenibilidad y de uso eficiente de recursos en el sector primario.
 
 \section{Metodología general de trabajo}
-Resumir la forma de abordar el proyecto: recogida de datos, desarrollo, experimentación y validación.
+
+El desarrollo del TFG ha seguido un enfoque iterativo que combina ingeniería de software y experimentación con aprendizaje profundo:
+
+\begin{enumerate}
+    \item \textbf{Análisis del problema y revisión bibliográfica}: identificación de la brecha entre datasets de laboratorio y condiciones reales (capítulo~2), y análisis sistemático del problema con la solución elegida (capítulo~3).
+    \item \textbf{Diseño e implementación de la plataforma}: arquitectura cliente-servidor, API, aplicación Flet e integración con MongoDB (capítulos~4 y~5). Parte del código partió de un desarrollo previo, continuado y unificado en un único backend.
+    \item \textbf{Preparación de datos}: importación de PlantVillage y de fuentes externas (p. ej. PlantDoc), preprocesado (grayscale, segmentación) y registro en base de datos; captura progresiva de imágenes reales mediante la app (capítulo~6).
+    \item \textbf{Modelado y experimentación}: definición de experimentos mediante \texttt{config.yaml}, entrenamiento de modelos CNN multitarea y evaluación de variantes de datos y preprocesado (capítulos~7 y~8).
+    \item \textbf{Validación y despliegue}: pruebas funcionales por rol, containerización con Docker y despliegue persistente en el servidor de la universidad (capítulo~9).
+\end{enumerate}
+
+La metodología prioriza la \textbf{reproducibilidad} (configuraciones versionadas, scripts de importación y entrenamiento documentados) y la \textbf{extensibilidad} (esquema de metadatos flexible, posibilidad de añadir fuentes y clases sin rediseñar la plataforma). Dado el limitado volumen de imágenes reales, las conclusiones sobre generalización se formulan con cautela y se dejan abiertas líneas de trabajo futuro (capítulo~10).
 
 \section{Estructura de la memoria}
-Explicar brevemente el contenido de cada capítulo.
+La memoria se organiza en diez capítulos que siguen un hilo discursivo de tipo \textit{problema $\rightarrow$ diseño $\rightarrow$ implementación $\rightarrow$ datos y modelo $\rightarrow$ evaluación}:
+
+\begin{itemize}
+    \item \textbf{Capítulos 1--3} plantean el contexto, los objetivos, el estado del arte y el análisis del problema con la solución adoptada.
+    \item \textbf{Capítulos 4--5} describen el diseño de Foliarium y su implementación (API, aplicación cliente y herramientas auxiliares).
+    \item \textbf{Capítulos 6--7} abordan el pipeline de datos y la metodología de entrenamiento del modelo.
+    \item \textbf{Capítulos 8--9} presentan los experimentos, la validación funcional y el despliegue en producción.
+    \item \textbf{Capítulo 10} recoge las conclusiones, limitaciones y líneas de trabajo futuro.
+\end{itemize}
+
+Los apéndices incluyen instrucciones de instalación, reproducción de experimentos, fragmentos de código y la guía de usuario.
 
 \section{Colaboradores y agradecimientos}
 Incluir el reconocimiento a las personas que han participado en el desarrollo o la validación del proyecto. Entre ellas: Jaime Carlavilla Lázaro (trabajo previo sobre el que se parte), Marta Rallo Fes (colaboración) y Carlos Carrascosa Casamayor (tutor y coordinación). Redactar el texto definitivo de agradecimientos.
 
 \chapter{Marco teórico y estado del arte}
-\section{Visión por computadora aplicada a agricultura}
-Presentar el contexto científico y técnico del problema.
 
-\section{Aprendizaje profundo y redes convolucionales}
-Explicar los conceptos básicos necesarios para entender la solución.
+\section{Introducción al capítulo}
 
-\section{Transfer learning y MobileNetV2}
-Describir por qué se usa transferencia de aprendizaje y por qué se eligió esta arquitectura.
+Este capítulo revisa los fundamentos de la clasificación de enfermedades en hojas mediante aprendizaje profundo, el estado del arte en conjuntos de datos y modelos, y las aplicaciones y plataformas existentes. A continuación se formula una crítica de las limitaciones actuales y se sitúa la contribución de Foliarium como plataforma de integración de fuentes heterogéneas, en coherencia con la motivación expuesta en el capítulo~1.
 
-\section{Clasificación multiclase y enfoque multitarea}
-Justificar la predicción conjunta de cultivo y enfermedad.
+\section{Fundamentos de aprendizaje profundo aplicados a fitopatología}
 
-\section{Dataset PlantVillage y datasets reales de campo}
-Resumir las fuentes de datos usadas y sus diferencias.
+La detección automática de enfermedades en plantas mediante visión por computador ha crecido de forma notable impulsada por las redes neuronales convolucionales (CNN) y la disponibilidad de conjuntos de imágenes anotadas. En fitopatología, la tarea se formula habitualmente como clasificación de imágenes de hojas: cada fotografía se asigna a una clase que combina especie y estado de salud o tipo de enfermedad.
 
-\section{\textit{Duda}: convenciones de notación, abreviaturas y terminología}
-Sección opcional si finalmente conviene explicitar notación o glosario.
+\subsection{Referencia base: Mohanty et al. y el \textit{domain shift}}
 
-\chapter{Análisis del problema y requisitos}
-\section{Casos de uso del sistema}
-Definir los escenarios principales de uso de la aplicación.
+Uno de los trabajos más influyentes en este ámbito es el de Mohanty et al.~\cite{mohanty2016}, que emplea AlexNet y GoogLeNet sobre PlantVillage, un dataset con más de 50.000 imágenes capturadas en condiciones controladas (iluminación uniforme, fondo neutro). Los autores alcanzan precisiones superiores al 99\% en laboratorio, pero reportan una caída drástica ---hasta aproximadamente el 30\%--- al evaluar con imágenes de campo. Este fenómeno, conocido como \textit{domain shift} o cambio de dominio, sigue siendo una referencia obligada al abordar la generalización fuera del laboratorio y constituye el hilo conductor de la revisión bibliográfica de este TFG.
 
-\section{Roles de usuario: usuario, etiquetador y administrador}
-Explicar las funciones disponibles para cada rol.
+\subsection{Transferencia de aprendizaje y técnicas de generalización}
 
-\section{Requisitos funcionales}
-Listar las capacidades que debe ofrecer el sistema.
+Diversos trabajos han aplicado \textit{transfer learning}, \textit{data augmentation} y adaptación de dominio para reducir la brecha entre datos de entrenamiento y condiciones reales~\cite{ferentinos2018,sladojevic2016}. Ferentinos~\cite{ferentinos2018} demuestra que arquitecturas profundas (VGG y variantes de AlexNet) pueden alcanzar alto rendimiento sobre PlantVillage con entrenamiento desde cero o transferencia. Sladojevic et al.~\cite{sladojevic2016} reportan resultados prometedores en un conjunto reducido de clases de campo, aunque con limitaciones de escala y reproducibilidad. Estas técnicas mitigan el desajuste entre dominios, pero no lo eliminan por completo cuando las fuentes son muy heterogéneas.
 
-\section{Requisitos no funcionales}
-Recoger aspectos de seguridad, mantenibilidad, rendimiento y usabilidad.
+\subsection{Arquitecturas de clasificación}
 
-\section{Criterios de calidad y seguridad}
-Explicar las medidas adoptadas para asegurar un funcionamiento robusto.
+En la literatura agrícola se emplean con frecuencia ResNet, EfficientNet, DenseNet y arquitecturas ligeras como MobileNet~\cite{mobilenetv2}. Las redes ligeras se diseñaron para inferencia en dispositivos con recursos limitados; las arquitecturas más profundas suelen orientarse a maximizar precisión cuando el cómputo no es restrictivo. En el contexto de Foliarium, la predicción se ejecuta en el \textbf{servidor} mediante la API (\texttt{/predict\_image}), por lo que la elección de arquitectura debe valorarse en función de precisión, tiempo de inferencia en servidor y facilidad de \textit{fine-tuning}, no únicamente por eficiencia en móvil. La implementación actual utiliza MobileNetV2 multitarea (capítulo~7), heredada del desarrollo previo orientado a inferencia local; su mantenimiento o sustitución queda abierto a revisión (véase nota en capítulo~1).
+
+\subsection{Formulación multiclase y multitarea}
+
+PlantVillage y trabajos similares suelen plantear un problema \textbf{multiclase} con una etiqueta por imagen (\texttt{Planta\_\_\_Enfermedad}). Foliarium adopta además una formulación \textbf{multitarea} con cabezas separadas para planta y enfermedad, lo que facilita restricciones en predicción (planta conocida) y la reutilización parcial del catálogo de clases. Esta decisión de diseño se desarrolla en el capítulo~7.
+
+\section{Estado del arte: conjuntos de datos y modelos}
+
+\subsection{Panorama de conjuntos de datos públicos}
+
+Existen múltiples conjuntos de datos relevantes para la clasificación de enfermedades y plagas en plantas. No obstante, difieren en realismo de captura, escala, balanceo, taxonomía y objetivo específico. La tabla~\ref{tab:datasets-fitopatologia} resume las características principales de los más citados en la literatura reciente.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparativa orientativa de conjuntos de datos públicos en fitopatología por imagen.}
+\label{tab:datasets-fitopatologia}
+\small
+\begin{tabular}{p{2.8cm}p{1.6cm}p{1.4cm}p{2.2cm}p{4.5cm}}
+\hline
+\textbf{Dataset} & \textbf{Realismo} & \textbf{Escala} & \textbf{Balanceo} & \textbf{Notas} \\
+\hline
+PlantVillage & Laboratorio & Muy alta & Desbalanceado & Referencia estándar; fondo controlado~\cite{mohanty2016}. \\
+PlantDoc & Campo & Media & Desbalanceado & Imágenes \textit{in situ}; domain shift respecto a PlantVillage~\cite{plantdoc2020}. \\
+PlantCLEF & Variable & Muy alta & Heterogéneo & Retos de identificación de especies/plagas; diversidad taxonómica~\cite{plantclef2022}. \\
+IP102 & Campo / lab & Muy alta & Desbalanceado & 102 clases de plagas; objetivo distinto (insectos)~\cite{ip1022019}. \\
+Plant Pathology 2020 & Campo & Alta & Competición & Manzano; enfermedades específicas; Kaggle~\cite{plantpathology2020}. \\
+New Plant Diseases (Kaggle) & Mixto & Alta & Variable & Muy usado en tutoriales; calidad y licencia heterogéneas. \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{PlantVillage} sigue siendo la referencia experimental principal de este TFG por su escala, reproducibilidad y comparabilidad con Mohanty et al. \textbf{PlantDoc}~\cite{plantdoc2020} aporta imágenes de campo con iluminación natural, fondos complejos y variabilidad de dispositivos; es la fuente externa prioritaria para integración en Foliarium. \textbf{PlantCLEF}~\cite{plantclef2022} y \textbf{IP102}~\cite{ip1022019} ilustran la diversidad de objetivos (identificación de especies vs. plagas) y la dificultad de unificar taxonomías. Los conjuntos de \textbf{Kaggle} (Plant Pathology 2020~\cite{plantpathology2020}, New Plant Diseases Dataset) amplían el panorama pero requieren mapeo cuidadoso de clases y verificación de licencias.
+
+La conclusión de esta revisión es que \textbf{sí existen datasets con imágenes reales o parcialmente realistas}, pero están \textbf{fragmentados y son heterogéneos}. No hay un único estándar público que cubra de forma completa el problema de clasificación de enfermedades en condiciones reales con la misma coherencia que PlantVillage en laboratorio.
+
+\subsection{Trabajos de clasificación con aprendizaje profundo}
+
+Más allá de Mohanty et al., la literatura reciente confirma tanto el potencial como los límites de las CNN en este dominio:
+
+\begin{itemize}
+    \item \textbf{Sladojevic et al.}~\cite{sladojevic2016} entrenan una CNN personalizada sobre un conjunto reducido de enfermedades de campo, alcanzando alta precisión en condiciones controladas de experimentación pero con escasa generalización demostrada a otras fuentes.
+    \item \textbf{Ferentinos}~\cite{ferentinos2018} compara VGG y AlexNet sobre decenas de enfermedades de PlantVillage, estableciendo un referente de rendimiento en condiciones de laboratorio con arquitecturas profundas.
+    \item \textbf{Singh et al.}~\cite{plantdoc2020} introducen PlantDoc y evalúan modelos entrenados en PlantVillage sobre imágenes de campo, cuantificando de nuevo la caída de rendimiento por \textit{domain shift}.
+    \item Trabajos con \textbf{EfficientNet y ResNet} sobre PlantDoc y conjuntos derivados de Kaggle reportan mejoras al combinar \textit{fine-tuning}, aumento de datos y entrenamiento multi-fuente, aunque con resultados difíciles de comparar por la falta de protocolo común entre estudios.
+\end{itemize}
+
+En conjunto, estos trabajos muestran que el problema sigue activo: altas precisiones en dominios controlados y degradación en campo, especialmente cuando no se dispone de un pipeline unificado para mezclar fuentes con taxonomías distintas.
+
+\section{Estado del arte: sistemas y aplicaciones}
+
+\subsection{Aplicaciones móviles y comerciales}
+
+Existen diversas aplicaciones orientadas al diagnóstico fitosanitario asistido por imagen, entre las que destacan:
+
+\begin{itemize}
+    \item \textbf{Plantix}: aplicación ampliamente difundida que permite fotografiar cultivos y obtener sugerencias de diagnóstico; utiliza modelos propios entrenados con datos no públicos.
+    \item \textbf{PlantVillage Nuru}: herramienta asociada al ecosistema PlantVillage, orientada a agricultores en países en desarrollo; combina captura móvil con modelos de clasificación, con cobertura limitada a ciertos cultivos.
+    \item \textbf{Crop Doctor, Leaf Doctor} y aplicaciones similares: ofrecen clasificación de enfermedades en hojas desde el móvil, generalmente con modelos entrenados para un conjunto cerrado de clases y sin posibilidad de reconfigurar experimentos o integrar nuevas fuentes.
+\end{itemize}
+
+Estas soluciones demuestran la viabilidad del diagnóstico asistido en entornos reales, pero comparten limitaciones: \textbf{datasets de entrenamiento privados}, dominio fijo, escasa reproducibilidad académica y nula capacidad de combinar fuentes heterogéneas o lanzar experimentos comparativos bajo control del usuario.
+
+\subsection{Arquitecturas de despliegue: inferencia local frente a cliente-servidor}
+
+Las aplicaciones anteriores suelen optar por inferencia en el dispositivo (modelos optimizados para móvil) o por servicios en la nube propietarios. Foliarium adopta una arquitectura \textbf{cliente-servidor}: la aplicación Flet (Windows, Linux, Android) actúa como cliente delgado que captura y sube imágenes; el entrenamiento y la predicción se ejecutan en el backend desplegado en la UPV. Esta decisión simplifica la distribución de modelos y centraliza la experimentación, aunque requiere conectividad y relativa la importancia de arquitecturas ultra-ligeras en el dispositivo.
+
+\subsection{Plataformas académicas y pipelines}
+
+Muchos trabajos publican modelos entrenados o notebooks de experimentación, pero \textbf{pocos sistemas integran} de forma explícita recopilación colaborativa, etiquetado, importación de datasets externos, configuración de experimentos versionados y despliegue operativo. Foliarium se sitúa en ese espacio intermedio entre un artículo experimental puntual y una aplicación comercial cerrada.
+
+\section{Crítica al estado del arte}
+
+A partir de la revisión anterior, se identifican las siguientes limitaciones estructurales:
+
+\begin{itemize}
+    \item \textbf{Falta de generalización}: modelos entrenados en laboratorio degradan su rendimiento en campo (\textit{domain shift}), como demuestra Mohanty et al.~\cite{mohanty2016} y estudios sobre PlantDoc~\cite{plantdoc2020}.
+    \item \textbf{Fragmentación de datasets}: existen conjuntos reales o parcialmente realistas, pero con taxonomías, metadatos, licencias y niveles de balanceo incompatibles entre sí.
+    \item \textbf{Ausencia de un estándar unificado}: no hay un dataset único que combine escala, calidad de anotación y realismo de captura de forma comparable a PlantVillage.
+    \item \textbf{Sistemas poco flexibles}: aplicaciones comerciales y muchos pipelines académicos están acoplados a un dominio fijo y no permiten seleccionar dinámicamente fuentes o clases para entrenar.
+    \item \textbf{Reproducibilidad limitada}: el uso de datos privados en productos comerciales impide validar y comparar resultados de forma abierta.
+    \item \textbf{Falta de plataformas de integración}: escasean entornos que unifiquen importación, normalización, experimentación configurable y captura colaborativa bajo un mismo esquema de datos.
+\end{itemize}
+
+Estas limitaciones no invalidan el avance en modelos de clasificación, pero desplazan el cuello de botella hacia la \textbf{gestión y unificación de fuentes heterogéneas} y hacia entornos controlados de experimentación reproducible.
+
+\section{Propuesta y posicionamiento de Foliarium}
+
+Frente al estado del arte descrito, este TFG propone Foliarium como \textbf{plataforma de integración, estructuración y explotación} de múltiples fuentes de imágenes de hojas, más que como un único modelo optimizado para un dataset fijo. La contribución principal recae en la infraestructura software:
+
+\begin{itemize}
+    \item \textbf{Esquema unificado de metadatos}: colecciones \texttt{Fuente}, \texttt{Clases} y \texttt{Docs} en MongoDB, con convención de carpetas \texttt{data/\{fuente\}/color/\{clase\}/} para importación.
+    \item \textbf{Integración de fuentes heterogéneas}: PlantVillage (laboratorio), PlantDoc y otros datasets públicos tras normalización de clases; capturas colaborativas mediante la aplicación (fuente «App»); importaciones ad hoc (p. ej. datos de vid).
+    \item \textbf{Experimentación configurable}: selección dinámica de fuentes, formatos (color, grayscale, segmented), plantas y enfermedades mediante \texttt{config.yaml} y filtros sobre la base de datos.
+    \item \textbf{Despliegue operativo}: API REST, contenedorización Docker y servicio en producción en la UPV; predicción centralizada accesible desde los clientes Flet.
+    \item \textbf{Modelo intercambiable}: la implementación actual (MobileNetV2 multitarea) es una primera versión del pipeline de entrenamiento e inferencia; la plataforma está preparada para sustituir o comparar arquitecturas sin rediseñar el flujo de datos (capítulos~7, 8 y~10).
+\end{itemize}
+
+De este modo, Foliarium aborda la brecha laboratorio--campo no solo entrenando un clasificador, sino proporcionando el entorno en el que combinar progresivamente fuentes controladas y reales, evaluar variantes de preprocesado y desplegar modelos en un sistema accesible para usuarios, etiquetadores y administradores. El análisis del problema, las alternativas consideradas y la solución elegida se desarrollan en el capítulo~3; el pipeline de datos en el capítulo~6; la metodología de entrenamiento en el capítulo~7.
+
+\chapter{Análisis del problema}
+
+\section{Introducción}
+
+Tras la revisión del estado del arte, queda identificada una brecha principal: no es tanto la ausencia total de imágenes de campo como la \textbf{falta de un entorno integrado} que permita unificar fuentes heterogéneas, experimentar de forma reproducible y desplegar modelos en un flujo operativo accesible a distintos perfiles de usuario. Este capítulo analiza el problema desde esa perspectiva, evalúa alternativas de solución y justifica la creación de Foliarium.
+
+\section{Formulación del problema y oportunidades}
+
+\subsection{Problema a resolver}
+
+El problema que aborda este TFG puede descomponerse en tres niveles:
+
+\begin{enumerate}
+    \item \textbf{Generalización}: los modelos entrenados en condiciones de laboratorio degradan su rendimiento en campo, como demuestra la literatura de referencia~\cite{mohanty2016,plantdoc2020}.
+    \item \textbf{Fragmentación de datos}: existen datasets públicos con imágenes reales o parcialmente realistas (PlantDoc, conjuntos de Kaggle, etc.), pero con taxonomías, metadatos y licencias incompatibles entre sí; no hay un estándar unificado comparable a PlantVillage.
+    \item \textbf{Brecha operativa}: aplicaciones comerciales y muchos trabajos académicos ofrecen clasificadores puntuales, pero no un \textbf{ciclo completo} ---recopilación colaborativa, validación, importación de fuentes externas, experimentación versionada y despliegue--- en un mismo sistema reproducible.
+\end{enumerate}
+
+El objetivo del TFG no es únicamente maximizar la precisión de un modelo sobre un dataset fijo, sino \textbf{diseñar e implementar la infraestructura} que permita abordar los tres niveles anteriores de forma incremental.
+
+\subsection{Actores y escenarios de uso}
+
+El sistema está pensado para un entorno de colaboración universidad--agrónomos, con los siguientes actores:
+
+\begin{itemize}
+    \item \textbf{Usuario colaborador}: captura o sube imágenes de hojas desde la aplicación cliente y las asocia a una clase del catálogo; puede solicitar experimentos y usar modelos publicados para obtener predicciones. Además, si tiene acceso a un conjunto de datos ya etiquetados, puede implementarlas a la base de datos en un solo proceso.
+    \item \textbf{Etiquetador}: revisa imágenes pendientes de validación, corrige clases y marca etiquetas de imágenes como validadas antes de usarlas en entrenamientos exigentes.
+    \item \textbf{Administrador}: gestiona usuarios y roles, supervisa entrenamientos, decide qué modelos quedan disponibles para predicción y mantiene la taxonomía de clases.
+    \item \textbf{Operador técnico} (desarrollador o administrador del servidor): importa datasets externos (PlantVillage, PlantDoc, etc.) mediante scripts o la aplicación, monitoriza el despliegue Docker y el backend en producción.
+\end{itemize}
+
+Los escenarios de uso principales son: (1)~recopilación de imágenes individuales o masivas; (2)~validación y control de calidad del etiquetado; (3)~definición y ejecución de experimentos filtrando por fuente, formato y clases; (4)~predicción sobre imágenes nuevas; (5)~importación por lotes de fuentes externas. Estos procesos se pueden llevar a cabo en una versión local o contra el servidor de producción (\texttt{https://plantas.gti-ia.upv.es}), donde está la base de datos centralizada.
+
+\subsection{Oportunidades de innovación}
+
+A partir del análisis anterior, se identifican las siguientes oportunidades, alineadas con el posicionamiento de Foliarium en el capítulo~2:
+
+\begin{itemize}
+    \item \textbf{Plataforma de integración multi-fuente}, con esquema común de metadatos (\texttt{Fuente}, \texttt{Clases}, \texttt{Docs}) y pipeline de normalización (capítulo~6).
+    \item \textbf{Experimentación reproducible} mediante \texttt{config.yaml} y carpetas versionadas en \texttt{experiments/}.
+    \item \textbf{Captura colaborativa} de imágenes reales como fuente adicional («App»), complementaria a datasets públicos.
+    \item \textbf{Despliegue operativo} en servidor, de modo que el sistema deje de ser un prototipo local y pase a ser utilizable por colaboradores externos.
+    \item \textbf{Encaje institucional} con líneas COSASS y Cátedra Planeta (capítulo~1), como componente software de recopilación y explotación de datos agrícolas.
+\end{itemize}
+
+\section{Identificación y análisis de soluciones posibles}
+
+No existe una única forma de abordar el problema formulado. Se han considerado las alternativas siguientes:
+
+\subsection{Alternativa A: entrenar un clasificador sobre PlantVillage}
+
+Consiste en desarrollar un notebook o script que entrene un modelo CNN sobre PlantVillage y evalúe su rendimiento, opcionalmente probando PlantDoc u otro dataset de campo de forma aislada.
+
+\begin{itemize}
+    \item \textbf{Ventajas}: mínimo coste de desarrollo software, foco puro en el modelo, resultados comparables con la literatura.
+    \item \textbf{Inconvenientes}: no resuelve la integración de fuentes ni la recopilación colaborativa, cada nuevo dataset exige adaptar scripts manualmente, no hay despliegue ni roles de usuario, difícil reutilización por agrónomos o colaboradores, carencia de innovación.
+\end{itemize}
+
+\subsection{Alternativa B: adoptar una aplicación comercial existente}
+
+Herramientas como Plantix o PlantVillage Nuru ya ofrecen captura móvil y diagnóstico asistido.
+
+\begin{itemize}
+    \item \textbf{Ventajas}: solución inmediata para el usuario final, modelos entrenados con datos propios a gran escala.
+    \item \textbf{Inconvenientes}: datos y modelos no reproducibles académicamente, imposibilidad de configurar experimentos, combinar fuentes públicas o extender la taxonomía, dependencia de un proveedor externo.
+\end{itemize}
+
+\subsection{Alternativa C: plataforma cliente-servidor de integración (Foliarium)}
+
+Desarrollar una plataforma propia con API REST, base de datos, cliente multiplataforma, pipeline de importación, experimentos configurables e inferencia centralizada en el servidor UPV.
+
+\begin{itemize}
+    \item \textbf{Ventajas}: cubre el ciclo completo de trabajo, permite unificar PlantVillage, PlantDoc, capturas propias y otras fuentes, experimentación versionada, despliegue bajo control de la universidad, extensible a futuras integraciones.
+    \item \textbf{Inconvenientes}: mayor esfuerzo de ingeniería, el rendimiento del modelo depende del volumen y calidad de datos disponibles, mantenimiento del servidor y de la aplicación.
+\end{itemize}
+
+\subsection{Criterios de selección y decisión}
+
+La tabla~\ref{tab:criterios-solucion} resume los criterios aplicados para elegir la alternativa.
+
+\begin{table}[htbp]
+\centering
+\caption{Criterios de selección entre alternativas de solución.}
+\label{tab:criterios-solucion}
+\small
+\begin{tabular}{p{4cm}p{2cm}p{2cm}p{2cm}p{2.5cm}}
+\hline
+\textbf{Criterio} & \textbf{A: solo modelo} & \textbf{B: app comercial} & \textbf{C: Foliarium} \\
+\hline
+Integración multi-fuente & Baja & Nula & Alta \\
+Reproducibilidad académica & Media & Baja & Alta \\
+Recopilación colaborativa & No & Sí (cerrada) & Sí (propia) \\
+Despliegue institucional & No & No & Sí \\
+Esfuerzo de desarrollo & Bajo & Nulo & Alto \\
+Alineación con objetivos & Parcial & Baja & Alta \\
+\hline
+\end{tabular}
+\end{table}
+
+Se adopta la \textbf{alternativa C (Foliarium)} porque cumple la restricción central del TFG: ir más allá de un experimento puntual de clasificación y aportar una \textbf{infraestructura extensible} para unificar fuentes, validar datos y desplegar modelos. El entrenamiento del clasificador pasa a ser un \textit{componente} dentro de la plataforma, no el único entregable.
+
+\section{Solución propuesta}
+
+\subsection{Descripción general}
+
+Foliarium es una plataforma cliente-servidor que integra:
+
+\begin{itemize}
+    \item \textbf{Cliente Flet} (Windows, Linux, Android): captura y subida de imágenes, etiquetado, administración, creación de experimentos, consulta de resultados y predicción (vía API).
+    \item \textbf{Backend Flask + MongoDB}: autenticación por roles, gestión de metadatos e imágenes, orquestación de entrenamientos e inferencia en el servidor.
+    \item \textbf{Pipeline de datos y scripts}: importación de fuentes externas, preprocesado (color, grayscale, segmentación) y registro en base de datos.
+    \item \textbf{Módulo de experimentación}: configuración YAML, entrenamiento CNN multitarea (implementación actual: MobileNetV2) y almacenamiento de resultados.
+\end{itemize}
+
+La predicción se ejecuta en el \textbf{servidor UPV}, no en el dispositivo móvil: el cliente envía la imagen a \texttt{/predict\_image} y recibe planta y enfermedad predichas. Este diseño simplifica la distribución de modelos y centraliza el cómputo, aunque relativa la necesidad de arquitecturas ultra-ligeras en el dispositivo (véase capítulo~7).
+
+\subsection{Fases del desarrollo y validación}
+
+El TFG se ha organizado en fases coherentes con los capítulos de la memoria:
+
+\begin{enumerate}
+    \item \textbf{Análisis y diseño} (capítulos~1--4): contexto, estado del arte, análisis del problema y arquitectura.
+    \item \textbf{Implementación de la plataforma} (capítulo~5): API, cliente Flet, autenticación y herramientas auxiliares.
+    \item \textbf{Datos y modelo} (capítulos~6--7): pipeline de fuentes, preprocesado, entrenamiento e inferencia.
+    \item \textbf{Evaluación} (capítulos~8--9): experimentos, validación funcional por rol y despliegue Docker en producción.
+    \item \textbf{Síntesis} (capítulo~10): conclusiones, limitaciones y trabajo futuro.
+\end{enumerate}
+
+La \textbf{validación} del sistema combina: (i)~pruebas funcionales por rol (subida, etiquetado, administración, experimentos, predicción); (ii)~comprobación del despliegue persistente y acceso HTTPS; (iii)~experimentos de clasificación sobre subconjuntos configurables de datos; (iv)~revisión exploratoria con imágenes de campo cuando estén disponibles. Un listado detallado de capacidades del sistema (requisitos funcionales y no funcionales de referencia) se recoge en el apéndice~\ref{ap:requisitos}.
+
+\section{Análisis de seguridad}
+
+El backend implementa las medidas siguientes:
+
+\begin{itemize}
+    \item \textbf{Autenticación JWT}: tras \texttt{/iniciar\_sesion}, el cliente incluye un token Bearer en las peticiones protegidas. La API valida expiración, firma e integridad del token antes de ejecutar la operación.
+    \item \textbf{Control por rol}: operaciones administrativas (gestión de usuarios, asignación de roles, etc.) exigen el rol \texttt{admin}. Otros endpoints sensibles pueden restringirse mediante configuración (\texttt{AUTH\_REQUIRED\_ENDPOINTS}, \texttt{ROLE\_REQUIRED\_ENDPOINTS}).
+    \item \textbf{Protección de contraseñas}: el registro y el cambio de contraseña almacenan un hash bcrypt en la base de datos \texttt{Usuarios}. El cliente aplica un preprocesado adicional antes del envío; el detalle de este flujo híbrido se documenta en el capítulo de implementación.
+    \item \textbf{Rate limiting}: los endpoints de login y registro limitan el número de peticiones por IP (10 por minuto) para mitigar ataques de fuerza bruta.
+    \item \textbf{Validación de entradas}: las imágenes subidas deben ser JPEG o PNG y no superar un tamaño máximo configurable (\texttt{MAX\_IMAGE\_SIZE\_MB}, por defecto 10~MB).
+    \item \textbf{CORS}: orígenes configurables (\texttt{CORS\_ORIGINS}) para desarrollo y un futuro cliente web; los clientes nativos actuales (Windows, Linux, Android) no lo requieren.
+    \item \textbf{Transporte seguro}: HTTPS en producción (\texttt{https://plantas.gti-ia.upv.es}); certificados autofirmados en desarrollo local.
+\end{itemize}
+
+Como criterio de calidad funcional, una imagen registrada por la aplicación debe quedar trazable (usuario, fuente, formato, clase) y, si procede, pasar por validación antes de utilizarse en entrenamientos configurados con la opción \texttt{solo\_validadas}.
+
+\section{Análisis de eficiencia y coste computacional}
+
+\subsection{Entrenamiento e inferencia}
+
+El entrenamiento de modelos y la inferencia (\texttt{/predict\_image}) se ejecutan en el \textbf{servidor} de la UPV, no en el dispositivo del usuario. Implica:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento}: coste computacional concentrado en el servidor (CPU/GPU disponible en la máquina de producción o de desarrollo); duración dependiente del tamaño del subconjunto seleccionado, épocas y estrategia de \textit{fine-tuning}. No se ha realizado un perfilado exhaustivo del consumo eléctrico; el criterio práctico ha sido ejecutar experimentos fuera de horas punta cuando el entrenamiento es prolongado.
+    \item \textbf{Inferencia}: una petición de predicción implica carga del modelo en memoria, preprocesado de la imagen y paso \textit{forward}; el coste por petición es bajo frente al entrenamiento, pero escala con el número de usuarios concurrentes.
+    \item \textbf{Cliente móvil}: la aplicación Android actúa como cliente delgado (captura, subida, visualización); el consumo de batería en móvil se asocia sobre todo a la cámara y la transferencia de datos, no al modelo de aprendizaje profundo. La elección inicial de MobileNetV2 respondía a inferencia local; dado el despliegue servidor-side, arquitecturas más pesadas podrían valorarse en el servidor sin penalizar la batería del dispositivo (capítulo~10).
+\end{itemize}
+
+\subsection{Adquisición y almacenamiento de datos}
+
+La subida de imágenes (base64 en JSON) y su persistencia en MongoDB más disco supone un coste de almacenamiento creciente con el volumen de fuentes integradas. Los scripts de importación masiva permiten procesar lotes en el servidor sin intervención manual repetitiva, optimizando el tiempo del operador frente a subidas individuales.
+
+\section{Marco legal y ético}
+
+\subsection{Protección de datos}
+
+Foliarium registra \textbf{datos personales} de usuarios (credenciales, identificador de usuario asociado a cada imagen subida) e \textbf{imágenes} que pueden tomarse en entornos agrícolas reales. En un despliegue institucional en la UPV deben considerarse:
+
+\begin{itemize}
+    \item \textbf{Minimización y finalidad}: solo se recogen datos necesarios para autenticación, trazabilidad de imágenes y operación del sistema de clasificación con fines académicos e investigadores.
+    \item \textbf{Almacenamiento}: metadatos en MongoDB e imágenes en el sistema de archivos del servidor universitario; acceso restringido mediante autenticación y roles.
+    \item \textbf{Responsabilidad y normativa}: en un uso extendido más allá del ámbito del TFG, sería necesario formalizar el tratamiento conforme al RGPD y a la política de protección de datos de la UPV (registro de actividades, base legal, información a usuarios, plazos de conservación). En la fase actual del proyecto, el acceso está limitado a entorno controlado y colaboradores identificados.
+    \item \textbf{Cesión de imágenes}: las fotografías aportadas por usuarios deben subirse con conocimiento de su uso con fines de investigación y mejora del clasificador.
+\end{itemize}
+
+\subsection{Propiedad intelectual y licencias de datos}
+
+\begin{itemize}
+    \item \textbf{Software}: el código del TFG se desarrolla en el marco académico de la UPV; la titularidad y posibles licencias de explotación deben alinearse con la normativa de la universidad y con los acuerdos del proyecto COSASS cuando aplique.
+    \item \textbf{Datasets públicos}: PlantVillage, PlantDoc y conjuntos de Kaggle están sujetos a sus propias licencias y condiciones de uso; la importación en Foliarium debe respetar redistribución y atribución. Las imágenes generadas por usuarios de la plataforma son aportaciones originales cuya licencia de uso conviene definir antes de publicar un corpus derivado.
+    \item \textbf{Modelos preentrenados}: MobileNetV2 utiliza pesos de PyTorch/ImageNet con las condiciones de uso de la librería correspondiente.
+\end{itemize}
+
+\subsection{Consideraciones éticas}
+
+Un sistema de apoyo al diagnóstico fitosanitario plantea dilemas que deben explicitarse:
+
+\begin{itemize}
+    \item \textbf{No sustitución del criterio experto}: las predicciones del modelo son orientativas; una decisión agronómica o fitosanitaria debe validarse por personal cualificado, especialmente en condiciones de campo donde el \textit{domain shift} degrada el rendimiento.
+    \item \textbf{Errores de clasificación}: falsos negativos (no detectar una enfermedad) pueden retrasar tratamientos; falsos positivos pueden inducir aplicaciones innecesarias de fitosanitarios. El workflow de validación por etiquetadores mitiga errores en \textit{entrenamiento}, pero no en \textit{inferencia} sobre imágenes nuevas.
+    \item \textbf{Sesgos}: desbalanceo entre clases, predominio de cultivos presentes en PlantVillage y escasez de imágenes reales validadas pueden sesgar el modelo hacia clases mayoritarias o condiciones de laboratorio. No se han identificado atributos sensibles (raza, sexo, etc.) en las imágenes de hojas, pero sí \textbf{sesgo de dominio} por fuente y dispositivo de captura.
+    \item \textbf{Impacto en sostenibilidad}: un uso responsable del sistema puede contribuir a reducir fitosanitarios innecesarios (ODS~12 y~15, capítulo~1); un uso descuidado del diagnóstico automático podría tener el efecto contrario.
+\end{itemize}
+
+\section{Análisis de riesgos}
+
+La tabla~\ref{tab:riesgos} recoge los riesgos principales identificados durante el análisis.
+
+\begin{table}[htbp]
+\centering
+\caption{Análisis de riesgos del proyecto Foliarium.}
+\label{tab:riesgos}
+\small
+\begin{tabular}{p{3cm}p{2cm}p{3.5cm}p{5cm}}
+\hline
+\textbf{Riesgo} & \textbf{Impacto} & \textbf{Consecuencia} & \textbf{Medidas} \\
+\hline
+Bajo volumen de imágenes reales validadas & Alto & Conclusiones limitadas sobre generalización & Integrar PlantDoc y otras fuentes; captura colaborativa; validación por etiquetadores \\
+Errores de predicción en campo & Alto & Decisión agronómica incorrecta & Documentar limitaciones; no presentar el sistema como diagnóstico definitivo; revisión por expertos \\
+Rechazo o baja adopción por usuarios & Medio & Pocos datos reales aportados & Interfaz por rol; despliegue accesible; pruebas con colaboradores (cap.~9) \\
+Fallo o indisponibilidad del servidor & Medio & Interrupción del servicio & Docker, health checks, despliegue en UPV \\
+Heterogeneidad al importar datasets & Medio & Clases mal mapeadas, experimentos inconsistentes & Pipeline de normalización (cap.~6); script PlantDoc; validación manual \\
+Desviación de esfuerzo hacia ingeniería vs. modelo & Medio & Menos tiempo para experimentación ML & Priorizar plataforma como objetivo explícito del TFG; experimentos mínimos documentados \\
+Integración futura con COSASS & Bajo & Incompatibilidad de interfaces & Diseño modular API + metadatos; línea de trabajo futuro \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Plan de trabajo y presupuesto orientativo}
+
+\subsection{Plan de trabajo (estimación y desviaciones)}
+
+El desarrollo se ha abordado de forma iterativa. La tabla~\ref{tab:plan-trabajo} resume fases, estimación inicial orientativa y observaciones a posteriori.
+
+\begin{table}[htbp]
+\centering
+\caption{Plan de trabajo del TFG (estimación retrospectiva).}
+\label{tab:plan-trabajo}
+\small
+\begin{tabular}{p{4cm}p{2cm}p{6.5cm}}
+\hline
+\textbf{Fase} & \textbf{Horas aprox.} & \textbf{Observaciones} \\
+\hline
+Revisión bibliográfica y análisis & 80--100 & Incluye profundización sobre el estado del arte y los datasets disponibles \\
+Diseño e implementación API + BBDD & 120--150 & Parte basada en desarrollo previo (Jaime Carlavilla) \\
+Cliente Flet multiplataforma & 150--200 & Mayor esfuerzo en empaquetado Android/Windows/Linux \\
+Pipeline de datos e importación & 60--80 & PlantVillage, scripts, preprocesado \\
+Modelo y experimentos & 80--100 & Entrenamientos en servidor; carpeta \texttt{experiments/} \\
+Docker y despliegue UPV & 60--80 & Dominio HTTPS, distribución de clientes \\
+Memoria y documentación & 100--120 & Redacción continua en paralelo \\
+\hline
+\textbf{Total orientativo} & \textbf{650--830} & Desviaciones: el empaquetado Flet y el despliegue superaron la estimación inicial \\
+\hline
+\end{tabular}
+\end{table}
+
+La principal \textbf{desviación} respecto al planteamiento inicial fue el esfuerzo en despliegue, empaquetado multiplataforma e infraestructura, frente a un foco más estrecho en el modelo móvil. Esta desviación es coherente con la solución elegida (alternativa C) y con el cambio a inferencia centralizada en servidor.
+
+\subsection{Presupuesto de recursos}
+
+\begin{itemize}
+    \item \textbf{Hardware}: PC de desarrollo del alumno; servidor de la UPV para producción (sin coste directo para el TFG); dispositivos de prueba (PC, móvil Android).
+    \item \textbf{Software}: stack mayoritariamente abierto (Python, Flask, MongoDB, PyTorch, Flet, Docker); sin licencias comerciales significativas.
+    \item \textbf{Datos}: datasets públicos gratuitos (PlantVillage, PlantDoc, etc.); coste de almacenamiento en servidor institucional.
+    \item \textbf{Recursos humanos}: esfuerzo principal del alumno; tutoría de Carlos Carrascosa Casamayor; trabajo previo de Jaime Carlavilla Lázaro; colaboraciones puntuales (etiquetado, pruebas).
+\end{itemize}
+
+En conjunto, el coste monetario directo para el alumno es bajo; el principal recurso invertido es \textbf{tiempo de ingeniería} para construir la plataforma, coherente con la naturaleza del entregable.
 
 \chapter{Diseño y arquitectura de la solución}
-\section{Visión global del sistema}
-Presentar la organización general del proyecto y sus componentes.
 
-\section{Arquitectura backend, frontend y servicios auxiliares}
-Describir la relación entre la API, la aplicación gráfica y los scripts auxiliares.
+\section{Visión global del sistema}
+
+Foliarium se concibe como una plataforma integrada que cubre el ciclo completo de trabajo con imágenes de hojas de plantas: recopilación y etiquetado, almacenamiento estructurado, entrenamiento de modelos de clasificación, evaluación experimental y predicción sobre imágenes nuevas. El diseño separa de forma clara el \textbf{cliente} (aplicación de usuario), el \textbf{servidor} (API y lógica de negocio) y la \textbf{persistencia} (base de datos y sistema de archivos), de modo que distintos clientes ---escritorio, móvil o scripts--- puedan operar sobre el mismo backend.
+
+A nivel conceptual, el sistema combina dos líneas de actividad que se retroalimentan:
+
+\begin{itemize}
+    \item \textbf{Línea de plataforma}: gestión de usuarios, subida y validación de imágenes, administración de clases y metadatos, y operación del sistema en producción.
+    \item \textbf{Línea de experimentación}: preparación de conjuntos de datos, configuración y ejecución de entrenamientos, almacenamiento de modelos y análisis de resultados.
+\end{itemize}
+
+Los componentes principales del repositorio son los siguientes:
+
+\begin{itemize}
+    \item \texttt{main\_app.py}: aplicación gráfica multiplataforma desarrollada con Flet (Windows, Linux y Android).
+    \item \texttt{logicav3.py}: capa de cliente que encapsula la comunicación HTTP con la API y el estado de la sesión.
+    \item \texttt{main.py}: API REST implementada con Flask; concentra la lógica de negocio, la autenticación y la integración con el modelo de datos.
+    \item \texttt{utils/}: módulos compartidos de acceso a base de datos, autenticación, modelo de aprendizaje profundo y entrenamiento.
+    \item \texttt{scripts/}: utilidades de mantenimiento, importación masiva de imágenes, configuración inicial de la base de datos y operaciones por lotes.
+    \item Almacenamiento en disco de imágenes (\texttt{imagenes/}), modelos entrenados (\texttt{models/}) y resultados de experimentos (\texttt{experiments/}).
+\end{itemize}
+
+En el entorno de producción de la universidad, el backend está desplegado de forma persistente y accesible mediante \texttt{https://plantas.gti-ia.upv.es}, mientras que los clientes se distribuyen como aplicaciones empaquetadas o mediante la página de descargas del propio servidor.
+
+\section{Arquitectura backend, cliente y servicios auxiliares}
+
+\subsection{API Flask (\texttt{main.py})}
+
+El servidor backend expone una API REST monolítica que centraliza todas las operaciones del sistema. Entre sus responsabilidades se incluyen: gestión de usuarios y roles, registro y consulta de imágenes, validación y clasificación manual, administración de taxonomías (plantas, enfermedades, fuentes y formatos), creación y seguimiento de experimentos, entrenamiento de modelos y predicción sobre imágenes individuales.
+
+La API se apoya en los módulos de \texttt{utils/} para conectar con MongoDB, cargar configuraciones de experimentos, construir el modelo CNN multitarea (implementación actual: MobileNetV2) y ejecutar inferencia en el servidor. En producción, el servicio se ejecuta bajo Gunicorn dentro de un contenedor Docker; en desarrollo local puede arrancarse con \texttt{run\_server.py}, con soporte opcional de HTTPS mediante certificados autofirmados.
+
+\subsection{Cliente Flet (\texttt{main\_app.py})}
+
+La interfaz de usuario no es una aplicación web tradicional, sino un cliente Flet empaquetable para distintas plataformas. La aplicación organiza la experiencia en vistas diferenciadas según el rol del usuario (\textit{usuario}, \textit{etiquetador}, \textit{administrador} y variantes con permisos ampliados). Desde el cliente se realizan las operaciones habituales del sistema: inicio de sesión, subida de imágenes, etiquetado, gestión de usuarios, creación de experimentos, consulta de resultados y predicción con modelos entrenados.
+
+La URL del backend es configurable desde la propia aplicación, lo que permite conectar tanto a una instancia local de desarrollo como al servidor de producción de la universidad.
+
+\subsection{Scripts y utilidades auxiliares}
+
+Complementariamente a la API y a la aplicación gráfica, el repositorio incluye scripts en \texttt{scripts/} para tareas que no requieren interacción directa del usuario final: inicialización de la base de datos (\texttt{setup\_bbdd.py}), importación masiva de imágenes, preprocesamiento (conversión a escala de grises, segmentación de hojas), creación de experimentos y comparación de resultados. Estos scripts comparten la misma API y las mismas convenciones de datos que el cliente Flet, lo que garantiza coherencia entre operaciones manuales y automatizadas.
 
 \section{Diseño de la comunicación entre aplicación y API}
-Explicar el flujo HTTP/JSON y el papel del módulo de conexión.
+
+La comunicación entre el cliente y el servidor sigue un esquema cliente-servidor basado en HTTP con intercambio de mensajes JSON. El módulo \texttt{logicav3.py} implementa la clase \texttt{LogicaApp}, que actúa como fachada de acceso a la API: construye las URLs de los endpoints, serializa las peticiones, gestiona los tokens de autenticación y mantiene en memoria el estado de la sesión activa (usuario, rol seleccionado, imágenes en curso, etc.).
+
+El flujo típico de una operación es el siguiente:
+
+\begin{enumerate}
+    \item El usuario interactúa con la interfaz Flet (\texttt{main\_app.py}).
+    \item La interfaz delega en \texttt{LogicaApp} la preparación de la petición (por ejemplo, codificación de una imagen en base64 antes de subirla).
+    \item \texttt{LogicaApp} envía la petición HTTP al endpoint correspondiente de la API.
+    \item La API valida la autenticación y los permisos del rol, ejecuta la operación sobre MongoDB o el sistema de archivos, y devuelve una respuesta JSON.
+    \item El cliente interpreta la respuesta y actualiza la interfaz.
+\end{enumerate}
+
+La autenticación se basa en tokens JWT. Tras un inicio de sesión correcto, el cliente incluye el token en el encabezado \texttt{Authorization: Bearer ...} en las peticiones a endpoints protegidos. La API aplica control de acceso por rol mediante un filtro previo a la ejecución de cada endpoint sensible.
 
 \section{Modelo de datos y persistencia en MongoDB}
-Describir las colecciones, campos y relaciones principales.
 
-\section{Despliegue y contenedorización con Docker}
-Explicar cómo se empaqueta y despliega el sistema.
+La persistencia del sistema se apoya en MongoDB y en almacenamiento de ficheros en disco. Se distinguen dos bases de datos principales:
 
-\chapter{Datos y preparación experimental}
+\begin{itemize}
+    \item \textbf{\texttt{Repositorio\_Plantas}}: almacena las imágenes, su metadatos, las clases, las etiquetas dinámicas y la información asociada a experimentos y entrenamientos.
+    \item \textbf{\texttt{Usuarios}}: almacena las credenciales y los roles de los usuarios del sistema.
+\end{itemize}
+
+Dentro de \texttt{Repositorio\_Plantas}, las colecciones más relevantes son:
+
+\begin{itemize}
+    \item \texttt{Docs}: documentos de imagen con metadatos (clase, fuente, formato, usuario, estado de validación, rutas o referencias a la imagen codificada).
+    \item \texttt{Clases}: taxonomía de plantas y enfermedades utilizada en la clasificación.
+    \item \texttt{Fuente}: catálogo de orígenes de las imágenes (por ejemplo, PlantVillage, aplicación móvil o importaciones externas).
+    \item \texttt{Campos}: definición del esquema extensible de metadatos; permite asociar colecciones de etiquetas a campos personalizados.
+    \item \texttt{Entrenamientos}: solicitudes y estado de entrenamientos de modelos iniciados desde la aplicación.
+    \item Colecciones de etiquetas auxiliares (por ejemplo, formatos de imagen) referenciadas dinámicamente desde \texttt{Campos}.
+\end{itemize}
+
+\subsection{Elección de MongoDB y criterios de diseño}
+
+Foliarium persiste metadatos de imágenes con estructura \textbf{heterogénea y evolutiva}: distintas fuentes (PlantVillage, PlantDoc, App), formatos (color, grayscale, segmented), campos auxiliares configurables y filtros dinámicos en experimentos. Se eligió \textbf{MongoDB} como base de datos documental porque:
+
+\begin{itemize}
+    \item El modelo de \textbf{documentos JSON} encaja con metadatos semi-estructurados y con la serialización ya empleada en la API Flask.
+    \item La colección \texttt{Campos} (inicializada desde \texttt{src/campos.json}) permite \textbf{extender el esquema} ---nuevas etiquetas o colecciones auxiliares--- sin migraciones rígidas de tablas relacionales.
+    \item Las consultas de experimentación combinan filtros sobre varios atributos (\texttt{fuente}, \texttt{formato}, \texttt{clase}, \texttt{validada}, etc.) de forma natural sobre documentos \texttt{Docs}.
+    \item El ecosistema Python (\texttt{pymongo}) se integra de forma directa con el resto del stack del proyecto.
+\end{itemize}
+
+Entre las alternativas consideradas, un \textbf{SGBD relacional} (p. ej. PostgreSQL) resulta adecuado para usuarios y credenciales, pero más rígido para el catálogo extensible de \texttt{Campos} y para evolucionar taxonomías sin rediseñar tablas. Almacenar todas las imágenes en la base de datos (\textbf{GridFS} o blobs embebidos) simplificaría el backup lógico unificado, pero penalizaría consultas masivas y el tamaño de la base; por ello se descartó frente al diseño híbrido siguiente.
+
+Las credenciales y roles se aislaron en la base \texttt{Usuarios}, separada de \texttt{Repositorio\_Plantas}, para acotar permisos y copias de seguridad: la información de autenticación no se mezcla con el volumen creciente de documentos de imagen.
+
+\subsection{Persistencia híbrida: MongoDB y sistema de archivos}
+
+Las imágenes en sí se almacenan en el sistema de archivos del servidor (directorio \texttt{imagenes/}), mientras que en la base de datos se guardan los metadatos y, en muchos casos, la imagen codificada en base64 o la URL pública de acceso. Los modelos entrenados se guardan en \texttt{models/} y los artefactos de cada experimento (configuración, métricas, gráficos) en carpetas bajo \texttt{experiments/}. Este diseño híbrido facilita la consulta estructurada de metadatos sin sobrecargar la base de datos con ficheros binarios masivos; la función \texttt{prepare\_data\_splits} (capítulo~6) consulta MongoDB para construir los conjuntos de entrenamiento a partir de esos metadatos, independientemente de la ruta concreta en disco.
+
+\section{Consideraciones de despliegue}
+
+El sistema está pensado para ejecutarse de forma containerizada mediante Docker Compose, con servicios separados para la API y MongoDB. En el entorno de producción, un reverse proxy termina TLS y expone el servicio bajo un dominio HTTPS; los clientes Flet se conectan a esa URL pública. El detalle del despliegue ---composición de contenedores, variables de entorno, volúmenes persistentes y validación en el servidor de la universidad--- se desarrolla en el capítulo de validación y despliegue.
+
+\chapter{Implementación de Foliarium}
+
+\section{Backend Flask y endpoints principales}
+
+La API implementada en \texttt{main.py} agrupa la funcionalidad del sistema en dominios coherentes con la solución descrita en el capítulo~3. A continuación se resume la responsabilidad de los bloques principales de endpoints (la lista completa supera cincuenta rutas):
+
+\begin{itemize}
+    \item \textbf{Autenticación y usuarios}: \texttt{/registro}, \texttt{/iniciar\_sesion}, \texttt{/cambiar\_password}, \texttt{/buscar\_usuarios}, \texttt{/add\_rol}, \texttt{/eliminar\_rol}, \texttt{/eliminar\_usuario}, \texttt{/verificar\_rol}.
+    \item \textbf{Imágenes}: \texttt{/subir\_imagen}, \texttt{/eliminar\_imagen}, \texttt{/clasificar}, \texttt{/validar\_imagen}, \texttt{/imagen\_base64/<nombre>}, \texttt{/servir\_n\_archivos}, \texttt{/servir\_n\_archivos\_sin\_validar}.
+    \item \textbf{Importación masiva}: \texttt{/subida\_masiva}, \texttt{/subida\_masiva\_zip}, \texttt{/listar\_fuentes\_importadas}.
+    \item \textbf{Metadatos y taxonomía}: \texttt{/etiquetas}, \texttt{/recuperar\_etiquetas/<colección>}, \texttt{/add\_etiqueta}, \texttt{/editar\_clases}, \texttt{/add\_class}, \texttt{/opciones\_*} (plantas, enfermedades, formatos, fuentes, modelos, filtros).
+    \item \textbf{Experimentos y entrenamiento}: \texttt{/crear\_experimento}, \texttt{/obtener\_experimentos}, \texttt{/solicitar\_entrenamiento}, \texttt{/entrenar\_modelo}, \texttt{/obtener\_resultados\_experimento}, \texttt{/comparar\_experimentos}.
+    \item \textbf{Predicción}: \texttt{/predict\_image}, \texttt{/obtener\_modelos}.
+    \item \textbf{Utilidades y acceso público}: \texttt{/health}, \texttt{/}, \texttt{/download/<platform>}, \texttt{/guia-usuario}.
+\end{itemize}
+
+La lógica de negocio accede a MongoDB a través de \texttt{utils/database.py} y delega en \texttt{utils/model.py} y \texttt{utils/train.py} las operaciones de aprendizaje profundo. Los entrenamientos solicitados desde la API pueden lanzarse como subprocesos que ejecutan el script \texttt{run\_experiment.py} de la carpeta del experimento correspondiente.
+
+\section{Interfaz de usuario Flet}
+
+La aplicación \texttt{main\_app.py} implementa la interfaz gráfica con la librería Flet. Tras el inicio de sesión, el usuario accede a una de las vistas principales según el rol seleccionado:
+
+\begin{itemize}
+    \item \textbf{Vista de usuario}: subida de fotografías (desde galería en móvil), consulta de experimentos, solicitud de entrenamientos, predicción con modelos disponibles y acceso a resultados.
+    \item \textbf{Vista de etiquetador}: listado de imágenes no validadas con filtros, navegación entre documentos, asignación de etiqueta y acción de validación.
+    \item \textbf{Vista de administrador}: gestión de usuarios y roles, supervisión de entrenamientos pendientes (incluida la decisión de publicar un modelo para predicción), edición de clases y operaciones de mantenimiento del catálogo.
+\end{itemize}
+
+La aplicación permite configurar la URL del backend desde el propio cliente, lo que facilita el uso en desarrollo local, en red privada o contra el servidor \texttt{https://plantas.gti-ia.upv.es}. Se han generado builds empaquetados para Windows, Linux y Android mediante el sistema de empaquetado de Flet (\texttt{flet build}).
+
+La navegación interna se implementa con rutas (\texttt{page.route}) y una barra inferior común con acceso al inicio de cada rol. El estado de la sesión (usuario autenticado, imágenes en curso, resultados de búsqueda) se mantiene en la instancia de \texttt{LogicaApp} asociada a la ventana.
+
+\section{Flujo de autenticación y roles}
+
+El flujo de autenticación sigue estos pasos:
+
+\begin{enumerate}
+    \item El usuario introduce nombre, contraseña y rol deseado en la pantalla de inicio de sesión.
+    \item \texttt{LogicaApp} envía una petición \texttt{POST} a \texttt{/iniciar\_sesion} con las credenciales procesadas por el cliente.
+    \item Si la autenticación es correcta, la API devuelve un token JWT, la lista de roles del usuario y el rol activo.
+    \item El cliente almacena el token y lo incluye en el encabezado \texttt{Authorization} de las peticiones posteriores.
+    \item La API, mediante el hook \texttt{@app.before\_request}, rechaza peticiones no autenticadas a endpoints protegidos y comprueba que el rol del usuario autoriza la operación solicitada.
+\end{enumerate}
+
+El registro de nuevos usuarios crea una cuenta con rol \texttt{usuario} por defecto; la ampliación a \texttt{etiquetador}, \texttt{usuario+} o \texttt{admin} la realiza un administrador mediante \texttt{/add\_rol}. Las operaciones sobre credenciales propias o ajenas aplican la regla «el propio usuario o un administrador».
+
+\section{Herramientas de administración, carga y mantenimiento}
+
+Además de las funciones expuestas en la API y accesibles desde Flet, el repositorio incluye scripts en \texttt{scripts/} para operaciones de mantenimiento:
+
+\begin{itemize}
+    \item \texttt{setup\_bbdd.py}: inicialización de la base de datos y creación del usuario administrador (perfil Docker \texttt{initdb}).
+    \item \texttt{upload\_images.py} y \texttt{subir\_imagenes\_nueva\_fuente.py}: importación masiva desde carpetas bajo \texttt{data/<fuente>/}.
+    \item \texttt{process\_imported\_images.py}, \texttt{convert\_to\_grayscale.py}, \texttt{segment\_leaves.py}: generación de variantes grayscale y segmentadas.
+    \item \texttt{make\_experiment.py}: creación de la estructura de un nuevo experimento a partir de la plantilla \texttt{experiments/BASE/}.
+    \item \texttt{compare\_experiments.py}: comparación de métricas entre experimentos.
+    \item \texttt{backup\_mongo.sh}: copia de seguridad de MongoDB.
+\end{itemize}
+
+Desde la propia aplicación, el administrador puede crear copias de seguridad del catálogo de clases y restaurar configuraciones, así como editar y completar metadatos de las clases sin modificar directamente los ficheros JSON del repositorio en tiempo de ejecución.
+
+\section{Integración con modelos de predicción}
+
+La integración entre la plataforma y los modelos entrenados se articula en tres momentos:
+
+\begin{enumerate}
+    \item \textbf{Creación del experimento}: desde el cliente o mediante \texttt{/crear\_experimento}, se define un \texttt{config.yaml} con filtros de datos, hiperparámetros, estrategia de \textit{fine-tuning} y opciones de formato de imagen.
+    \item \textbf{Entrenamiento}: la API ejecuta el pipeline del experimento (consulta a MongoDB, generación de CSVs, entrenamiento con PyTorch, evaluación y guardado de resultados en \texttt{experiments/<nombre>/results/}). Un administrador puede aprobar que el modelo resultante se copie a \texttt{models/} y quede disponible para predicción.
+    \item \textbf{Inferencia}: el endpoint \texttt{/predict\_image} recibe la imagen en base64, el identificador del modelo y, opcionalmente, la planta conocida; carga los pesos, aplica las transformaciones de preprocesado y devuelve las predicciones de planta y enfermedad, restringidas a combinaciones válidas según el conjunto de entrenamiento.
+\end{enumerate}
+
+Este flujo permite que un usuario final utilice un modelo entrenado sin interactuar con los scripts de línea de comandos, mientras que el desarrollador conserva la posibilidad de lanzar experimentos y análisis desde el propio repositorio.
+
+\chapter{Datos y pipeline de preparación}
+
 \section{Fuentes de datos y organización del repositorio}
-Indicar qué datasets se usan y cómo están organizados en el repositorio.
+
+Foliarium está diseñado para trabajar con \textbf{múltiples fuentes heterogéneas} de imágenes, registradas en la colección \texttt{Fuente} de MongoDB e identificadas por un nombre de carpeta bajo \texttt{data/}. Las fuentes previstas o utilizadas en este TFG son:
+
+\begin{itemize}
+    \item \textbf{PlantVillage}: conjunto de referencia en condiciones de laboratorio; base de los experimentos iniciales. Organización en disco: \texttt{data/plantvillage/color/}, \texttt{grayscale/} y \texttt{segmented/}, con subcarpetas por clase (\texttt{Planta\_\_\_Enfermedad}).
+    \item \textbf{PlantDoc}: dataset de imágenes de campo~\cite{plantdoc2020}; fuente externa prioritaria para evaluar generalización fuera del laboratorio. Tras descarga, se normaliza con el script \texttt{scripts/prepare\_plantdoc\_import.py} (véase §~\ref{sec:normalizacion-fuentes}).
+    \item \textbf{App}: imágenes capturadas o subidas mediante Foliarium (fuente «App» en MongoDB); condiciones reales de captura colaborativa.
+    \item \textbf{Otras importaciones}: datos aportados externamente (p. ej. vid, VRAIN) u otros conjuntos de Kaggle, siempre bajo \texttt{data/<fuente>/}.
+\end{itemize}
+
+En la fase de redacción de esta memoria, los experimentos documentados combinan principalmente \textbf{PlantVillage} con integración progresiva de \textbf{PlantDoc} y, de forma exploratoria, imágenes de la \textbf{App}. Otras fuentes (PlantCLEF, IP102, Plant Pathology) son compatibles con el pipeline pero quedan como línea de trabajo futuro por la complejidad del mapeo taxonómico.
+
+Las imágenes en producción residen en el servidor (\texttt{imagenes/} y documentos en MongoDB), no en el repositorio de código, que en desarrollo puede contener solo datos de prueba.
+
+\subsection{Normalización de fuentes externas}
+\label{sec:normalizacion-fuentes}
+
+Los datasets públicos no comparten la nomenclatura \texttt{Planta\_\_\_Enfermedad} de PlantVillage. La integración en Foliarium sigue estos pasos:
+
+\begin{enumerate}
+    \item \textbf{Descarga y revisión} del dataset original (licencia, estructura de carpetas, etiquetas).
+    \item \textbf{Mapeo de clases}: tabla de correspondencia entre etiquetas del dataset externo e identificadores del catálogo \texttt{Clases} en MongoDB (p. ej. «Corn\_Gray\_leaf\_spot» en PlantDoc $\rightarrow$ \texttt{Corn\_\_\_Cercospora\_leaf\_spot\_Gray\_leaf\_spot}). Las clases no presentes en el catálogo pueden añadirse con \texttt{scripts/add\_class.py}.
+    \item \textbf{Reorganización en disco}: copia de imágenes a \texttt{data/\{fuente\}/color/\{clase\_mapeada\}/} mediante \texttt{scripts/prepare\_plantdoc\_import.py} u otro script análogo.
+    \item \textbf{Preprocesado común}: generación de \texttt{grayscale/} y \texttt{segmented/} con \texttt{scripts/process\_imported\_images.py}.
+    \item \textbf{Registro en base de datos}: subida con \texttt{scripts/upload\_images.py} o \texttt{scripts/subir\_imagenes\_nueva\_fuente.py}, creando la entrada en \texttt{Fuente} si no existe.
+    \item \textbf{Experimentos}: filtrado por fuente en \texttt{config.yaml} (\texttt{fuentes: [plantdoc]}) para entrenar y evaluar sobre subconjuntos configurables.
+\end{enumerate}
+
+Este flujo garantiza que fuentes con distinto origen compartan el mismo esquema de metadatos (\texttt{fuente}, \texttt{formato}, \texttt{clase}, \texttt{validada}) y el mismo pipeline de preprocesado, requisito para comparar formatos de imagen y combinar fuentes en un mismo experimento.
 
 \section{Taxonomía de plantas y enfermedades}
-Explicar cómo se codifican las clases y sus relaciones.
+
+La taxonomía del sistema se modela en la colección \texttt{Clases} de MongoDB. Cada documento de clase incluye, entre otros campos, la \textbf{planta}, la \textbf{clasificación} (por ejemplo «Sana» o «Enferma») y el \textbf{nombre común} de la enfermedad o estado. Este esquema permite tanto la visualización en la interfaz (formato «Planta, Clasificación, Enfermedad») como la formulación multitarea del modelo (predicción separada de planta y enfermedad).
+
+En la fase de inicialización del proyecto, el catálogo se carga a partir de ficheros JSON en \texttt{src/} (por ejemplo \texttt{clases.json}, \texttt{clases\_combinadas.json}), que reflejan la nomenclatura de PlantVillage (\texttt{Planta\_\_\_Enfermedad}). El identificador numérico de clase (\texttt{\_id}) se utiliza como referencia en los documentos de la colección \texttt{Docs}.
+
+Las etiquetas auxiliares ---fuentes, formatos y campos personalizados--- se gestionan mediante la colección \texttt{Campos}, que declara qué colección de MongoDB almacena cada tipo de etiqueta y permite extender el esquema sin modificar el código de la API.
 
 \section{Limpieza, validación e importación de imágenes}
-Describir el flujo de incorporación de imágenes a la base de datos y al almacenamiento local.
+
+\subsection{Entrada desde la aplicación}
+
+Cuando un usuario sube una imagen desde Flet, el cliente la codifica en base64 y la envía a \texttt{/subir\_imagen} junto con el identificador de clase y metadatos (\texttt{fuente}, \texttt{formato}, \texttt{usuario}). Por defecto, las imágenes capturadas desde la app se registran en color con la fuente asociada a la aplicación. El documento creado en \texttt{Docs} puede quedar inicialmente sin validar hasta que un etiquetador confirme la clase mediante \texttt{/validar\_imagen}.
+
+\subsection{Importación masiva desde disco}
+
+Para fuentes externas, el pipeline de importación espera la siguiente estructura de carpetas:
+
+\begin{verbatim}
+data/{fuente}/color/{clase}/imagen.jpg
+\end{verbatim}
+
+donde \texttt{\{clase\}} sigue la convención de nombres de PlantVillage (por ejemplo \texttt{Tomato\_\_\_Early\_blight}).
+
+El script \texttt{scripts/process\_imported\_images.py} genera, a partir de las imágenes en color, las carpetas \texttt{grayscale/} y \texttt{segmented/} invocando \texttt{convert\_to\_grayscale.py} y \texttt{segment\_leaves.py}. A continuación, \texttt{upload\_images.py} recorre las imágenes del formato indicado, las codifica y las registra en MongoDB mediante \texttt{POST /subir\_imagen}, creando la fuente en \texttt{Fuente} si no existe. El script \texttt{subir\_imagenes\_nueva\_fuente.py} automatiza el procesamiento y la subida en los tres formatos.
+
+Para evitar duplicados en importaciones interrumpidas, \texttt{upload\_images.py} mantiene registros de imágenes ya subidas por fuente y formato. La API también expone \texttt{/subida\_masiva} y \texttt{/subida\_masiva\_zip} para cargas iniciadas desde el cliente con permisos adecuados.
+
+\subsection{Validación como control de calidad}
+
+El campo \texttt{validada} en \texttt{Docs} distingue imágenes revisadas por un etiquetador. Los experimentos pueden configurarse con \texttt{solo\_validadas: true} en \texttt{config.yaml} para entrenar únicamente con documentos validados, lo que actúa como mecanismo de limpieza lógica del conjunto de entrenamiento.
 
 \section{Preprocesamientos: color, grayscale y segmentado}
 Las imágenes obtenidas mediante la aplicación móvil desarrollada en el proyecto representan condiciones de captura realistas: iluminación natural, fondos heterogéneos, presencia de sombras, variaciones en distancia y enfoque, entre otros factores. Esta variabilidad contrasta fuertemente con las condiciones controladas en las que se capturaron las imágenes del dataset PlantVillage, donde se utilizó un fondo blanco uniforme, iluminación constante y encuadres centrados. Esta diferencia introduce un \textit{domain shift} que puede afectar negativamente al rendimiento del modelo si no se tiene en cuenta durante el entrenamiento.
@@ -190,14 +820,44 @@ Este procedimiento permite generar un conjunto coherente de imágenes segmentada
 
 
 \section{División train/validation/test}
-Justificar el criterio de partición de los datos.
+
+La partición de datos para entrenamiento no se realiza de forma estática sobre disco, sino \textbf{dinámicamente} a partir de MongoDB en el momento de ejecutar un experimento. La función \texttt{prepare\_data\_splits} (\texttt{utils/data.py}) realiza los pasos siguientes:
+
+\begin{enumerate}
+    \item Filtra documentos en \texttt{Docs} según la configuración del experimento: plantas, enfermedades, fuentes, formato de imagen, variables adicionales y, opcionalmente, solo imágenes validadas.
+    \item Agrupa los documentos por identificador de clase y, si procede, limita el número de imágenes por clase (\texttt{imagenes\_por\_clase} en \texttt{config.yaml}).
+    \item Baraja aleatoriamente las imágenes de cada clase y las reparte en tres subconjuntos según las proporciones definidas en \texttt{config["split"]} (claves \texttt{train}, \texttt{val} y \texttt{test}).
+    \item Genera los ficheros \texttt{train.csv}, \texttt{val.csv} y \texttt{test.csv} en la carpeta \texttt{data/} del experimento, con columnas de ruta local, planta, enfermedad e identificador de clase.
+    \item Actualiza en memoria la lista de plantas y enfermedades efectivamente presentes y guarda la configuración resultante como \texttt{config\_final.yaml} para reproducibilidad.
+\end{enumerate}
+
+Las proporciones concretas de partición dependen de cada experimento y se leen del \texttt{config.yaml} correspondiente (la plantilla base reside en \texttt{experiments/BASE/}).
 
 \section{Balanceo de clases y control de sesgos}
-Describir las estrategias para evitar clases dominantes y resultados engañosos.
+
+El desbalanceo entre clases es un riesgo conocido en PlantVillage y resulta aún más acusado cuando se mezclan fuentes con distinto número de imágenes. El sistema aborda este problema de varias formas:
+
+\begin{itemize}
+    \item \textbf{Limitación por clase}: el parámetro \texttt{imagenes\_por\_clase} acota cuántas muestras por clase entran en el experimento, evitando que clases muy numerosas dominen el conjunto cuando se desea un estudio equilibrado.
+    \item \textbf{Filtro de validación}: \texttt{solo\_validadas} permite excluir imágenes no revisadas, reduciendo ruido de etiquetado en fuentes reales.
+    \item \textbf{Ponderación en la función de pérdida}: si \texttt{use\_class\_weights} está activo en la configuración, \texttt{utils/train.py} calcula pesos inversos a la frecuencia de cada clase de planta y de enfermedad y los aplica en las \texttt{CrossEntropyLoss} multitarea.
+    \item \textbf{Pesos manuales por tarea}: los parámetros \texttt{peso\_planta} y \texttt{peso\_enfermedad} permiten ponderar la contribución de cada cabeza del modelo en la pérdida total.
+    \item \textbf{Avisos de clases minoritarias}: durante la preparación del entrenamiento se emiten advertencias cuando una clase dispone de menos muestras que \texttt{min\_samples\_per\_class}.
+\end{itemize}
+
+La evaluación del impacto de estas medidas sobre métricas concretas se reporta en el capítulo de experimentación.
 
 \chapter{Modelo y metodología de entrenamiento}
-\section{Arquitectura multitarea basada en MobileNetV2}
-Describir la red base, las cabezas de salida y la lógica multitarea.
+
+\section{Arquitectura multitarea basada en CNN (implementación MobileNetV2)}
+
+El pipeline de entrenamiento e inferencia de Foliarium utiliza actualmente una red \textbf{multitarea} con base MobileNetV2~\cite{mobilenetv2}: una cabeza predice la planta y otra la enfermedad, coherente con el esquema de \texttt{Clases} en MongoDB. El módulo \texttt{utils/model.py} define la arquitectura; \texttt{utils/train.py} ejecuta el entrenamiento; la API carga los pesos en \texttt{/predict\_image}.
+
+\subsection{Justificación histórica y limitaciones de la elección}
+
+MobileNetV2 se seleccionó en una fase inicial del proyecto orientada a \textbf{inferencia en dispositivo móvil} (bajo coste computacional). En la arquitectura desplegada, sin embargo, la predicción se ejecuta en el \textbf{servidor UPV}: el cliente Flet envía la imagen a la API y recibe el resultado. Por tanto, la ligereza del modelo deja de ser un requisito crítico y abre la posibilidad de evaluar arquitecturas más precisas (ResNet, EfficientNet, etc.) sin cambiar el flujo cliente-servidor.
+
+\textit{[Nota para revisión con Carlos: decidir si mantener MobileNetV2 como implementación de referencia, sustituirla o documentar una comparativa breve con otra arquitectura. Ver capítulo~10, trabajo futuro.]}
 
 \section{Estrategias de fine-tuning}
 Comparar congelado parcial, fine-tuning de capas superiores y ajuste completo.
@@ -210,22 +870,6 @@ Describir el sistema de configuración por YAML y el versionado experimental.
 
 \section{Scripts de entrenamiento e inferencia}
 Resumir los scripts utilizados para entrenar, evaluar y predecir.
-
-\chapter{Implementación del sistema}
-\section{Backend Flask y endpoints principales}
-Describir los servicios expuestos por la API.
-
-\section{Interfaz de usuario Flet}
-Explicar la aplicación de escritorio/móvil y sus pantallas principales.
-
-\section{Flujo de autenticación y roles}
-Detallar el acceso y las acciones permitidas según el tipo de usuario.
-
-\section{Herramientas de administración, carga y mantenimiento}
-Recoger los scripts y utilidades para operar el sistema.
-
-\section{Integración con modelos de predicción}
-Explicar cómo se invocan y consumen los modelos entrenados.
 
 \chapter{Experimentación y resultados}
 \section{Experimentos de referencia}
@@ -247,17 +891,122 @@ Estudiar los fallos más relevantes y sus patrones.
 Interpretar los hallazgos principales y sus implicaciones.
 
 \chapter{Validación y despliegue}
-\section{Validación funcional del sistema}
-Comprobar que las funciones principales trabajan como se espera.
 
-\section{Validación del despliegue en Docker}
-Verificar el arranque, la persistencia y la operación del sistema en contenedores.
+Este capítulo aborda la \textbf{validación y puesta en producción de la plataforma} Foliarium. Conviene distinguirlo del capítulo~8: allí se evalúan los \textbf{experimentos del modelo} (métricas, comparativas de datos y formatos, generalización); aquí se documenta que el \textbf{sistema desplegado funciona} ---conexión cliente--servidor, roles, subida de imágenes, flujos administrativos--- y cómo se ha containerizado y operado en el servidor de la UPV. Al redactar esta memoria, la validación experimental del clasificador y los entrenamientos documentados en detalle estaban aún pendientes de repetir con datos actualizados (importación PlantDoc, revisión del pipeline de experimentación); las secciones correspondientes del capítulo~8 se completarán con esos resultados.
+
+\section{Validación funcional del sistema}
+
+\subsection{Alcance de la validación}
+
+La validación funcional comprueba que Foliarium cumple su cometido como plataforma integrada una vez desplegada, independientemente del rendimiento numérico del modelo en un experimento concreto. Los aspectos verificables en esta fase incluyen:
+
+\begin{itemize}
+    \item Acceso al backend en producción (\texttt{https://plantas.gti-ia.upv.es}) y endpoint de salud (\texttt{/health}).
+    \item Registro, inicio de sesión y selección de rol activo.
+    \item Subida de imágenes y registro en MongoDB con metadatos (fuente, formato, clase).
+    \item Flujo de etiquetado y validación por el rol \texttt{etiquetador}.
+    \item Operaciones de administración (usuarios, roles, clases).
+    \item Creación de experimentos y consulta de resultados (cuando existan experimentos en el servidor).
+    \item Predicción mediante \texttt{/predict\_image} con un modelo publicado (si hay modelos disponibles en \texttt{models/}).
+    \item Descarga de clientes y guía de usuario desde la landing pública.
+\end{itemize}
+
+\subsection{Pruebas realizadas hasta la fecha de redacción}
+
+El sistema está \textbf{desplegado y operativo} en el servidor de la universidad. El autor ha comprobado de forma recurrente los flujos principales ---conexión desde clientes empaquetados (Windows, Android), subida de imágenes, navegación por rol y operación contra la API de producción--- con resultado satisfactorio.
+
+Además, \textbf{varios colaboradores} (compañeros del entorno universitario) han instalado los clientes y probado el acceso al backend remoto, con comentarios positivos sobre conectividad y uso básico de la aplicación. Estas pruebas han sido \textbf{informales}, no sustituyen un plan de validación exhaustivo ni una encuesta estructurada.
+
+\textit{[Pendiente de completar: matriz de pruebas por rol con casos concretos; resultados de la encuesta prevista si se lleva a cabo; capturas o evidencias si el tutor lo solicita.]}
+
+\subsection{Limitaciones de esta validación}
+
+En el momento de redactar este borrador \textbf{no se ha documentado aún} una batería sistemática de entrenamientos ni la evaluación cuantitativa del modelo sobre conjuntos de prueba actualizados; ello corresponde al capítulo~8. Tampoco se ha realizado validación agronómica por expertos fitosanitarios. La validación funcional confirma que la plataforma es utilizable \textit{end-to-end} en producción, no que el clasificador alcance un rendimiento determinado en campo.
+
+\section{Despliegue y contenedorización con Docker}
+
+\subsection{Arquitectura Docker Compose}
+
+El despliegue del backend se realiza mediante \textbf{Docker Compose} (\texttt{docker-compose.yml}), con los servicios siguientes:
+
+\begin{itemize}
+    \item \textbf{\texttt{mongo}} (imagen \texttt{mongo:7}): base de datos MongoDB con volumen persistente \texttt{mongo\_data} y \textit{healthcheck} mediante \texttt{mongosh}.
+    \item \textbf{\texttt{api}} (imagen construida desde el \texttt{Dockerfile} del repositorio): API Flask servida con \textbf{Gunicorn} en el puerto~5001, dependiente de MongoDB en estado saludable.
+    \item \textbf{\texttt{initdb}} (perfil \texttt{init}, ejecución puntual): ejecuta \texttt{scripts/setup\_bbdd.py} para inicializar bases de datos, catálogo de clases y usuario administrador por defecto.
+\end{itemize}
+
+El contenedor \texttt{api} monta volúmenes para persistir datos fuera de la imagen: \texttt{imagenes/}, \texttt{models/}, \texttt{experiments/}, \texttt{data/}, \texttt{logs/} y \texttt{downloads/} (clientes empaquetados para la landing).
+
+\subsection{Imagen de la API (\texttt{Dockerfile})}
+
+La imagen se basa en \texttt{python:3.11-slim}, instala dependencias de sistema necesarias para OpenCV/PIL (\texttt{libgl1}, \texttt{libglib2.0-0}), copia \texttt{requirements.txt} y el código del repositorio, y arranca Gunicorn con parámetros configurables:
+
+\begin{verbatim}
+gunicorn --workers ${GUNICORN_WORKERS:-2} \
+         --timeout ${GUNICORN_TIMEOUT:-120} \
+         --bind 0.0.0.0:5001 main:app
+\end{verbatim}
+
+El \texttt{Dockerfile} indica que, en despliegue real, \textbf{TLS debe terminar en un reverse proxy} (Nginx, Caddy u equivalente) y la API corre en HTTP interno dentro de la red Docker.
+
+\subsection{Variables de entorno y comprobaciones}
+
+Entre las variables relevantes del fichero \texttt{.env} (plantilla \texttt{.env.docker.example}) figuran:
+
+\begin{itemize}
+    \item \texttt{URL\_BBDD=mongodb://mongo:27017/} --- conexión interna entre contenedores.
+    \item \texttt{PUBLIC\_API\_BASE\_URL=https://plantas.gti-ia.upv.es} --- URL pública usada al registrar rutas de imágenes en la base de datos.
+    \item \texttt{GUNICORN\_WORKERS}, \texttt{GUNICORN\_TIMEOUT}, \texttt{MAX\_IMAGE\_SIZE\_MB}.
+    \item \texttt{DOWNLOADS\_DIR} y nombres de ficheros ZIP para Windows, Linux y Android.
+\end{itemize}
+
+Tanto \texttt{mongo} como \texttt{api} definen \textit{healthchecks} periódicos; el servicio \texttt{initdb} solo arranca cuando \texttt{api} reporta estado saludable.
+
+\subsection{Operación habitual}
+
+El ciclo de despliegue documentado en \texttt{docs/DOCKER.md} comprende: \texttt{docker compose build}, \texttt{docker compose up -d}, verificación con \texttt{docker compose ps}, consulta de logs (\texttt{docker compose logs -f api}) y, en la primera puesta en marcha, \texttt{docker compose --profile init run --rm initdb} para inicializar la base de datos.
+
+\section{Despliegue en el servidor de producción}
+
+\subsection{Entorno accesible}
+
+El sistema en producción está accesible en \textbf{\texttt{https://plantas.gti-ia.upv.es}}. Los clientes Flet (Windows, Linux, Android) se configuran para apuntar a esa URL de la API; la misma máquina sirve la landing pública en la raíz del dominio.
+
+\subsection{Landing, guía y distribución de clientes}
+
+La ruta \texttt{/} de la API renderiza una \textbf{página de presentación} (\texttt{templates/landing.html}) con:
+
+\begin{itemize}
+    \item Descripción breve de Foliarium (subida de imágenes, clases, predicción).
+    \item Enlace a la \textbf{guía de usuario} en PDF (\texttt{/guia-usuario}, fichero \texttt{docs/guia\_usuario.pdf}).
+    \item Enlaces de descarga de clientes empaquetados: \texttt{/download/windows}, \texttt{/download/linux}, \texttt{/download/android}, que sirven los ZIP almacenados en \texttt{downloads/} si están disponibles en el servidor.
+\end{itemize}
+
+Esta página centraliza la distribución de la aplicación sin depender de tiendas de aplicaciones (Google Play queda como línea futura, capítulo~10).
+
+\subsection{Clientes y conexión}
+
+Los usuarios finales instalan el cliente correspondiente a su plataforma, configuran (o aceptan por defecto) la URL del backend de producción e inician sesión con las credenciales registradas. Las operaciones de captura, subida y predicción se realizan contra el backend remoto; no es necesario ejecutar la API en la máquina del usuario.
+
+\textit{[Pendiente de completar: detalle del reverse proxy o certificado TLS en la VM de la UPV si el tutor pide explicitarlo; capturas de la landing y de la app conectada a producción.]}
 
 \section{Reproducibilidad de los experimentos}
-Asegurar que las ejecuciones pueden repetirse con la misma configuración.
 
-\section{\textit{Duda}: evidencias de colaboración externa o validación por terceros}
-Sección opcional si finalmente se documentan revisiones externas o validación adicional.
+A nivel de \textbf{infraestructura}, la reproducibilidad queda apoyada en:
+
+\begin{itemize}
+    \item Imagen Docker versionada a partir del repositorio y \texttt{requirements.txt}.
+    \item Volúmenes persistentes para \texttt{experiments/} y \texttt{models/} en el servidor.
+    \item Scripts de importación y entrenamiento compartidos entre entorno local y contenedor.
+\end{itemize}
+
+A nivel de \textbf{contenido experimental} (configuraciones concretas, métricas y gráficos), la reproducibilidad se documentará en el capítulo~8 a partir de las carpetas \texttt{experiments/<nombre>/} con su \texttt{config.yaml} y \texttt{run\_experiment.py}, una vez repetidos los entrenamientos con los datos definitivos.
+
+\section{Pruebas con usuarios externos}
+
+Varios conocidos del entorno universitario han probado la aplicación instalada contra el servidor de producción, confirmando que la conexión remota y los flujos básicos son utilizables. No se ha recopilado aún una encuesta formal ni métricas de satisfacción.
+
+\textit{[Pendiente de completar: listado de probadores (si procede anonimizado), encuesta informáticos vs. no informáticos, incidencias reportadas.]}
 
 \chapter{Conclusiones y trabajo futuro}
 \section{Conclusiones}
@@ -267,19 +1016,69 @@ Sintetizar las aportaciones y aprendizajes principales.
 Reconocer las restricciones del sistema y del estudio experimental.
 
 \section{Trabajo futuro}
-Proponer extensiones técnicas y funcionales.
 
-\backmatter
-\begin{thebibliography}{10}
+Entre las extensiones previstas a corto plazo destacan:
+
+\begin{itemize}
+    \item \textbf{Integración de nuevas fuentes de datos}: PlantCLEF, IP102, Plant Pathology (Kaggle) y otros conjuntos públicos, completando el mapeo taxonómico y ampliando experimentos multi-fuente.
+    \item \textbf{Evaluación de arquitecturas alternativas}: comparativa sistemática de MobileNetV2 frente a EfficientNet, ResNet u otros backbones sobre los mismos subconjuntos definidos en \texttt{config.yaml}, aprovechando que la inferencia ya está centralizada en el servidor.
+    \item \textbf{Validación agronómica en campo}: colaboración con perfiles agrónomos para ampliar y validar imágenes de la fuente «App».
+    \item \textbf{Distribución ampliada}: publicación en Google Play, cliente iOS y mejoras de accesibilidad web.
+\end{itemize}
+
+% No usar \backmatter aquí: en tfgetsinf rompe la numeración de apéndices (A, B, C…).
+% Véase plantillatfg.tex / tfgexmpl.tex: bibliografía y \APPENDIX sin \backmatter.
+\begin{thebibliography}{99}
 \bibitem{mohanty2016}
 S. P. Mohanty, D. P. Hughes y M. Salathé.
 \newblock Using deep learning for image-based plant disease detection.
-\newblock \textit{Frontiers in Plant Science}, 2016.
+\newblock \textit{Frontiers in Plant Science}, 7:1419, 2016.
 
 \bibitem{mobilenetv2}
-M. Sandler et al.
+M. Sandler, A. Howard, M. Zhu, A. Zhmoginov y L.-C. Chen.
 \newblock MobileNetV2: Inverted Residuals and Linear Bottlenecks.
-\newblock \textit{CVPR}, 2018.
+\newblock \textit{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2018.
+
+\bibitem{plantdoc2020}
+D. Singh, N. Singh, A. Kaur, L. J. G. Villalba, L. O. P. Pascual, J. Kim y K.-S. Choi.
+\newblock PlantDoc: A Dataset for Visual Plant Disease Detection.
+\newblock \textit{Proceedings of the 7th ACM IKDD CoDS and 25th COMAD}, 2020.
+
+\bibitem{plantclef2022}
+H. Goëau, P. Bonnet, M. J. M. Y. Joly, W. Joly, C. Selmi, I. Molino, P. Carré, E. Mouysset, J.-C. Melet, C. Lamour, J. Champ, A. Affouard, J.-F. Molino, D. Barthélémy, N. Boujemaa, E. Moulin, D. Story, H. G. Mac Seóighe, A. Hanbury, H. Glotin, F. Champagnat, M. Dufour-Kowalski, S. Joly, A. Baffou, H. de Solan, T. Laga, A. Chouaki, A. Boukhers, Z. Akata, I. Naamani y A. Joly.
+\newblock Overview of PlantCLEF 2022: image-based plant identification in the wild.
+\newblock \textit{CLEF 2022 Working Notes}, 2022.
+
+\bibitem{ip1022019}
+X. Wu, C. Zhan, L. Luo, Y. Zhang, L. Yang, J. Wu y Y. Wang.
+\newblock IP102: A Large-Scale Benchmark Dataset for Insect Pest Recognition.
+\newblock \textit{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2019.
+
+\bibitem{plantpathology2020}
+A. Too, D. S. Weaver y B. M. Wong.
+\newblock Using Deep Learning for Image-Based Plant Disease Detection.
+\newblock Plant Pathology 2020 --- FGVC7 Workshop at CVPR (Kaggle competition), 2020.
+
+\bibitem{ferentinos2018}
+K. P. Ferentinos.
+\newblock Deep learning models for plant disease detection and diagnosis.
+\newblock \textit{Computers and Electronics in Agriculture}, 145:311--318, 2018.
+
+\bibitem{sladojevic2016}
+S. Sladojevic, M. Arsenovic, A. Anderla, D. Culibrk y D. Stefanovic.
+\newblock Deep neural networks based recognition of plant diseases by leaf image classification.
+\newblock \textit{Computational Intelligence and Neuroscience}, 2016.
+
+\bibitem{upv_cosass}
+Universitat Politècnica de València.
+\newblock Investigadores de la UPV desarrollan un gemelo digital para incorporar la IA a zonas rurales de la España vaciada (proyecto COSASS).
+\newblock Noticia UPV, 2023.
+\newblock \url{https://www.upv.es/noticias-upv/noticia-14364-proyecto-cosas-es.html}
+
+\bibitem{upv_caplanet}
+Universitat Politècnica de València.
+\newblock Cátedra de Cooperación y Desarrollo Sostenible-Eje Planeta.
+\newblock \url{https://www.upv.es/contenidos/CAPLANET/}
 
 \end{thebibliography}
 \cleardoublepage
@@ -306,6 +1105,49 @@ Incluir extractos útiles de los módulos más importantes.
 ??????
 \section{Material de apoyo}
 Añadir material de apoyo que no conviene llevar al cuerpo principal.
+
+\chapter{Requisitos del sistema (referencia)}
+\label{ap:requisitos}
+
+Este apéndice recoge el listado detallado de requisitos funcionales y no funcionales derivados de los escenarios de uso de Foliarium. No forma parte del hilo principal del capítulo~3 (análisis del problema y solución elegida), pero sirve como referencia para la implementación (capítulos~4--5) y la validación (capítulo~9).
+
+\section{Requisitos funcionales}
+
+\begin{itemize}
+    \item \textbf{RF-01 Autenticación}: registro e inicio de sesión de usuarios con selección de rol activo.
+    \item \textbf{RF-02 Subida de imágenes}: registro de imágenes en MongoDB con clase, fuente, formato, usuario y estado de validación.
+    \item \textbf{RF-03 Consulta y filtrado}: recuperación paginada de documentos de imagen con filtros por metadatos (clase, fuente, formato, validación, etc.).
+    \item \textbf{RF-04 Etiquetado y validación}: clasificación manual de imágenes pendientes y marcado explícito como validadas.
+    \item \textbf{RF-05 Gestión de taxonomía}: consulta, edición y ampliación del catálogo de clases (plantas y enfermedades) y de etiquetas auxiliares (fuentes, formatos, campos personalizados).
+    \item \textbf{RF-06 Subida masiva}: incorporación de lotes de imágenes desde el cliente o mediante endpoints y scripts de importación.
+    \item \textbf{RF-07 Experimentos}: creación de carpetas de experimento con \texttt{config.yaml}, generación de particiones train/validation/test desde la base de datos y ejecución de entrenamiento.
+    \item \textbf{RF-08 Resultados}: consulta de métricas, gráficos y comparación entre experimentos.
+    \item \textbf{RF-09 Predicción}: inferencia sobre una imagen con un modelo seleccionado, devolviendo predicciones de planta y enfermedad coherentes con las clases vistas en entrenamiento.
+    \item \textbf{RF-10 Administración de usuarios}: búsqueda, modificación de credenciales y gestión de roles (solo administrador).
+    \item \textbf{RF-11 Configuración de conexión}: posibilidad de indicar la URL del backend desde el cliente para operar en local o en producción.
+    \item \textbf{RF-12 Landing y distribución}: página pública en la raíz del servidor con enlaces de descarga de clientes y guía de usuario.
+\end{itemize}
+
+\section{Requisitos no funcionales}
+
+\begin{itemize}
+    \item \textbf{RNF-01 Seguridad}: autenticación basada en JWT para endpoints sensibles; contraseñas almacenadas con hash bcrypt en el servidor; limitación de intentos en login y registro; validación de tipo y tamaño de ficheros subidos.
+    \item \textbf{RNF-02 Disponibilidad}: despliegue persistente del backend en servidor dedicado, con contenedores Docker y comprobaciones de salud (\texttt{/health}).
+    \item \textbf{RNF-03 Escalabilidad de datos}: separación entre metadatos en MongoDB y ficheros en disco; esquema extensible de campos mediante la colección \texttt{Campos}.
+    \item \textbf{RNF-04 Multiplataforma}: clientes Flet para Windows, Linux y Android empaquetados e instalables de forma independiente.
+    \item \textbf{RNF-05 Reproducibilidad}: experimentos versionados por carpeta con configuración YAML y artefactos de salida en \texttt{experiments/}.
+    \item \textbf{RNF-06 Mantenibilidad}: scripts auxiliares para inicialización de base de datos, importación masiva y operaciones de mantenimiento sin depender exclusivamente de la interfaz gráfica.
+    \item \textbf{RNF-07 Usabilidad}: interfaz por rol con flujos diferenciados para captura, etiquetado y administración; posibilidad de ampliar y descargar imágenes desde el cliente.
+\end{itemize}
+
+\section{Roles de usuario}
+
+\begin{itemize}
+    \item \textbf{Usuario (\texttt{usuario})}: subida individual, experimentos, predicción.
+    \item \textbf{Usuario ampliado (\texttt{usuario+})}: subida masiva desde el cliente.
+    \item \textbf{Etiquetador (\texttt{etiquetador})}: revisión y validación de imágenes pendientes.
+    \item \textbf{Administrador (\texttt{admin})}: gestión de usuarios, roles, clases, entrenamientos y modelos publicados.
+\end{itemize}
 
 
 \end{document}

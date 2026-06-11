@@ -21,23 +21,13 @@ Leyenda de criticidad
 SEGURIDAD Y AUTENTICACIÓN
 -------------------------
 
-1. Hash de contraseñas incompleto o híbrido
-   Descripción: el cliente (logicav3.py) aplica un hash casero con sal fija "HOLAAAA"
-   antes de enviar la contraseña. El servidor aplica bcrypt sobre ese valor recibido,
-   no sobre la contraseña en texto plano. Funciona si el flujo es coherente en registro
-   y login, pero no es un esquema estándar y puede generar confusión en la defensa.
-   Criticidad: [ALTO]
-   Antes de la entrega: SÍ, conviene revisar que registro, login y cambio de contraseña
-   funcionen de extremo a extremo en el servidor de producción. Si el esquema actual es
-   intencional, documentarlo en la memoria (cap. implementación / seguridad). Si quedó a
-   medias por olvido, unificar (p. ej. enviar contraseña por HTTPS y hashear solo en servidor).
-
-2. JWT_SECRET con valor por defecto en código
-   Descripción: main.py y setup_bbdd.py usan "CHANGE_ME_IN_PRODUCTION" si no hay .env.
-   Criticidad: [BAJO] en producción (ya configurado en el servidor de la universidad).
-   Antes de la entrega: NO es urgente si producción ya tiene JWT_SECRET en .env. Sí
-   comprobar que el .env.docker.example o la documentación adviertan de no desplegar sin
-   cambiarlo (solo por si alguien clona y levanta sin leer).
+1. Hash de contraseñas (esquema estándar)
+   Descripción: el cliente envía la contraseña en texto plano por HTTPS; el servidor
+   aplica bcrypt en registro, login y cambio de contraseña (`utils/auth.py`). Se eliminó
+   el pre-hash casero con sal fija "HOLAAAA" del cliente.
+   Criticidad: [RESUELTO]
+   Nota: usuarios creados con el esquema anterior deben volver a registrarse (o resetear
+   contraseña vía admin) tras desplegar clientes/scripts actualizados.
 
 3. verify=False en peticiones HTTP del cliente
    Descripción: logicav3.py y partes de main_app.py desactivan verificación SSL.
@@ -55,13 +45,6 @@ SEGURIDAD Y AUTENTICACIÓN
    Criticidad: [MEDIO]
    Antes de la entrega: NO obligatorio corregir. SÍ mencionar en memoria como limitación
    conocida o decisión de diseño para compatibilidad con Flet/móvil.
-
-5. Imágenes y datos sensibles en repositorio
-   Descripción: .gitignore cubre ssl_certs, .env, backups, etc. Correcto.
-   Criticidad: [BAJO] si se mantiene la disciplina actual.
-   Antes de la entrega: NO requiere cambio de código. Revisar una vez que no se suba
-   nada sensible por error antes de entregar el repo al tribunal.
-
 
 ARQUITECTURA Y CÓDIGO
 ---------------------
@@ -87,55 +70,6 @@ ARQUITECTURA Y CÓDIGO
    un apartado de validación manual (por rol, subida, etiquetado, predicción, Docker)
    con los pasos que ya habéis hecho en servidor.
 
-9. Dependencia requirements.txt
-   Descripción: el Dockerfile referencia requirements.txt; verificar que exista y esté
-   actualizado en el repo que se entrega o en el que se despliega.
-   Criticidad: [ALTO] si falta o está desactualizado (Docker no construye).
-   Antes de la entrega: SÍ, comprobar que el despliegue en servidor se reproduce con
-   pip install -r requirements.txt o docker compose build sin sorpresas.
-
-
-DATOS Y EXPERIMENTACIÓN
------------------------
-
-10. Pocos datos reales
-    Descripción: volumen limitado de imágenes en condiciones de campo.
-    Criticidad: [N/A] — fuera de control del autor.
-    Antes de la entrega: NO requiere acción técnica. SÍ reflejar en memoria como
-    limitación explícita y enfoque del TFG (plataforma + experimentación exploratoria).
-
-11. Carpetas ignoradas vacías o con datos de prueba en local
-    Descripción: data/, imagenes/, experiments/, models/ no van al repo; en producción
-    se regeneran con el uso normal de la app.
-    Criticidad: [N/A] — comportamiento esperado.
-    Antes de la entrega: NO cambiar el enfoque. SÍ dejar en memoria/apéndices cómo
-    inicializar el sistema (setup_bbdd, docker compose --profile init, primer uso).
-
-
-DOCUMENTACIÓN Y MEMORIA
------------------------
-
-12. Nombre del proyecto: Foliarium (opcional énfasis FolIArium en memoria)
-    Descripción: código y README usan Foliarium; borradores antiguos usaban PlantAID.
-    Criticidad: [BAJO] en código; [MEDIO] en memoria final.
-    Antes de la entrega: NO tocar READMEs (decisión del autor). SÍ usar Foliarium de
-    forma consistente en estructura_memoria_tfg.tex al redactar.
-
-13. main.tex obsoleto e incompleto
-    Descripción: era almacén provisional de explicaciones; describe arquitectura antigua
-    (FastAPI + Flask separados), rutas de scripts incorrectas, sección de documentación
-    desactualizada.
-    Criticidad: [N/A] como problema del producto — solo afecta si se usara como memoria final.
-    Antes de la entrega: NO actualizar main.tex. Trabajar solo en estructura_memoria_tfg.tex
-    (formato tfgetsinf oficial). Reciclar párrafos de main.tex con cuidado y contrastando
-    con el estado actual del repositorio/servidor.
-
-14. docs/estructura_memoria_tfg.tex vs memoria/estructura_memoria_tfg.tex
-    Descripción: puede haber dos copias del esqueleto; la de trabajo debería ser la de
-    memoria/ (gitignored) o una única fuente de verdad acordada.
-    Criticidad: [BAJO]
-    Antes de la entrega: decidir qué carpeta es la maestra para no editar dos veces.
-
 
 OPERACIÓN Y DESPLIEGUE (PRODUCCIÓN UNIVERSITARIA)
 -------------------------------------------------
@@ -146,33 +80,19 @@ OPERACIÓN Y DESPLIEGUE (PRODUCCIÓN UNIVERSITARIA)
     Antes de la entrega: NO obligatorio automatizar. Opcional mencionar en memoria o
     anexo de despliegue.
 
-16. TLS: Gunicorn HTTP interno + proxy inverso
-    Descripción: diseño correcto para producción; en local se usa HTTPS con certs
-    autofirmados (run_server.py).
-    Criticidad: [N/A] — ya contemplado.
-    Antes de la entrega: describir en memoria el despliegue real del servidor UPV.
-
 
 RESUMEN: QUÉ SÍ RESOLVER O VERIFICAR ANTES DE LA ENTREGA
 ---------------------------------------------------------
   Obligatorio / muy recomendable:
-    - [1] Revisar flujo de autenticación (hash) en producción y documentarlo.
-    - [9] Verificar requirements.txt y despliegue reproducible en servidor. HECHO
     - [3] Valorar quitar o condicionar verify=False en cliente de producción.
-    - Redactar estructura_memoria_tfg.tex (no main.tex) con arquitectura ACTUAL.
 
   Documentar en memoria sin obligación de refactor:
     - [4] Token en query string.
     - [7] Entrenamiento vía API vs scripts.
     - [8] Validación manual (sin tests automatizados).
-    - [10] Limitación de datos reales.
-    - [11] Inicialización de carpetas y BBDD en producción.
-    - [16] Despliegue Docker + servidor universitario. HECHO
 
   Posponer explícitamente (acordado):
     - [6] Refactor de monolitos.
-    - [12] Cambios en READMEs del repo.
-    - [13] Actualización de main.tex.
 
 
 MEMORIA — ESTADO ACORDADO

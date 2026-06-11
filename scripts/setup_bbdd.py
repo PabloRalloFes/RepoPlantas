@@ -35,17 +35,6 @@ def _auth_headers(token: str):
     return {"Authorization": f"Bearer {token}"}
 
 
-def _app_password_hash(usuario: str, password: str) -> str:
-    """Replica el hash cliente que usa `logicav3.hash_func` para login/registro."""
-    cadena = usuario + "HOLAAAA" + password
-    hash_res = ""
-    for i in range(len(cadena)):
-        c = ord(cadena[i]) * (i + 1) * (i + 1)
-        hash_res += str(c)
-    hash_res = hash_res.zfill(20)
-    return hash_res[-20:]
-
-
 def _ensure_collection(db, collection_name: str):
     if collection_name not in db.list_collection_names():
         db.create_collection(collection_name)
@@ -61,13 +50,12 @@ def _json_or_text(response):
 def _bootstrap_admin_user():
     admin_name = "admin"
     admin_password = "admin"
-    admin_password_hashed = _app_password_hash(admin_name, admin_password)
 
     try:
         print("STEP registro ->", f"{URL}/registro")
         registro = _post(
             f"{URL}/registro",
-            json={"nombre": admin_name, "password": admin_password_hashed},
+            json={"nombre": admin_name, "password": admin_password},
         )
         print("registro status:", registro.status_code, _json_or_text(registro))
     except Exception as e:
@@ -100,14 +88,13 @@ def _bootstrap_admin_user():
         return None
 
     try:
-        # Si el usuario ya existía con una contraseña creada con el flujo anterior,
-        # lo migramos al formato que espera la app de escritorio.
+        # Asegura admin con bcrypt estándar (p. ej. tras migrar desde el esquema antiguo).
         db_auth = connect_to_database(db_name=DB_USERS)
         col_usuarios = db_auth["usuarios"]
         col_usuarios.update_one(
             {"nombre": admin_name},
             {
-                "$set": {"password": hash_password(admin_password_hashed)},
+                "$set": {"password": hash_password(admin_password)},
                 "$addToSet": {"rol": {"$each": ["usuario", "admin"]}},
             },
             upsert=True,
@@ -119,7 +106,7 @@ def _bootstrap_admin_user():
         print("STEP login ->", f"{URL}/iniciar_sesion")
         login = _post(
             f"{URL}/iniciar_sesion",
-            json={"nombre": admin_name, "password": admin_password_hashed, "rol": "admin"},
+            json={"nombre": admin_name, "password": admin_password, "rol": "admin"},
         )
         login_data = _json_or_text(login)
         print("login status:", login.status_code, login_data)
