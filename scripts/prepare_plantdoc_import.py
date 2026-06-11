@@ -1,10 +1,10 @@
 """
 Reorganiza el dataset PlantDoc al layout de Foliarium:
-  data/plantdoc/color/{Planta___Enfermedad}/imagen.jpg
+  data/PlantDoc/color/{Planta___Enfermedad}/imagen.jpg
 
 Uso:
-  python scripts/prepare_plantdoc_import.py --input /ruta/a/PlantDoc --output data/plantdoc
-  python scripts/subir_imagenes_nueva_fuente.py --fuente plantdoc --validada
+  python scripts/prepare_plantdoc_import.py --input /ruta/a/PlantDoc --output data/PlantDoc
+  python scripts/subir_imagenes_nueva_fuente.py --fuente PlantDoc --validada
 
 Descarga PlantDoc: https://github.com/pratikkayal/PlantDoc-Dataset
 Referencia: Singh et al., PlantDoc, CoDS-COMAD 2020.
@@ -103,13 +103,13 @@ def main():
     parser.add_argument(
         "--output",
         default=None,
-        help="Carpeta destino (default: data/plantdoc respecto a la raíz del repo)",
+        help="Carpeta destino (default: data/PlantDoc respecto a la raíz del repo)",
     )
     parser.add_argument("--dry-run", action="store_true", help="Solo mostrar operaciones")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parent.parent
-    output = Path(args.output) if args.output else root / "data" / "plantdoc"
+    output = Path(args.output) if args.output else root / "data" / "PlantDoc"
     input_dir = Path(args.input)
 
     if not input_dir.is_dir():
@@ -124,8 +124,8 @@ def main():
         print(f"Carpetas omitidas (sin clase destino): {stats['skipped_class']}")
     if not args.dry_run and stats["copied"] > 0:
         print("\nSiguiente paso:")
-        print("  python scripts/process_imported_images.py --fuente plantdoc")
-        print("  python scripts/subir_imagenes_nueva_fuente.py --fuente plantdoc --validada")
+        print("  python scripts/process_imported_images.py --fuente PlantDoc")
+        print("  python scripts/subir_imagenes_nueva_fuente.py --fuente PlantDoc --validada")
 
 
 if __name__ == "__main__":
