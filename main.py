@@ -15,6 +15,7 @@ import zipfile
 from utils.model import build_model
 from utils.database import load_yaml_config, connect_to_database
 from utils.auth import hash_password, check_password
+from utils.dataset_zip import normalize_extracted_dataset
 from torchvision import transforms
 from PIL import Image
 import torch
@@ -908,81 +909,12 @@ def subida_masiva_zip():
             with zipfile.ZipFile(zip_file, 'r') as zip_ref:
                 zip_ref.extractall(dest_dir)
 
-            # Detectar base de clases válida:
-            # 1) data/<fuente>/color/<Planta___Enfermedad>/...
-            # 2) data/<fuente>/<Planta___Enfermedad>/...
-            # 3) con carpeta contenedora adicional en el ZIP
-            color_path = os.path.join(dest_dir, "color")
-            candidate_base = None
-
-            if os.path.isdir(color_path):
-                candidate_base = color_path
-            else:
-                root_dirs = [d for d in os.listdir(dest_dir) if os.path.isdir(os.path.join(dest_dir, d)) and d != "__MACOSX"]
-                root_class_dirs = [d for d in root_dirs if "___" in d]
-
-                if root_class_dirs:
-                    candidate_base = dest_dir
-                elif len(root_dirs) == 1:
-                    wrapper_dir = os.path.join(dest_dir, root_dirs[0])
-                    wrapper_color = os.path.join(wrapper_dir, "color")
-                    if os.path.isdir(wrapper_color):
-                        candidate_base = wrapper_color
-                    else:
-                        wrapper_dirs = [d for d in os.listdir(wrapper_dir) if os.path.isdir(os.path.join(wrapper_dir, d)) and d != "__MACOSX"]
-                        wrapper_class_dirs = [d for d in wrapper_dirs if "___" in d]
-                        if wrapper_class_dirs:
-                            candidate_base = wrapper_dir
-
-            if not candidate_base:
+            ok, result = normalize_extracted_dataset(dest_dir)
+            if not ok:
                 shutil.rmtree(dest_dir, ignore_errors=True)
-                return jsonify({
-                    "success": False,
-                    "error": "Estructura inválida. El ZIP debe contener carpetas 'Planta___Enfermedad' (directamente o dentro de 'color/')."
-                }), 400
+                return jsonify({"success": False, "error": result}), 400
 
-            # Validar carpetas Planta___Enfermedad con imágenes
-            subdirs = [d for d in os.listdir(candidate_base) if os.path.isdir(os.path.join(candidate_base, d))]
-            valid_class_dirs = []
-            for subdir in subdirs:
-                if "___" not in subdir:
-                    continue
-                subdir_path = os.path.join(candidate_base, subdir)
-                contains_images = False
-                for _, _, files in os.walk(subdir_path):
-                    if any(f.lower().endswith((".jpg", ".jpeg", ".png")) for f in files):
-                        contains_images = True
-                        break
-                if contains_images:
-                    valid_class_dirs.append(subdir)
-
-            if not valid_class_dirs:
-                shutil.rmtree(dest_dir, ignore_errors=True)
-                return jsonify({
-                    "success": False,
-                    "error": "No se encontraron carpetas válidas 'Planta___Enfermedad' con imágenes .jpg/.jpeg/.png."
-                }), 400
-
-            # Normalizar siempre a data/<fuente>/color/<Planta___Enfermedad>/...
-            final_color_path = os.path.join(dest_dir, "color")
-            os.makedirs(final_color_path, exist_ok=True)
-            if candidate_base != final_color_path:
-                for class_dir in valid_class_dirs:
-                    src = os.path.join(candidate_base, class_dir)
-                    dst = os.path.join(final_color_path, class_dir)
-                    if os.path.exists(dst):
-                        shutil.rmtree(dest_dir, ignore_errors=True)
-                        return jsonify({
-                            "success": False,
-                            "error": f"Conflicto al normalizar estructura: la carpeta '{class_dir}' ya existe en color/."
-                        }), 400
-                    shutil.move(src, dst)
-
-                # El ZIP ya fue normalizado; eliminar la carpeta temporal que lo envolvía.
-                cleanup_path = candidate_base if candidate_base == dest_dir else os.path.dirname(candidate_base)
-                if cleanup_path and os.path.isdir(cleanup_path):
-                    shutil.rmtree(cleanup_path, ignore_errors=True)
-            
+            class_count = result
             # Guardar backup del ZIP en logs/zips/
             zips_backup_dir = os.path.join(ROOT, "logs", "zips")
             os.makedirs(zips_backup_dir, exist_ok=True)
@@ -994,7 +926,10 @@ def subida_masiva_zip():
             
             return jsonify({
                 "success": True,
-                "message": f"ZIP descomprimido correctamente en 'data/{nombre_fuente}/'. Backup guardado en '{backup_zip_path}'."
+                "message": (
+                    f"ZIP descomprimido correctamente en 'data/{nombre_fuente}/color/' "
+                    f"({class_count} clases). Backup guardado en '{backup_zip_path}'."
+                ),
             })
         
         except zipfile.BadZipFile:
