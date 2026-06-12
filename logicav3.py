@@ -626,7 +626,7 @@ class LogicaApp:
         base64_image = base64.b64encode(img).decode("utf-8")
         self.foto_b64 = base64_image
 
-    def subir_foto(self, id_etiqueta, fuente=2, formato=0): # Por defecto fuente App, formato Color
+    def subir_foto(self, id_etiqueta, fuente=0, formato=0): # Por defecto fuente App, formato Color
         if id_etiqueta == None:
             for etiqueta in self.recuperar_etiquetas():
                 if etiqueta["clasificacion"] == "Sin_clasificar":
