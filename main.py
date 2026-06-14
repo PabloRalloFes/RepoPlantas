@@ -13,7 +13,7 @@ from io import BytesIO
 import uuid
 import zipfile
 from utils.model import build_model
-from utils.database import load_yaml_config, connect_to_database
+from utils.database import load_yaml_config, connect_to_database, DEFAULT_DB_NAME, DEFAULT_DB_USERS
 from utils.auth import hash_password, check_password
 from utils.dataset_zip import normalize_extracted_dataset
 from torchvision import transforms
@@ -59,8 +59,8 @@ def _env_json(name, default):
         return default
 
 
-DB_NAME = os.getenv("DB_NAME", "Repositorio_Plantas")
-DB_USERS = os.getenv("DB_USERS", "Usuarios")
+DB_NAME = os.getenv("DB_NAME", DEFAULT_DB_NAME)
+DB_USERS = os.getenv("DB_USERS", DEFAULT_DB_USERS)
 
 app = Flask(__name__)
 db = connect_to_database(db_name=DB_NAME)

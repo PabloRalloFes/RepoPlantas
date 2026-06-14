@@ -5,6 +5,9 @@ import dotenv
 
 dotenv.load_dotenv()
 
+DEFAULT_DB_NAME = "Plantas"
+DEFAULT_DB_USERS = "Usuarios"
+
 
 def _running_inside_docker() -> bool:
     """Detecta si el proceso se ejecuta dentro de un contenedor Docker."""
@@ -23,10 +26,12 @@ def _normalize_local_mongo_uri(uri: str) -> str:
 
     return uri
 
-def connect_to_database(uri=None, db_name="Repositorio_Plantas"):
+def connect_to_database(uri=None, db_name=None):
     """Conecta a MongoDB y devuelve la instancia de base de datos."""
     if uri is None:
         uri = os.getenv("URL_BBDD", "mongodb://localhost:27017/")
+    if db_name is None:
+        db_name = os.getenv("DB_NAME", DEFAULT_DB_NAME)
     uri = _normalize_local_mongo_uri(uri)
     client = MongoClient(uri)
     return client[db_name]

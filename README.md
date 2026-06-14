@@ -67,7 +67,7 @@ El flujo de funcionamiento es el siguiente:
 3. La app se comunica vía JSON/HTTP (`httpx`) con la **API Flask** (`main.py`).
 4. La **API Flask** gestiona la **Base de datos MongoDB**:
   - `appPlantas` (usuarios)
-  - `Repositorio_Plantas` (imágenes)
+  - `Plantas` (imágenes)
 5. El módulo experimental (CNN) utiliza los datos para:
   - Entrenamiento MobileNetV2
   - Uso del dataset PlantVillage

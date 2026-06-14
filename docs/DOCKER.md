@@ -135,7 +135,8 @@ docker compose down --volumes
 
 ## 💾 Backup y Restore
 
-Foliarium usa dos bases en MongoDB: `Repositorio_Plantas` (datos) y `Usuarios` (credenciales).
+Foliarium usa dos bases en MongoDB: `Plantas` (datos de imágenes) y `Usuarios` (credenciales).
+El nombre de la base de imágenes se configura con `DB_NAME` en `.env` (por defecto `Plantas`).
 El script `scripts/backup_mongo.sh` vuelca ambas.
 
 ### Crear backup manual
@@ -144,7 +145,7 @@ Desde el directorio del proyecto, con el stack levantado:
 
 ```bash
 sh scripts/backup_mongo.sh
-# Crea: backups/mongo/<timestamp>/Repositorio_Plantas.archive
+# Crea: backups/mongo/<timestamp>/Plantas.archive
 #       backups/mongo/<timestamp>/Usuarios.archive
 ```
 
@@ -180,12 +181,12 @@ Ejecuta también un backup manual **antes** de importaciones masivas o cambios d
 
 ```bash
 # Copiar archivo al contenedor
-docker cp backups/mongo/<timestamp>/Repositorio_Plantas.archive plantas-mongo:/tmp/
+docker cp backups/mongo/<timestamp>/Plantas.archive plantas-mongo:/tmp/
 docker cp backups/mongo/<timestamp>/Usuarios.archive plantas-mongo:/tmp/
 
 # Restaurar (repetir por cada base)
 docker exec plantas-mongo sh -c \
-  "mongorestore --drop --db Repositorio_Plantas --archive=/tmp/Repositorio_Plantas.archive"
+  "mongorestore --drop --db Plantas --archive=/tmp/Plantas.archive"
 docker exec plantas-mongo sh -c \
   "mongorestore --drop --db Usuarios --archive=/tmp/Usuarios.archive"
 ```

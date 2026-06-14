@@ -1,7 +1,6 @@
 import json
 import os
 import argparse
-from pymongo import MongoClient
 import sys
 from pathlib import Path
 
@@ -14,7 +13,9 @@ except Exception:
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-DB_NAME = "Repositorio_Plantas"
+from utils.database import connect_to_database, DEFAULT_DB_NAME
+
+DB_NAME = os.getenv("DB_NAME", DEFAULT_DB_NAME)
 CLASE_COLECCION = "Clases"
 
 COMBINADAS_PATH = os.path.join(ROOT, "src", "clases_combinadas.json")
@@ -28,8 +29,7 @@ nombre_clase = args.nombre_clase
 planta, nombre_comun = nombre_clase.split("___", 1)
 
 # Conectar a Mongo
-client = MongoClient("mongodb://localhost:27017/")
-db = client[DB_NAME]
+db = connect_to_database(db_name=DB_NAME)
 coleccion = db[CLASE_COLECCION]
 
 # Cargar archivos

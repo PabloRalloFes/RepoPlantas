@@ -11,7 +11,7 @@ from datetime import datetime
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
-from utils.database import connect_to_database
+from utils.database import connect_to_database, DEFAULT_DB_NAME, DEFAULT_DB_USERS
 from utils.auth import hash_password
 
 load_dotenv()
@@ -19,8 +19,8 @@ load_dotenv()
 URL = os.getenv("URL_API")
 JWT_SECRET = os.getenv("JWT_SECRET", "CHANGE_ME_IN_PRODUCTION")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-DB_NAME = os.getenv("DB_NAME", "Repositorio_Plantas")
-DB_USERS = os.getenv("DB_USERS", "Usuarios")
+DB_NAME = os.getenv("DB_NAME", DEFAULT_DB_NAME)
+DB_USERS = os.getenv("DB_USERS", DEFAULT_DB_USERS)
 VERIFY_SSL = os.getenv("VERIFY_SSL", "false").strip().lower() in {"1", "true", "yes"}
 
 if not VERIFY_SSL:

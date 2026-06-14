@@ -25,6 +25,8 @@ services:
       - .env
     environment:
       URL_BBDD: mongodb://mongo:27017/
+      DB_NAME: ${DB_NAME:-Plantas}
+      DB_USERS: ${DB_USERS:-Usuarios}
       URL_API: http://api:5001
       URL_API_INIT: http://api:5001
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-}
@@ -63,6 +65,8 @@ services:
       URL_API: http://api:5001
       API_BASE_URL: http://api:5001
       URL_BBDD: mongodb://mongo:27017/
+      DB_NAME: ${DB_NAME:-Plantas}
+      DB_USERS: ${DB_USERS:-Usuarios}
     volumes:
       - ./scripts:/app/scripts
       - ./src:/app/src

@@ -6,7 +6,7 @@ BACKUP_ROOT=${BACKUP_ROOT:-./backups/mongo}
 BACKUP_DIR="${BACKUP_ROOT}/${TIMESTAMP}"
 CONTAINER_NAME=${MONGO_CONTAINER_NAME:-plantas-mongo}
 # Bases usadas por la API (main.py / setup_bbdd.py)
-DB_NAMES=${MONGO_DB_NAMES:-"Repositorio_Plantas Usuarios"}
+DB_NAMES=${MONGO_DB_NAMES:-"Plantas Usuarios"}
 BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-0}
 
 mkdir -p "$BACKUP_DIR"

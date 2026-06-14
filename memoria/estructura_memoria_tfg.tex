@@ -597,11 +597,11 @@ La autenticación se basa en tokens JWT. Tras un inicio de sesión correcto, el 
 La persistencia del sistema se apoya en MongoDB y en almacenamiento de ficheros en disco. Se distinguen dos bases de datos principales:
 
 \begin{itemize}
-    \item \textbf{\texttt{Repositorio\_Plantas}}: almacena las imágenes, su metadatos, las clases, las etiquetas dinámicas y la información asociada a experimentos y entrenamientos.
+    \item \textbf{\texttt{Plantas}}: almacena las imágenes, su metadatos, las clases, las etiquetas dinámicas y la información asociada a experimentos y entrenamientos.
     \item \textbf{\texttt{Usuarios}}: almacena las credenciales y los roles de los usuarios del sistema.
 \end{itemize}
 
-Dentro de \texttt{Repositorio\_Plantas}, las colecciones más relevantes son:
+Dentro de \texttt{Plantas}, las colecciones más relevantes son:
 
 \begin{itemize}
     \item \texttt{Docs}: documentos de imagen con metadatos (clase, fuente, formato, usuario, estado de validación, rutas o referencias a la imagen codificada).
@@ -625,7 +625,7 @@ Foliarium persiste metadatos de imágenes con estructura \textbf{heterogénea y 
 
 Entre las alternativas consideradas, un \textbf{SGBD relacional} (p. ej. PostgreSQL) resulta adecuado para usuarios y credenciales, pero más rígido para el catálogo extensible de \texttt{Campos} y para evolucionar taxonomías sin rediseñar tablas. Almacenar todas las imágenes en la base de datos (\textbf{GridFS} o blobs embebidos) simplificaría el backup lógico unificado, pero penalizaría consultas masivas y el tamaño de la base; por ello se descartó frente al diseño híbrido siguiente.
 
-Las credenciales y roles se aislaron en la base \texttt{Usuarios}, separada de \texttt{Repositorio\_Plantas}, para acotar permisos y copias de seguridad: la información de autenticación no se mezcla con el volumen creciente de documentos de imagen.
+Las credenciales y roles se aislaron en la base \texttt{Usuarios}, separada de \texttt{Plantas}, para acotar permisos y copias de seguridad: la información de autenticación no se mezcla con el volumen creciente de documentos de imagen.
 
 \subsection{Persistencia híbrida: MongoDB y sistema de archivos}
 
@@ -691,7 +691,7 @@ Además de las funciones expuestas en la API y accesibles desde Flet, el reposit
     \item \texttt{process\_imported\_images.py}, \texttt{convert\_to\_grayscale.py}, \texttt{segment\_leaves.py}: generación de variantes grayscale y segmentadas.
     \item \texttt{make\_experiment.py}: creación de la estructura de un nuevo experimento a partir de la plantilla \texttt{experiments/BASE/}.
     \item \texttt{compare\_experiments.py}: comparación de métricas entre experimentos.
-    \item \texttt{backup\_mongo.sh}: copia de seguridad de las bases \texttt{Repositorio\_Plantas} y \texttt{Usuarios} (véase capítulo~9).
+    \item \texttt{backup\_mongo.sh}: copia de seguridad de las bases \texttt{Plantas} y \texttt{Usuarios} (véase capítulo~9).
 \end{itemize}
 
 Desde la propia aplicación, el administrador puede crear copias de seguridad del catálogo de clases y restaurar configuraciones, así como editar y completar metadatos de las clases sin modificar directamente los ficheros JSON del repositorio en tiempo de ejecución.
@@ -1005,7 +1005,7 @@ El ciclo de despliegue documentado en \texttt{docs/DOCKER.md} comprende: \texttt
 
 \subsection{Copias de seguridad de MongoDB}
 
-Los datos persistentes del sistema se reparten entre el volumen Docker de MongoDB (\texttt{mongo\_data}), las bases \texttt{Repositorio\_Plantas} y \texttt{Usuarios}, y los directorios montados \texttt{imagenes/}, \texttt{models/} y \texttt{experiments/}. Para la base de datos documental, el repositorio incluye el script \texttt{scripts/backup\_mongo.sh}, que genera un volcado (\texttt{mongodump}) de \textbf{ambas bases} en ficheros \texttt{.archive} con marca temporal bajo \texttt{backups/mongo/}.
+Los datos persistentes del sistema se reparten entre el volumen Docker de MongoDB (\texttt{mongo\_data}), las bases \texttt{Plantas} y \texttt{Usuarios}, y los directorios montados \texttt{imagenes/}, \texttt{models/} y \texttt{experiments/}. Para la base de datos documental, el repositorio incluye el script \texttt{scripts/backup\_mongo.sh}, que genera un volcado (\texttt{mongodump}) de \textbf{ambas bases} en ficheros \texttt{.archive} con marca temporal bajo \texttt{backups/mongo/}.
 
 \begin{itemize}
     \item \textbf{Copia manual}: ejecutar el script desde el host con el stack levantado (\texttt{sh scripts/backup\_mongo.sh}). Conviene hacerlo antes de importaciones masivas, cambios de esquema o actualizaciones arriesgadas.

@@ -1,6 +1,5 @@
 import json
 import os
-from pymongo import MongoClient
 import sys
 from pathlib import Path
 from bson import ObjectId
@@ -9,13 +8,13 @@ from bson import ObjectId
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
+from utils.database import connect_to_database
+
 json_path = os.path.join(ROOT, "src", "clases_combinadas.json")
 backup_path = os.path.join(ROOT, "src", "clases_backup.json")
 os.makedirs(os.path.dirname(backup_path), exist_ok=True)
 
-# Conexión a MongoDB
-client = MongoClient("mongodb://localhost:27017/")
-db = client["Repositorio_Plantas"]
+db = connect_to_database()
 coleccion = db["Clases"]
 
 def convertir_ids(doc):
