@@ -14,6 +14,7 @@ import uuid
 import zipfile
 from utils.model import build_model
 from utils.database import load_yaml_config, connect_to_database, DEFAULT_DB_NAME, DEFAULT_DB_USERS
+from utils.data import normalize_imagenes_por_clase_for_storage
 from utils.auth import hash_password, check_password
 from utils.dataset_zip import normalize_extracted_dataset
 from torchvision import transforms
@@ -1061,8 +1062,7 @@ def crear_experimento():
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
         
         ipc = config_variables.get("imagenes_por_clase")
-        if ipc in ("Todas", "todas", "all", None, "") or ipc == 0:
-            config_variables["imagenes_por_clase"] = "all"
+        config_variables["imagenes_por_clase"] = normalize_imagenes_por_clase_for_storage(ipc)
 
         mapeo_modelos = {
             "MobileNetV2": "MobileNet_V2_Weights.DEFAULT"
@@ -1105,6 +1105,10 @@ def obtener_experimentos():
             exp_info = {"nombre": nombre, "config": None, "metrics": None}
 
             exp_info["config"] = load_yaml_config(os.path.join(base_path, nombre, "config.yaml"))
+            if exp_info["config"] and "imagenes_por_clase" in exp_info["config"]:
+                exp_info["config"]["imagenes_por_clase"] = normalize_imagenes_por_clase_for_storage(
+                    exp_info["config"]["imagenes_por_clase"]
+                )
 
             metrics_path = os.path.join(base_path, nombre, "results", "metrics.json")
             if os.path.exists(metrics_path):

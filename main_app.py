@@ -14,6 +14,12 @@ nombre_app = "FOLIARIUM"
 def _format_imagenes_por_clase(value):
     if value in ("all", "Todas", "todas"):
         return "Todas"
+    if isinstance(value, str):
+        stripped = value.strip().lower()
+        if stripped in ("all", "todas", "0", ""):
+            return "Todas"
+        if stripped.isdigit() and int(stripped) <= 0:
+            return "Todas"
     if isinstance(value, (int, float)) and (value <= 0 or value >= 999999999):
         return "Todas"
     if value is None:

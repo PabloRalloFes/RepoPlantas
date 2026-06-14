@@ -12,11 +12,24 @@ from pathlib import Path
 def is_unlimited_imagenes_por_clase(value):
     if value is None:
         return True
-    if isinstance(value, str) and value.strip().lower() in ("all", "todas"):
-        return True
+    if isinstance(value, str):
+        stripped = value.strip().lower()
+        if stripped in ("all", "todas", "0", ""):
+            return True
+        if stripped.isdigit() and int(stripped) <= 0:
+            return True
     if isinstance(value, (int, float)) and (value <= 0 or value >= 999999999):
         return True
     return False
+
+
+def normalize_imagenes_por_clase_for_storage(value):
+    """Valor canónico para config.yaml: 'all' o entero positivo."""
+    if is_unlimited_imagenes_por_clase(value):
+        return "all"
+    if isinstance(value, str) and value.strip().isdigit():
+        return int(value.strip())
+    return value
 
 
 def selection_is_all(values):

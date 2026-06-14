@@ -3,6 +3,13 @@ import argparse
 import shutil
 import yaml
 import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from utils.data import normalize_imagenes_por_clase_for_storage
 
 def create_experiment_structure(experiment_name, config_variables=None):
     """Crea la estructura base para un nuevo experimento."""
@@ -36,9 +43,9 @@ def create_experiment_structure(experiment_name, config_variables=None):
             final_config.update(config_variables)
             if "plantas" in config_variables or "enfermedades" in config_variables:
                 final_config.pop("classes", None)
-            ipc = final_config.get("imagenes_por_clase")
-            if ipc in ("Todas", "todas", None, "") or ipc == 0:
-                final_config["imagenes_por_clase"] = "all"
+            final_config["imagenes_por_clase"] = normalize_imagenes_por_clase_for_storage(
+                final_config.get("imagenes_por_clase")
+            )
 
         # Guardar el nuevo config.yaml
         config_path = os.path.join(experiment_path, "config.yaml")
