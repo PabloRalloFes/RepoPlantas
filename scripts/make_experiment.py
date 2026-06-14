@@ -34,6 +34,11 @@ def create_experiment_structure(experiment_name, config_variables=None):
         final_config = base_config.copy()
         if config_variables:
             final_config.update(config_variables)
+            if "plantas" in config_variables or "enfermedades" in config_variables:
+                final_config.pop("classes", None)
+            ipc = final_config.get("imagenes_por_clase")
+            if ipc in ("Todas", "todas", None, "") or ipc == 0:
+                final_config["imagenes_por_clase"] = "all"
 
         # Guardar el nuevo config.yaml
         config_path = os.path.join(experiment_path, "config.yaml")

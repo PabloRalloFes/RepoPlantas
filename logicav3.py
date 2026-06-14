@@ -197,7 +197,7 @@ class LogicaApp:
             "config_variables": config_variables,
         }
 
-        if config_variables.get("imagenes_por_clase") == "Todas":
+        if config_variables.get("imagenes_por_clase") in ("Todas", "todas", "all", 0, None, ""):
             payload["config_variables"]["imagenes_por_clase"] = "all"
 
         response = self._post(url, json=payload, timeout=10.0)

@@ -10,6 +10,17 @@ from dotenv import load_dotenv
 
 nombre_app = "FOLIARIUM"
 
+
+def _format_imagenes_por_clase(value):
+    if value in ("all", "Todas", "todas"):
+        return "Todas"
+    if isinstance(value, (int, float)) and (value <= 0 or value >= 999999999):
+        return "Todas"
+    if value is None:
+        return "N/A"
+    return str(value)
+
+
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
 
 
@@ -3797,7 +3808,7 @@ if __name__ == "__main__":
                     enfermedades_texto = "Todas" if "all" in enfermedades_config else ", ".join(enfermedades_config)
                     
                     formato = config.get("formato", "N/A")
-                    imagenes_por_clase = "Todas" if config.get("imagenes_por_clase") == "all" else str(config.get("imagenes_por_clase", "N/A"))
+                    imagenes_por_clase = _format_imagenes_por_clase(config.get("imagenes_por_clase"))
                     
                     precision_media = "-"
                     if metrics and "test" in metrics and "accuracy_combinada" in metrics["test"]:
@@ -4359,7 +4370,7 @@ if __name__ == "__main__":
                             fuentes = ", ".join(config.get("fuentes", []))
                             if "all" in config.get("fuentes", []):
                                 fuentes = "Todas"
-                            imagenes_por_clase = "Todas" if config.get("imagenes_por_clase") == "all" else config.get("imagenes_por_clase", "-")
+                            imagenes_por_clase = _format_imagenes_por_clase(config.get("imagenes_por_clase"))
                             formato = config.get("formato", "-")
 
                             # Plantas
@@ -4729,7 +4740,11 @@ if __name__ == "__main__":
                     """Construye config con valores legibles (nombres) incluyendo todos los campos dinámicos."""
                     config = {
                         "formato": dropdown_formato.value,
-                        "imagenes_por_clase": int(dropdown_num_imagenes.value) if dropdown_num_imagenes.value != "Todas" else dropdown_num_imagenes.value,
+                        "imagenes_por_clase": (
+                            "all"
+                            if dropdown_num_imagenes.value in ("Todas", "todas", "all", None, "")
+                            else int(dropdown_num_imagenes.value)
+                        ),
                         "modelo": dropdown_modelo.value,
                         "solo_validadas": checkbox_solo_validadas.value,
                     }

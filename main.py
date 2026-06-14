@@ -32,10 +32,11 @@ from pymongo.cursor import Cursor
 from decimal import Decimal
 import subprocess
 import matplotlib
-from flask import send_file
-import mimetypes
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from flask import send_file
+import mimetypes
+from utils.plot_style import BAR_COLORS, apply_plot_style, format_metric_label, save_figure as save_plot_figure
 
 # Carga .env del directorio del proyecto (si existe).
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
@@ -1059,12 +1060,9 @@ def crear_experimento():
         if not experiment_name:
             return jsonify({"success": False, "error": "Falta el nombre del experimento"}), 400
         
-        if config_variables.get("imagenes_por_clase") == "all":
-            clases = db["Clases"].distinct("planta")
-            total_imagenes = {}
-            for clase in clases:
-                total_imagenes[clase] = db["Docs"].count_documents({"clase": clase})
-            config_variables["imagenes_por_clase"] = max(total_imagenes.values())
+        ipc = config_variables.get("imagenes_por_clase")
+        if ipc in ("Todas", "todas", "all", None, "") or ipc == 0:
+            config_variables["imagenes_por_clase"] = "all"
 
         mapeo_modelos = {
             "MobileNetV2": "MobileNet_V2_Weights.DEFAULT"
@@ -1379,45 +1377,60 @@ def comparar_experimentos():
 
         combined_metrics = ["accuracy_planta", "accuracy_enfermedad", "accuracy_combinada"]
         x = range(len(experimentos))
+        apply_plot_style()
 
-        plt.figure()
-        width = 0.2
+        plt.figure(figsize=(9, 5))
+        width = 0.22
         for i, metric in enumerate(combined_metrics):
             values = [
                 all_metrics[experiment]["test"].get(metric, 0) for experiment in experimentos
             ]
-            plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
+            plt.bar(
+                [pos + i * width for pos in x],
+                values,
+                width=width,
+                label=format_metric_label(metric),
+                color=BAR_COLORS[i % len(BAR_COLORS)],
+                edgecolor="white",
+            )
 
-        plt.title("Comparación de Accuracy")
-        plt.xlabel("Experimentos")
+        plt.title("Comparación de accuracy (test)")
+        plt.xlabel("Experimento")
         plt.ylabel("Accuracy")
-        plt.xticks([pos + width for pos in x], experimentos)
+        plt.xticks([pos + width for pos in x], experimentos, rotation=15, ha="right")
+        plt.ylim(0, 1.05)
         plt.legend()
-        plt.grid(True)
+        plt.grid(True, axis="y", alpha=0.6)
         plt.tight_layout()
         accuracy_path = os.path.join(comparison_folder, "comparison_accuracy_combined.png")
-        plt.savefig(accuracy_path)
-        plt.close()
+        save_plot_figure(accuracy_path)
 
         f1_metrics = ["f1_planta", "f1_enfermedad"]
-        plt.figure()
-        width = 0.3
+        plt.figure(figsize=(8, 5))
+        width = 0.32
         for i, metric in enumerate(f1_metrics):
             values = [
                 all_metrics[experiment]["test"].get(metric, 0) for experiment in experimentos
             ]
-            plt.bar([pos + i * width for pos in x], values, width=width, label=metric)
+            plt.bar(
+                [pos + i * width for pos in x],
+                values,
+                width=width,
+                label=format_metric_label(metric),
+                color=BAR_COLORS[i % len(BAR_COLORS)],
+                edgecolor="white",
+            )
 
-        plt.title("Comparación de F1-Score")
-        plt.xlabel("Experimentos")
+        plt.title("Comparación de F1 (test)")
+        plt.xlabel("Experimento")
         plt.ylabel("F1-Score")
-        plt.xticks([pos + width / 2 for pos in x], experimentos)
+        plt.xticks([pos + width / 2 for pos in x], experimentos, rotation=15, ha="right")
+        plt.ylim(0, 1.05)
         plt.legend()
-        plt.grid(True)
+        plt.grid(True, axis="y", alpha=0.6)
         plt.tight_layout()
         f1_path = os.path.join(comparison_folder, "comparison_f1_combined.png")
-        plt.savefig(f1_path)
-        plt.close()
+        save_plot_figure(f1_path)
 
         return jsonify({
             "success": True,

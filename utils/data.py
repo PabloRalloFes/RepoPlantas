@@ -9,6 +9,16 @@ from pathlib import Path
 
 
 
+def is_unlimited_imagenes_por_clase(value):
+    if value is None:
+        return True
+    if isinstance(value, str) and value.strip().lower() in ("all", "todas"):
+        return True
+    if isinstance(value, (int, float)) and (value <= 0 or value >= 999999999):
+        return True
+    return False
+
+
 def selection_is_all(values):
     if values is None:
         return True
@@ -325,7 +335,7 @@ def prepare_data_splits(db, config, save_dir):
 
     for clase_id, lista in docs_por_clase.items():
         random.shuffle(lista)
-        if imagenes_por_clase is not None and imagenes_por_clase < len(lista):
+        if not is_unlimited_imagenes_por_clase(imagenes_por_clase) and imagenes_por_clase < len(lista):
             lista = lista[:imagenes_por_clase]
 
         n_total = len(lista)
