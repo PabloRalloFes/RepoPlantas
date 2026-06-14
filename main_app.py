@@ -6,8 +6,11 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 
 nombre_app = "FOLIARIUM"
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
 
 
 if __name__ == "__main__":
@@ -4733,6 +4736,8 @@ if __name__ == "__main__":
                     
                     # Añadir todos los campos dinámicos seleccionados.
                     for campo, seleccion in selecciones_filtros.items():
+                        if campo == "formato":
+                            continue
                         # Mapeo de nombres internos a nombres de config (compatibilidad).
                         nombre_config = campo
                         if campo == "nombre_comun":

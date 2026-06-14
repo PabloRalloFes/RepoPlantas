@@ -9,6 +9,78 @@ from pathlib import Path
 
 
 
+def selection_is_all(values):
+    if values is None:
+        return True
+    if isinstance(values, str):
+        return values.strip().lower() == "all"
+    if isinstance(values, list):
+        return not values or any(str(v).strip().lower() == "all" for v in values)
+    return False
+
+
+def _as_list(values):
+    if values is None:
+        return []
+    if isinstance(values, list):
+        return values
+    return [values]
+
+
+def normalize_plantas_enfermedades(db, config):
+    """Expande 'all' y unifica claves planta/plantas y nombre_comun/enfermedades."""
+    if "planta" in config and "plantas" not in config:
+        config["plantas"] = config.pop("planta")
+    if "nombre_comun" in config and "enfermedades" not in config:
+        config["enfermedades"] = config.pop("nombre_comun")
+
+    if selection_is_all(config.get("classes")):
+        config.setdefault("plantas", ["all"])
+        config.setdefault("enfermedades", ["all"])
+
+    plantas = config.get("plantas", ["all"])
+    enfermedades = config.get("enfermedades", ["all"])
+
+    total_clases = db["Clases"].count_documents({})
+
+    if selection_is_all(plantas):
+        plantas = sorted(db["Clases"].distinct("planta"))
+    else:
+        plantas = [p for p in _as_list(plantas) if p is not None and str(p).strip() != ""]
+
+    if selection_is_all(enfermedades):
+        enfermedades = sorted(db["Clases"].distinct("nombre_comun"))
+    else:
+        enfermedades = [
+            e for e in _as_list(enfermedades) if e is not None and str(e).strip() != ""
+        ]
+
+    clases_filtradas = list(db["Clases"].find({
+        "planta": {"$in": plantas},
+        "nombre_comun": {"$in": enfermedades},
+    }))
+
+    if not clases_filtradas:
+        msg = (
+            "No se han encontrado combinaciones planta-enfermedad válidas con los filtros actuales del config. "
+            f"Clases en BD: {total_clases}. "
+            f"Plantas filtradas ({len(plantas)}): {plantas[:8]}{'...' if len(plantas) > 8 else ''}. "
+            f"Enfermedades filtradas ({len(enfermedades)}): {enfermedades[:8]}{'...' if len(enfermedades) > 8 else ''}."
+        )
+        if total_clases == 0:
+            msg += " La colección Clases está vacía: ejecuta scripts/setup_bbdd.py."
+        elif plantas and enfermedades and not selection_is_all(config.get("plantas")) and not selection_is_all(config.get("enfermedades")):
+            msg += (
+                " Si elegiste plantas y enfermedades concretas, comprueba que exista alguna clase "
+                "con esa pareja (p. ej. 'Grape' + enfermedad solo de 'Vid' no coincide)."
+            )
+        raise ValueError(msg)
+
+    config["plantas"] = plantas
+    config["enfermedades"] = enfermedades
+    return clases_filtradas
+
+
 def prepare_data_splits(db, config, save_dir):
     """
     Prepara los CSVs con rutas a imágenes y etiquetas para train/val/test.
@@ -22,27 +94,15 @@ def prepare_data_splits(db, config, save_dir):
     imagenes_por_clase = config["imagenes_por_clase"]
     split_ratios = config["split"]
     formato_nombre = config.get("formato")
-    plantas = config.get("plantas", ["all"])
-    enfermedades = config.get("enfermedades", ["all"])
+    if isinstance(formato_nombre, list):
+        if selection_is_all(formato_nombre):
+            formato_nombre = None
+        elif len(formato_nombre) == 1:
+            formato_nombre = formato_nombre[0]
 
-    def selection_is_all(values):
-        if values is None:
-            return True
-        if isinstance(values, str):
-            return values.strip().lower() == "all"
-        if isinstance(values, list):
-            return not values or any(str(v).strip().lower() == "all" for v in values)
-        return False
-
-    if selection_is_all(plantas):
-        plantas = sorted(db["Clases"].distinct("planta"))
-    elif not isinstance(plantas, list):
-        plantas = [plantas]
-
-    if selection_is_all(enfermedades):
-        enfermedades = sorted(db["Clases"].distinct("nombre_comun"))
-    elif not isinstance(enfermedades, list):
-        enfermedades = [enfermedades]
+    clases_filtradas = normalize_plantas_enfermedades(db, config)
+    plantas = config["plantas"]
+    enfermedades = config["enfermedades"]
 
     def is_scalar(v):
         return isinstance(v, (str, int, float, bool)) and v is not None
@@ -122,16 +182,6 @@ def prepare_data_splits(db, config, save_dir):
 
     collection_names_lower = {c.lower(): c for c in db.list_collection_names()}
 
-    # Obtener clases válidas con planta y enfermedad filtrados
-    clases_filtradas = list(db["Clases"].find({
-        "planta": {"$in": plantas},
-        "nombre_comun": {"$in": enfermedades}
-    }))
-
-    if not clases_filtradas:
-        raise ValueError(" No se han encontrado combinaciones planta-enfermedad válidas con los filtros actuales del config.")
-
-
     id_to_info = {doc["_id"]: (doc["planta"], doc["nombre_comun"]) for doc in clases_filtradas}
     clases_ids = list(id_to_info.keys())
 
@@ -147,17 +197,18 @@ def prepare_data_splits(db, config, save_dir):
         print(f"Formato no encontrado o no especificado: {formato_nombre}")
 
     fuentes_dict = {doc["fuente"]: doc["_id"] for doc in db["Fuente"].find()}
-    if isinstance(fuentes, list) and "all" in fuentes:
+    if selection_is_all(fuentes):
         fuentes_ids = list(fuentes_dict.values())
     else:
-        fuentes_ids = [fuentes_dict[fuente] for fuente in fuentes if fuente in fuentes_dict]
+        fuentes_ids = [fuentes_dict[fuente] for fuente in _as_list(fuentes) if fuente in fuentes_dict]
 
     print(f"Fuentes seleccionadas: {fuentes} (IDs: {fuentes_ids})")
 
     # Avisos de fuentes no encontradas
-    no_encontradas = [fuente for fuente in fuentes if fuente not in fuentes_dict]
-    if no_encontradas:
-        print(f"️Fuentes no encontradas en la base de datos: {no_encontradas}")
+    if not selection_is_all(fuentes):
+        no_encontradas = [fuente for fuente in _as_list(fuentes) if fuente not in fuentes_dict]
+        if no_encontradas:
+            print(f"Fuentes no encontradas en la base de datos: {no_encontradas}")
 
     # Construir query base de Docs
     docs_query = {
@@ -188,7 +239,12 @@ def prepare_data_splits(db, config, save_dir):
         "min_samples_per_class",
         "optimizer",
         "plantas",
+        "planta",
         "enfermedades",
+        "nombre_comun",
+        "fuente",
+        "modelo",
+        "clase",
         "split",
         "use_class_weights",
         "weights",

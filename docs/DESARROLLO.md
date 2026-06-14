@@ -149,6 +149,14 @@ El resultado se genera dentro de `build/windows/` y puede distribuirse como carp
 
 Si al compilar aparece un error de CMake o del generador de Visual Studio, borra `build/flutter/build/windows/x64` o `build/flutter/build/windows` y vuelve a lanzar el build.
 
+### URL de la API en builds Android / Windows
+
+La URL por defecto del cliente está en `logicav3.py` (`https://plantas.gti-ia.upv.es`). El archivo `.env` **no se empaqueta** en `flet build` (está en `exclude` de `pyproject.toml`), así que cambiar solo `.env` no afecta a la APK/AAB.
+
+- **Producción:** deja el default de `logicav3.py` o confírmalo antes de compilar.
+- **Desarrollo local:** usa `.env` con `URL_API=https://localhost:5001` al ejecutar con `python main_app.py` o `flet run`.
+- Tras cambiar el default, conviene borrar `build/` y recompilar (`flet build apk`) para evitar caché de Flutter.
+
 ---
 
 

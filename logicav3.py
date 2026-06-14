@@ -3,10 +3,17 @@ import httpx
 import urllib
 import base64
 import os
+from pathlib import Path
 from urllib.parse import urlparse
 
-URL_API="https://localhost:5001"
-URL_BBDD="mongodb://localhost:27017"
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
+except ImportError:
+    pass
+
+URL_API = os.getenv("URL_API", "https://plantas.gti-ia.upv.es")
+URL_BBDD = os.getenv("URL_BBDD", "mongodb://localhost:27017")
 
 
 def resolve_verify_ssl(api_url: str) -> bool:
