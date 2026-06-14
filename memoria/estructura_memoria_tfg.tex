@@ -718,10 +718,39 @@ Foliarium está diseñado para trabajar con \textbf{múltiples fuentes heterogé
     \item \textbf{PlantVillage}: conjunto de referencia en condiciones de laboratorio; base de los experimentos iniciales. Organización en disco: \texttt{data/plantvillage/color/}, \texttt{grayscale/} y \texttt{segmented/}, con subcarpetas por clase (\texttt{Planta\_\_\_Enfermedad}).
     \item \textbf{PlantDoc}: dataset de imágenes de campo~\cite{plantdoc2020}; fuente externa prioritaria para evaluar generalización fuera del laboratorio. Tras descarga, se normaliza con el script \texttt{scripts/prepare\_plantdoc\_import.py} (véase §~\ref{sec:normalizacion-fuentes}).
     \item \textbf{App}: imágenes capturadas o subidas mediante Foliarium (fuente «App» en MongoDB); condiciones reales de captura colaborativa.
-    \item \textbf{Otras importaciones}: datos aportados externamente (p. ej. vid, VRAIN) u otros conjuntos de Kaggle, siempre bajo \texttt{data/<fuente>/}.
+    \item \textbf{Otras importaciones}: datos aportados externamente; en producción, \textbf{VRAIN\_Viticultura\_Enologia} (122 imágenes de vid en campo) u otros conjuntos de Kaggle, siempre bajo \texttt{data/<fuente>/}.
 \end{itemize}
 
 En la fase de redacción de esta memoria, los experimentos documentados combinan principalmente \textbf{PlantVillage} con integración progresiva de \textbf{PlantDoc} y, de forma exploratoria, imágenes de la \textbf{App}. Otras fuentes (PlantCLEF, IP102, Plant Pathology) son compatibles con el pipeline pero quedan como línea de trabajo futuro por la complejidad del mapeo taxonómico.
+
+\subsection{Fuentes incorporadas en el servidor de producción}
+\label{sec:fuentes-produccion}
+
+Tras la importación masiva realizada en el servidor institucional (\texttt{plantas.gti-ia.upv.es}), el repositorio de entrenamiento queda compuesto por las fuentes siguientes. Los nombres deben coincidir \textbf{exactamente} con el campo \texttt{fuente} registrado en MongoDB al filtrar en \texttt{config.yaml} (\texttt{fuentes: [PlantVillage, PlantDoc, ...]}).
+
+\begin{table}[htbp]
+\centering
+\caption{Características de las fuentes de datos importadas (formato Color).}
+\label{tab:fuentes-produccion}
+\begin{tabular}{@{}p{3.2cm}p{2.2cm}p{4.5cm}p{2cm}p{2.2cm}@{}}
+\toprule
+\textbf{Fuente (MongoDB)} & \textbf{Entorno} & \textbf{Alcance taxonómico} & \textbf{Vol. aprox.} & \textbf{Validación} \\
+\midrule
+PlantVillage & Laboratorio & Catálogo PlantVillage completo (multi-cultivo; clases \texttt{Planta\_\_\_Enfermedad}) & $\sim$54\,000 & No (carga masiva) \\
+PlantDoc & Campo & Subconjunto mapeado al catálogo PlantVillage; train+test unificados & $\sim$2\,600 & No \\
+VRAIN\_Viticultura\_Enologia & Campo / institucional & Solo \textit{vid} (\texttt{Grape}); varias enfermedades del ámbito vitivinícola & 122 & No \\
+App & Captura colaborativa & Según uso de la plataforma & Variable & Parcial \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{PlantVillage}~\cite{mohanty2016} aporta la escala y la referencia de comparabilidad bibliográfica: imágenes con fondo uniforme, iluminación controlada y alta resolución relativa. Es la base principal para experimentos de línea base.
+
+\textbf{PlantDoc}~\cite{plantdoc2020} introduce \textit{domain shift}: fondos naturales, variabilidad de dispositivo y ángulos de captura. Tras \texttt{prepare\_plantdoc\_import.py}, las carpetas originales del dataset se renombran a la convención \texttt{Planta\_\_\_Enfermedad}; solo se importan clases presentes en el mapeo del script o en el catálogo \texttt{Clases}.
+
+\textbf{VRAIN\_Viticultura\_Enologia} es un aporte externo reducido pero relevante para el contexto agronómico del proyecto (viticultura, COSASS/VRAIN): todas las imágenes corresponden a vid y cubren distintas patologías. Su volumen limitado impide entrenar modelos solo con esta fuente, pero permite evaluar comportamiento en un cultivo con pocas muestras reales.
+
+En los experimentos iniciales de este TFG se utiliza únicamente el formato \textbf{Color}; las variantes \texttt{grayscale} y \texttt{segmented} pueden generarse con \texttt{process\_imported\_images.py} y subirse en fases posteriores. La mayoría de imágenes importadas permanecen con \texttt{validada=false}; el flag \texttt{solo\_validadas} del config permite restringir el entrenamiento a imágenes revisadas por etiquetadores cuando exista suficiente volumen validado.
 
 Las imágenes en producción residen en el servidor (\texttt{imagenes/} y documentos en MongoDB), no en el repositorio de código, que en desarrollo puede contener solo datos de prueba.
 

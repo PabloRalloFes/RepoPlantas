@@ -25,6 +25,25 @@ def prepare_data_splits(db, config, save_dir):
     plantas = config.get("plantas", ["all"])
     enfermedades = config.get("enfermedades", ["all"])
 
+    def selection_is_all(values):
+        if values is None:
+            return True
+        if isinstance(values, str):
+            return values.strip().lower() == "all"
+        if isinstance(values, list):
+            return not values or any(str(v).strip().lower() == "all" for v in values)
+        return False
+
+    if selection_is_all(plantas):
+        plantas = sorted(db["Clases"].distinct("planta"))
+    elif not isinstance(plantas, list):
+        plantas = [plantas]
+
+    if selection_is_all(enfermedades):
+        enfermedades = sorted(db["Clases"].distinct("nombre_comun"))
+    elif not isinstance(enfermedades, list):
+        enfermedades = [enfermedades]
+
     def is_scalar(v):
         return isinstance(v, (str, int, float, bool)) and v is not None
 
@@ -158,6 +177,7 @@ def prepare_data_splits(db, config, save_dir):
     # Filtros dinámicos adicionales: cualquier clave del config fuera del bloque reservado.
     reserved_keys = {
         "batch_size",
+        "classes",
         "epochs",
         "fine_tune",
         "formato",
