@@ -3,14 +3,7 @@ import httpx
 import urllib
 import base64
 import os
-from pathlib import Path
 from urllib.parse import urlparse
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
-except ImportError:
-    pass
 
 URL_API = os.getenv("URL_API", "https://plantas.gti-ia.upv.es")
 URL_BBDD = os.getenv("URL_BBDD", "mongodb://localhost:27017")
