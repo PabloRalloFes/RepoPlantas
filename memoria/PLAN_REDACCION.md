@@ -183,6 +183,7 @@
 - [x] § Reproducibilidad (infra en cap. 9; experimentos detallados en cap. 8).
 - [x] § Pruebas con usuarios externos (borrador informal).
 - [ ] Completar placeholders: matriz pruebas por rol, encuesta, capturas, detalle TLS/proxy.
+- [ ] **Añadir enlace a Google Forms** (encuesta de usabilidad) en la landing `plantas.gti-ia.upv.es` (`templates/landing.html`). ✅ Hecho — pendiente desplegar en servidor.
 - [ ] Tras import PlantDoc + reentrenamiento: no mezclar métricas aquí (van a cap. 8).
 
 ---

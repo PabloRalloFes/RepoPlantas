@@ -85,6 +85,41 @@ if __name__ == "__main__":
             else:
                 page.overlay.clear()
             page.update()
+
+        def con_carga(page, trabajo, al_terminar):
+            """Ejecuta una operación lenta en segundo plano con overlay de carga."""
+            mostrar_cargando(page, True)
+
+            def worker():
+                try:
+                    payload = ("ok", trabajo())
+                except Exception as ex:
+                    payload = ("err", ex)
+
+                def on_done(*_):
+                    mostrar_cargando(page, False)
+                    status, data = payload
+                    if status == "err":
+                        al_terminar({"success": False, "error": str(data)})
+                    else:
+                        al_terminar(data)
+
+                page.run_thread(lambda *_: None, on_done)
+
+            threading.Thread(target=worker, daemon=True).start()
+
+        def _dialogo_error_conexion(page, titulo="Error de conexión", detalle=None):
+            if detalle is None:
+                detalle = (
+                    f"No se pudo conectar con el servidor en {logica_app.url_api}.\n\n"
+                    "Revisa la URL en la configuración de conexión y tu red."
+                )
+            page.open(ft.AlertDialog(
+                modal=True,
+                title=ft.Text(titulo),
+                content=ft.Text(detalle),
+                actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))],
+            ))
         page.title = nombre_app
 
         page.theme = ft.Theme(color_scheme_seed=ft.Colors.GREEN)
@@ -206,14 +241,17 @@ if __name__ == "__main__":
                 )
                 page.open(alerta_faltan_campos)
             else:
+                mostrar_cargando(page, True)
+                page.update()
                 try:
                     if logica_app.inicio_sesion(nombre, password, rol):
+                        mostrar_cargando(page, False)
                         if rol == "etiquetador":
-                            # ahora va al menú principal del etiquetador
                             page.go("/main_etiquetador")
                         else:
                             page.go(f"/main_{rol}")
                     else:
+                        mostrar_cargando(page, False)
                         alerta_error_inicio_sesion = ft.AlertDialog(
                             modal = True,
                             title = ft.Text("Datos de inicio de sesión incorrectos"),
@@ -223,20 +261,17 @@ if __name__ == "__main__":
                         )
                         page.open(alerta_error_inicio_sesion)
                 except httpx.ConnectTimeout:
-                    page.open(ft.AlertDialog(
-                        modal=True,
-                        title=ft.Text("Error de conexión"),
-                        content=ft.Text("Tiempo de espera agotado al conectar con el servidor.\n\nRevisa que la IP sea correcta en la configuración o verifica tu red."),
-                        actions=[ft.TextButton("Aceptar", on_click= lambda e: page.close(e.control.parent))]
-                    ))
-                except httpx.RequestError as e:
-                    page.open(ft.AlertDialog(
-                        modal=True,
-                        title=ft.Text("Servidor inaccesible"),
-                        content=ft.Text(f"No se pudo conectar con el servidor en {logica_app.url_api}.\n\nRevisa la IP en la configuración."),
-                        actions=[ft.TextButton("Aceptar", on_click= lambda e: page.close(e.control.parent))]
-                    ))
+                    mostrar_cargando(page, False)
+                    _dialogo_error_conexion(
+                        page,
+                        titulo="Error de conexión",
+                        detalle="Tiempo de espera agotado al conectar con el servidor.\n\nRevisa la URL en la configuración o verifica tu red.",
+                    )
+                except httpx.RequestError:
+                    mostrar_cargando(page, False)
+                    _dialogo_error_conexion(page)
                 except Exception as e:
+                    mostrar_cargando(page, False)
                     page.open(ft.AlertDialog(
                         modal=True,
                         title=ft.Text("Error inesperado"),
@@ -261,6 +296,8 @@ if __name__ == "__main__":
                     ]
                 )
                 page.open(alerta_faltan_campos)
+                page.update()
+                page.update()
             elif password_1 != password_2:
                 alerta_passwords_distintas = ft.AlertDialog(
                     modal = True,
@@ -270,27 +307,31 @@ if __name__ == "__main__":
                     ]
                 )
                 page.open(alerta_passwords_distintas)
+                page.update()
             else:
-                res = logica_app.registro(nombre, password_1)
-                if res.get("success"):
-                    alerta_registro_correcto = ft.AlertDialog(
-                        modal=True,
-                        title=ft.Text("Registro completado"),
-                        content=ft.Text("Por favor, inicie sesión"),
-                        actions=[ft.TextButton("Aceptar", on_click=view_pop)]
-                    )
-                    page.open(alerta_registro_correcto)
-                else:
-                    mensaje = res.get("error", "No se ha podido completar el registro")
-                    alerta_usuario_existente = ft.AlertDialog(
-                        modal=True,
-                        title=ft.Text("Error en el registro"),
-                        content=ft.Text(mensaje),
-                        actions=[ft.TextButton("Aceptar", on_click=lambda _: page.close(alerta_usuario_existente))]
-                    )
-                    page.open(alerta_usuario_existente)
-            for x in campos_borrar: x.value = ""
-            page.update()
+                def finalizar_registro(res):
+                    if res.get("success"):
+                        for x in campos_borrar:
+                            x.value = ""
+                        alerta_registro_correcto = ft.AlertDialog(
+                            modal=True,
+                            title=ft.Text("Registro completado"),
+                            content=ft.Text("Por favor, inicie sesión"),
+                            actions=[ft.TextButton("Aceptar", on_click=view_pop)]
+                        )
+                        page.open(alerta_registro_correcto)
+                    else:
+                        mensaje = res.get("error", "No se ha podido completar el registro")
+                        page.open(ft.AlertDialog(
+                            modal=True,
+                            title=ft.Text("Error en el registro"),
+                            content=ft.Text(mensaje),
+                            actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))],
+                        ))
+                    page.update()
+
+                con_carga(page, lambda: logica_app.registro(nombre, password_1), finalizar_registro)
+                return
 
         def seleccionar_usuario(e):
             logica_app.seleccionar_usuario(e)
@@ -369,54 +410,64 @@ if __name__ == "__main__":
         def predecir_foto(modelo_seleccionado, known_planta=None):
             if known_planta == "Ninguna":
                 known_planta = None
-            resultado = logica_app.predecir_imagen(modelo_seleccionado, known_planta)
-            if resultado["success"]:
-                pred = resultado["enfermedad_predicha"]
-                planta = resultado["planta_predicha"]
-                prob = round(resultado["probabilidad"] * 100, 2)
-                page.open(ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Predicción del modelo", weight=ft.FontWeight.BOLD),
-                    content=ft.Column(
-                        tight=True,
-                        spacing=8,
-                        controls=[
-                            ft.Row(spacing=10, controls=[ft.Text("Planta:", weight=ft.FontWeight.BOLD), ft.Text(planta)]),
-                            ft.Row(spacing=10, controls=[ft.Text("Enfermedad:", weight=ft.FontWeight.BOLD), ft.Text(pred)]),
-                            ft.Row(spacing=10, controls=[ft.Text("Probabilidad:", weight=ft.FontWeight.BOLD), ft.Text(f"{prob}%")])
-                        ]
-                    ),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
-                ))
-            else:
-                page.open(ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Error en la predicción"),
-                    content=ft.Text(resultado.get("error", "Error desconocido")),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
-                ))
+
+            def mostrar_resultado(resultado):
+                if resultado.get("success"):
+                    pred = resultado["enfermedad_predicha"]
+                    planta = resultado["planta_predicha"]
+                    prob = round(resultado["probabilidad"] * 100, 2)
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Predicción del modelo", weight=ft.FontWeight.BOLD),
+                        content=ft.Column(
+                            tight=True,
+                            spacing=8,
+                            controls=[
+                                ft.Row(spacing=10, controls=[ft.Text("Planta:", weight=ft.FontWeight.BOLD), ft.Text(planta)]),
+                                ft.Row(spacing=10, controls=[ft.Text("Enfermedad:", weight=ft.FontWeight.BOLD), ft.Text(pred)]),
+                                ft.Row(spacing=10, controls=[ft.Text("Probabilidad:", weight=ft.FontWeight.BOLD), ft.Text(f"{prob}%")])
+                            ]
+                        ),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+                else:
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Error en la predicción"),
+                        content=ft.Text(resultado.get("error", "Error desconocido")),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+                page.update()
+
+            con_carga(
+                page,
+                lambda: logica_app.predecir_imagen(modelo_seleccionado, known_planta),
+                mostrar_resultado,
+            )
 
         def validar_imagen_actual():
             id_doc = logica_app.archivo_seleccionado["_id"]
-            resultado = logica_app.validar_imagen(id_doc)
 
-            if resultado["success"]:
-                mostrar_cargando(page, True)
-                cargar_datos_no_validados()
-                page.open(ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Imagen validada"),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.go("/main_etiquetador/seleccion_imagenes"))]
-                ))
-            else:
-                page.open(ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Error al validar"),
-                    content=ft.Text(resultado.get("error", "Error desconocido")),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
-                ))
-            
-            page.update()
+            def al_terminar(resultado):
+                if resultado.get("success"):
+                    mostrar_cargando(page, True)
+                    cargar_datos_no_validados()
+                    mostrar_cargando(page, False)
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Imagen validada"),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.go("/main_etiquetador/seleccion_imagenes"))]
+                    ))
+                else:
+                    page.open(ft.AlertDialog(
+                        modal=True,
+                        title=ft.Text("Error al validar"),
+                        content=ft.Text(resultado.get("error", "Error desconocido")),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
+                    ))
+                page.update()
+
+            con_carga(page, lambda: logica_app.validar_imagen(id_doc), al_terminar)
 
         def cargar_fuentes_dropdown(fuente_dropdown):
             try:
@@ -486,21 +537,8 @@ if __name__ == "__main__":
                 return
             
             file_path = zip_picker.result.files[0].path
-            
-            page.open(ft.AlertDialog(
-                modal=True,
-                title=ft.Text("Subiendo ZIP..."),
-                content=ft.Text("Esto puede tardar unos minutos según el tamaño."),
-                actions=[]
-            ))
-            page.update()
-            
-            try:
-                with open(file_path, 'rb') as f:
-                    zip_bytes = f.read()
-                
-                data = logica_app.subida_masiva_zip(zip_bytes, nombre_fuente)
-                
+
+            def al_terminar(data):
                 if data.get("success"):
                     page.open(ft.AlertDialog(
                         modal=True,
@@ -508,9 +546,7 @@ if __name__ == "__main__":
                         content=ft.Text(data.get("message")),
                         actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
                     ))
-                    # Limpiar campos
                     nombre_fuente_input.value = ""
-                    # Recargar dropdown de fuentes
                     cargar_fuentes_dropdown(fuente_dropdown)
                 else:
                     page.open(ft.AlertDialog(
@@ -519,15 +555,14 @@ if __name__ == "__main__":
                         content=ft.Text(data.get("error", "Error desconocido")),
                         actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
                     ))
-            except Exception as e:
-                page.open(ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Error de conexión"),
-                    content=ft.Text(str(e)),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
-                ))
-            
-            page.update()
+                page.update()
+
+            def trabajo():
+                with open(file_path, 'rb') as f:
+                    zip_bytes = f.read()
+                return logica_app.subida_masiva_zip(zip_bytes, nombre_fuente)
+
+            con_carga(page, trabajo, al_terminar)
 
         def ejecutar_subida_masiva(page, logica_app, fuente_input, procesar_switch, validada_switch):
             fuente = fuente_input.value.strip()
@@ -543,16 +578,7 @@ if __name__ == "__main__":
                 ))
                 return
 
-            page.open(ft.AlertDialog(
-                modal=True,
-                title=ft.Text("Ejecutando subida..."),
-                content=ft.Text("Esto puede tardar unos minutos."),
-                actions=[]
-            ))
-            page.update()
-
-            try:
-                data = logica_app.subida_masiva(fuente, procesar, validada)
+            def al_terminar(data):
                 if data.get("success"):
                     page.open(ft.AlertDialog(
                         modal=True,
@@ -564,18 +590,16 @@ if __name__ == "__main__":
                     page.open(ft.AlertDialog(
                         modal=True,
                         title=ft.Text("Error durante la subida"),
-                        content=ft.Text(data.get("error")),
+                        content=ft.Text(data.get("error", "Error desconocido")),
                         actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
                     ))
-            except Exception as e:
-                page.open(ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Error de conexión"),
-                    content=ft.Text(str(e)),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))]
-                ))
+                page.update()
 
-            page.update()
+            con_carga(
+                page,
+                lambda: logica_app.subida_masiva(fuente, procesar, validada),
+                al_terminar,
+            )
 
         def abrir_dialogo_nueva_clase(on_success=None):
             planta_input = ft.TextField(label="Planta *")
@@ -677,21 +701,17 @@ if __name__ == "__main__":
                 )
                 page.open(alerta_nombre_faltante)
                 return
-            elif nombre_experimento in [exp["nombre"] for exp in logica_app.obtener_experimentos()]:
-                alerta_nombre_existente = ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Error"),
-                    content=ft.Text("El nombre del experimento ya existe. Elige otro nombre."),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda _: page.close(alerta_nombre_existente))]
-                )
-                page.open(alerta_nombre_existente)
-                return
 
-            try:
+            def trabajo():
+                if nombre_experimento in [exp["nombre"] for exp in logica_app.obtener_experimentos()]:
+                    return {"success": False, "error": "El nombre del experimento ya existe. Elige otro nombre."}
                 response = logica_app.crear_experimento(nombre_experimento, config_variables)
+                if response.get("success") and entrenar_modelo:
+                    logica_app.solicitar_entrenamiento(nombre_experimento, disponible_prediccion)
+                return response
+
+            def al_terminar(response):
                 if response.get("success"):
-                    if entrenar_modelo:
-                        logica_app.solicitar_entrenamiento(nombre_experimento, disponible_prediccion)
                     alerta_exito = ft.AlertDialog(
                         modal=True,
                         title=ft.Text("Éxito"),
@@ -700,22 +720,15 @@ if __name__ == "__main__":
                     )
                     page.open(alerta_exito)
                 else:
-                    alerta_error = ft.AlertDialog(
+                    page.open(ft.AlertDialog(
                         modal=True,
                         title=ft.Text("Error"),
-                        content=ft.Text(f"Error: {response.get('error')}"),
-                        actions=[ft.TextButton("Aceptar", on_click=lambda _: page.close(alerta_error))]
-                    )
-                    page.open(alerta_error)
-            except Exception as ex:
-                alerta_excepcion = ft.AlertDialog(
-                    modal=True,
-                    title=ft.Text("Error inesperado"),
-                    content=ft.Text(f"Error al crear el experimento: {str(ex)}"),
-                    actions=[ft.TextButton("Aceptar", on_click=lambda _: page.close(alerta_excepcion))]
-                )
-                page.open(alerta_excepcion)  
-            page.update()
+                        content=ft.Text(f"Error: {response.get('error', 'Error desconocido')}"),
+                        actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))],
+                    ))
+                page.update()
+
+            con_carga(page, trabajo, al_terminar)
 
         def entrenar_modelo(nombre_experimento, aceptar_disponible_prediccion=False):
             dialogo_entrenamiento = ft.AlertDialog(
@@ -4989,19 +5002,21 @@ if __name__ == "__main__":
                         page.open(alerta_seleccion_insuficiente)
                         return
 
-                    resultados = logica_app.comparar_experimentos(seleccionados)
-                    if resultados["success"]:
-                        experimentos_param = "&".join([f"experimentos={exp}" for exp in seleccionados])
-                        mostrar_cargando(page, True)
-                        page.go(f"/main_usuario/experimentos/comparar_resultados?{experimentos_param}")
-                    else:
-                        alerta_error_comparacion = ft.AlertDialog(
-                            modal=True,
-                            title=ft.Text("Error"),
-                            content=ft.Text(f"No se pudo completar la comparación: {resultados['error']}"),
-                            actions=[ft.TextButton("Aceptar", on_click=lambda _: page.close(alerta_error_comparacion))],
-                        )
-                        page.open(alerta_error_comparacion)
+                    def al_terminar(resultados):
+                        if resultados.get("success"):
+                            experimentos_param = "&".join([f"experimentos={exp}" for exp in seleccionados])
+                            mostrar_cargando(page, True)
+                            page.go(f"/main_usuario/experimentos/comparar_resultados?{experimentos_param}")
+                        else:
+                            page.open(ft.AlertDialog(
+                                modal=True,
+                                title=ft.Text("Error"),
+                                content=ft.Text(f"No se pudo completar la comparación: {resultados.get('error')}"),
+                                actions=[ft.TextButton("Aceptar", on_click=lambda e: page.close(e.control.parent))],
+                            ))
+                            page.update()
+
+                    con_carga(page, lambda: logica_app.comparar_experimentos(seleccionados), al_terminar)
 
                 page.views.append(
                     ft.View(

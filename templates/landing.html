@@ -224,6 +224,11 @@
                 Abrir guía
             </a>
             {% endif %}
+            {% if section.link_url %}
+            <a href="{{ section.link_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                {{ section.link_label or "Abrir enlace" }}
+            </a>
+            {% endif %}
           </div>
           {% endfor %}
         </div>

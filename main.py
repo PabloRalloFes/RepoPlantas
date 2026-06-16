@@ -336,6 +336,12 @@ def landing_page():
             "pdf_url": "/guia-usuario",
         },
         {
+            "title": "Encuesta de usabilidad",
+            "body": "Si has probado la app, ayúdanos con esta breve encuesta sobre tu experiencia (2–3 minutos).",
+            "link_url": "https://docs.google.com/forms/d/e/1FAIpQLSfnOFyAngdabXpSC_hHvR8naxDZfVoruM0ja7EoTS4nLHnnKw/viewform",
+            "link_label": "Rellenar encuesta",
+        },
+        {
             "title": "Etiquetado y administración",
             "body": "Los etiquetadores validan imágenes y clases, y los administradores gestionan usuarios, roles y configuración.",
         },

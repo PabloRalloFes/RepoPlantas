@@ -77,8 +77,18 @@ class LogicaApp:
             "modelo": modelo_seleccionado,
             "planta": known_planta,
         }
-        res = self._post(url_predict, json=payload, timeout=10.0)
-        return res.json()
+        try:
+            res = self._post(url_predict, json=payload, timeout=120.0)
+            return res.json()
+        except httpx.ConnectTimeout:
+            return {"success": False, "error": "Tiempo de espera agotado al conectar con el servidor."}
+        except httpx.RequestError:
+            return {
+                "success": False,
+                "error": f"No se pudo conectar con el servidor en {self.url_api}. Revisa la configuración de conexión.",
+            }
+        except Exception as e:
+            return {"success": False, "error": f"Error en la predicción: {e}"}
     
     def validar_imagen(self, id_doc):
         if isinstance(id_doc, dict) and "$oid" in id_doc:
@@ -298,12 +308,16 @@ class LogicaApp:
         """
         url = self.crear_url("/comparar_experimentos", self.url_api)
         try:
-            response = self._post(url, json={"experimentos": experimentos}, timeout=10.0)
+            response = self._post(url, json={"experimentos": experimentos}, timeout=120.0)
             if response.status_code == 200:
                 return response.json()
             else:
                 return {"success": False, "error": response.json().get("error", "Error desconocido")}
         except Exception as e:
+            # El servidor puede haber terminado tras un timeout del cliente; reutilizar gráficos existentes.
+            fallback = self.obtener_graficos_comparacion(experimentos)
+            if fallback.get("success"):
+                return fallback
             return {"success": False, "error": f"Error al conectar con el backend: {str(e)}"}
     
     def obtener_graficos_comparacion(self, experimentos):
@@ -377,16 +391,24 @@ class LogicaApp:
 
 
     def registro(self, nombre: str, password: str):
-        
         params = {"nombre": nombre, "password": password}
         url_registro = self.crear_url("/registro", self.url_api)
 
         try:
-            respuesta = self._post(url_registro, json=params, timeout=10.0)
+            respuesta = self._post(url_registro, json=params, timeout=15.0)
             data = respuesta.json()
-            return data
-        except Exception:
-            return {"success": False, "error": f"Error en la conexión ({respuesta.status_code})"}
+            if isinstance(data, dict):
+                return data
+            return {"success": False, "error": "Respuesta no válida del servidor"}
+        except httpx.ConnectTimeout:
+            return {"success": False, "error": "Tiempo de espera agotado al conectar con el servidor."}
+        except httpx.RequestError:
+            return {
+                "success": False,
+                "error": f"No se pudo conectar con el servidor en {self.url_api}. Revisa la configuración de conexión.",
+            }
+        except Exception as e:
+            return {"success": False, "error": f"Error de conexión: {e}"}
 
     def add_rol(self, nombre: str, rol: str):
 
