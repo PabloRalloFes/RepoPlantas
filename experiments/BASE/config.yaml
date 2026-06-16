@@ -1,0 +1,29 @@
+# Plantilla base de experimento (MobileNetV2 multitarea)
+
+fuentes:
+- all
+plantas:
+- all
+enfermedades:
+- all
+
+imagenes_por_clase: all
+
+formato: Color
+solo_validadas: false
+
+split:
+  train: 0.7
+  val: 0.2
+  test: 0.1
+
+weights: MobileNet_V2_Weights.DEFAULT
+fine_tune: top
+optimizer: adam
+use_class_weights: true
+min_samples_per_class: 10
+
+image_size: [224, 224]
+batch_size: 32
+epochs: 10
+lr: 0.001

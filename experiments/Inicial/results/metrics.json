@@ -1,0 +1,46 @@
+{
+  "val": {
+    "accuracy_planta": 0.9092105263157895,
+    "accuracy_enfermedad": 0.8144736842105263,
+    "accuracy_combinada": 0.7710526315789473,
+    "f1_planta": 0.8889938602447904,
+    "f1_enfermedad": 0.7768484328759951,
+    "precision_planta": 0.8695404265543738,
+    "precision_enfermedad": 0.7749853348809268,
+    "recall_planta": 0.9170238095238094,
+    "recall_enfermedad": 0.8031746031746032
+  },
+  "test": {
+    "accuracy_planta": 0.9447368421052632,
+    "accuracy_enfermedad": 0.8263157894736842,
+    "accuracy_combinada": 0.8052631578947368,
+    "f1_planta": 0.9371218009849461,
+    "f1_enfermedad": 0.8144924228221878,
+    "precision_planta": 0.9319339959943072,
+    "precision_enfermedad": 0.8107205703863632,
+    "recall_planta": 0.95,
+    "recall_enfermedad": 0.8369047619047618
+  },
+  "history": {
+    "train_loss_planta": [
+      1.7754475296962828,
+      0.8782674471537272,
+      0.5828493829993975
+    ],
+    "train_loss_enfermedad": [
+      2.210589572077706,
+      1.2278945275715418,
+      0.874234064703896
+    ],
+    "val_loss_planta": [
+      1.1544325264791648,
+      0.717271476984024,
+      0.5582646578550339
+    ],
+    "val_loss_enfermedad": [
+      1.5628158052762349,
+      1.1183454344669979,
+      0.9250521411498388
+    ]
+  }
+}
