@@ -156,6 +156,12 @@
       gap: 16px;
     }
 
+    @media (max-width: 1100px) {
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .section-card {
       padding: 20px;
       background: rgba(10, 24, 18, 0.72);
@@ -173,6 +179,26 @@
       margin: 0;
       color: var(--muted);
       line-height: 1.65;
+    }
+
+    .survey-card {
+      background: var(--panel-2);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 8px;
+    }
+
+    .survey-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .survey-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.98rem;
     }
 
     .footer {
@@ -207,14 +233,14 @@
   <main class="wrap">
     <section class="hero">
       <article class="panel hero-copy">
-        <div class="eyebrow">Descargas y uso</div>
+        <div class="eyebrow">Sobre Foliarium</div>
         <h1>{{ app_name }}</h1>
         <p class="lead">
-          Una herramienta para subir imágenes de plantas sanas o enfermas y usar modelos de clasificación.
-          Aquí tienes las versiones de la app y una guía rápida para empezar.
+          Plataforma para subir imágenes de plantas, etiquetarlas y usar modelos de clasificación
+          de enfermedades en hojas. Aquí encontrarás una guía rápida y el resumen de funcionalidades.
         </p>
         <div class="section-grid">
-          {% for section in sections %}
+          {% for section in info_sections %}
           <div class="section-card">
             <h2>{{ section.title }}</h2>
             <p>{{ section.body }}</p><br>
@@ -224,11 +250,6 @@
                 Abrir guía
             </a>
             {% endif %}
-            {% if section.link_url %}
-            <a href="{{ section.link_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                {{ section.link_label or "Abrir enlace" }}
-            </a>
-            {% endif %}
           </div>
           {% endfor %}
         </div>
@@ -236,11 +257,19 @@
 
       <aside class="panel hero-aside">
         <div>
-          <div class="eyebrow">Descargas</div>
-          <h2 style="margin: 14px 0 8px; font-size: 1.5rem;">Elige tu plataforma</h2>
+          <div class="eyebrow">Descargas y encuesta</div>
+          <h2 style="margin: 14px 0 8px; font-size: 1.5rem;">Clientes y feedback</h2>
           <p class="lead" style="font-size: 0.98rem; margin-bottom: 0;">
-            Cada enlace descarga directamente el archivo de la versión correspondiente.
+            Descarga la app para tu plataforma o comparte tu opinión tras probarla.
           </p>
+        </div>
+
+        <div class="survey-card">
+          <h2>{{ survey.title }}</h2>
+          <p>{{ survey.body }}</p>
+          <a href="{{ survey.link_url }}" target="_blank" rel="noopener noreferrer" class="btn">
+            {{ survey.link_label }}
+          </a>
         </div>
 
         <div class="download-grid">

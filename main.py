@@ -325,21 +325,15 @@ def landing_page():
             "url": f"/download/{platform}",
         })
 
-    sections = [
+    info_sections = [
         {
             "title": "Qué hace la app",
             "body": "Foliarium permite subir imágenes de plantas, asignarles una clase y usar modelos para predecir enfermedades.",
         },
         {
             "title": "Cómo usarla",
-            "body": "Sigue las instrucciones en la siguiente guía de usuario: ",
+            "body": "Sigue las instrucciones en la guía de usuario para instalar la app, conectarte al servidor y empezar a trabajar.",
             "pdf_url": "/guia-usuario",
-        },
-        {
-            "title": "Encuesta de usabilidad",
-            "body": "Si has probado la app, ayúdanos con esta breve encuesta sobre tu experiencia (2–3 minutos).",
-            "link_url": "https://docs.google.com/forms/d/e/1FAIpQLSfnOFyAngdabXpSC_hHvR8naxDZfVoruM0ja7EoTS4nLHnnKw/viewform",
-            "link_label": "Rellenar encuesta",
         },
         {
             "title": "Etiquetado y administración",
@@ -347,7 +341,20 @@ def landing_page():
         },
     ]
 
-    return render_template("landing.html", downloads=downloads, sections=sections, app_name="Foliarium")
+    survey = {
+        "title": "Encuesta de usabilidad",
+        "body": "Si has probado la app, ayúdanos con esta breve encuesta sobre tu experiencia (2–3 minutos).",
+        "link_url": "https://docs.google.com/forms/d/e/1FAIpQLSfnOFyAngdabXpSC_hHvR8naxDZfVoruM0ja7EoTS4nLHnnKw/viewform",
+        "link_label": "Rellenar encuesta",
+    }
+
+    return render_template(
+        "landing.html",
+        downloads=downloads,
+        info_sections=info_sections,
+        survey=survey,
+        app_name="Foliarium",
+    )
 
 @app.route("/guia-usuario")
 def guia_usuario():
