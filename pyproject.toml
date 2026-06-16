@@ -10,7 +10,6 @@ dependencies = [
     "flet==0.28.3",
     "httpx==0.28.1",
     "certifi==2026.2.25",
-    "python-dotenv==1.2.1",
 ]
 
 [tool.flet]

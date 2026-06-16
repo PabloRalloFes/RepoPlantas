@@ -6,7 +6,6 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from dotenv import load_dotenv
 
 nombre_app = "FOLIARIUM"
 
@@ -25,9 +24,6 @@ def _format_imagenes_por_clase(value):
     if value is None:
         return "N/A"
     return str(value)
-
-
-load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=False)
 
 
 if __name__ == "__main__":
