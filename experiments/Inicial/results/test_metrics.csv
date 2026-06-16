@@ -1,0 +1,10 @@
+,score
+accuracy_planta,0.9447368421052632
+accuracy_enfermedad,0.8263157894736842
+accuracy_combinada,0.8052631578947368
+f1_planta,0.9371218009849461
+f1_enfermedad,0.8144924228221878
+precision_planta,0.9319339959943072
+precision_enfermedad,0.8107205703863632
+recall_planta,0.95
+recall_enfermedad,0.8369047619047618

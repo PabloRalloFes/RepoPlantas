@@ -1,0 +1,33 @@
+batch_size: 32
+enfermedades:
+- all
+epochs: 10
+fine_tune: top
+formato: Color
+fuentes:
+- PlantDoc
+- PlantVillage
+image_size:
+- 224
+- 224
+imagenes_por_clase: all
+lr: 0.001
+min_samples_per_class: 10
+optimizer: adam
+plantas:
+- Apple
+- Cherry_(including_sour)
+- Corn_(maize)
+- Grape
+- Peach
+- Pepper_bell
+- Potato
+- Strawberry
+- Tomato
+solo_validadas: false
+split:
+  test: 0.1
+  train: 0.7
+  val: 0.2
+use_class_weights: true
+weights: MobileNet_V2_Weights.DEFAULT

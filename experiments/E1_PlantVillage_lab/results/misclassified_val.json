@@ -1,0 +1,5084 @@
+[
+    {
+        "filename": "/app/imagenes/2a33705f-d4b9-38d9-963d-26cceee4f4ea.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3973ca7a-62f6-3492-85bd-6d9591a8a5c9.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e551899b-ad47-3096-aa3e-de8bd2b8ae4d.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "Powdery_mildew"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5bfe1445-396f-3c68-ac6c-6f4158494ef2.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d0e89203-6be9-3f84-b698-016822b7c860.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/eb79d857-b1c8-36f4-b4e6-952c66bbb88b.png",
+        "predicted": {
+            "planta": "Strawberry",
+            "enfermedad": "Leaf_scorch"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f60cdced-58ba-3bed-9c24-792fc86abfe1.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6e6f8a25-3401-33b6-9766-4691f89475ca.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        }
+    },
+    {
+        "filename": "/app/imagenes/481f876e-e5d3-363f-9554-e05d5ef0455c.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bce970f9-d10e-341d-8fff-9db92d3dad4f.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2b410f11-e42f-3e70-a9c9-6d09b5c3b3d9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2b6c54c9-2215-31dd-8b3e-1f346d45f53a.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2dfa8572-584b-3321-866f-919eb7e36118.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c672feb6-669d-3a63-8a0f-b38c02e4736b.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0cfcc467-590d-3ee4-b972-7d5186618331.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/701f5ff8-b234-3d01-88e6-3e5617691424.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6a7e0fbd-02a1-3d86-aa2e-0642da44f2d9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1424ac6e-6872-39de-9c8b-edc571046b33.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "Cedar_apple_rust"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b961856e-3e92-3b29-9a59-00530d141262.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3491a97c-46bc-3f84-b994-0916311b3504.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2da49713-baa5-3c00-a2cd-1b602e50b444.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/86f67cc1-a8f6-3881-bf82-6619d5afae35.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8fb662a4-0e2b-3cfd-ad44-16fb6e13493f.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/48b021bc-742b-30fb-a769-506aac03e30b.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ecd3ad5e-45f0-3874-9206-5195d2f2fd41.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9b867d33-fb50-3d64-b79e-8edacd1b93f4.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2da7e276-c90b-3777-a4ee-c03a56dcb3ea.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/dd61f5ee-f420-3c11-9fa6-69cb7939036b.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f39764a5-16d6-3516-a71d-8fe70cc8f825.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cee6a9fc-6a2a-39bc-b339-32ba68b42b0a.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6cfc6ce7-1be0-3ffb-86cd-62d7e6607d47.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6b605e51-691b-3739-96f2-1e0a4573000b.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/46fb7848-8023-3512-82cf-6c7209189f02.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d1065f27-3151-3124-a6ac-78aaf9042644.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1b4cebe3-aaf9-3a58-91a2-e4ee3a29f58a.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3ba291be-6967-378a-8d56-4d1ddd17bae8.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ba7d0f23-6c0c-35d0-8d85-251a48c38aa1.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7fd694b0-516b-330e-98ef-8a6e85d7a5eb.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0e241de6-47f1-3ee2-97f6-2a08de0fc944.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1cc8700a-adf9-3249-b25c-bc940666c05f.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a9adb6d2-597a-398d-a9d9-d9edbef683e3.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cfcef51a-f664-39ac-87fd-0b2932c46299.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4ae04374-f926-3bc2-983f-ef9e27c268e5.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8c3624ad-d435-32a5-b250-05e5578f77c4.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/de951f81-43d8-385f-9e97-7203a2ee8af1.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/74662bd3-0074-3558-b352-a87cd96d88d9.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Common_rust"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8575cb15-c30c-3faf-ba23-0f65da5fc231.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Common_rust"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c78863fd-c45e-3dc5-80f9-c655a7bb04d8.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Common_rust"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8107c97b-195b-31ab-b700-40112d03cf14.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Common_rust"
+        }
+    },
+    {
+        "filename": "/app/imagenes/64b94413-a272-366a-bbcb-6a3f69483bb0.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/10b443b7-aa06-30cb-b550-578577542532.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/12577ce9-dad1-38c0-9523-a33d6095a34d.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8dee2fca-0109-361a-aac6-ca4bc693e398.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/62c45c66-6133-3d9f-a3a2-957021e0db61.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4654820b-deb4-3898-9f06-13ff8045f63e.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2fb5fc5d-077e-34e6-a631-607c5c995960.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/19d4c0ab-c82f-3e12-bc39-22e2a663c15b.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/560f648e-09fa-35b7-a7a1-d0b1fb90f37d.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ade8ff2b-7cd5-3fec-adaf-dd50d01d2617.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9c904fd6-b622-3999-a971-fa20e0f389a8.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4dbff144-1d22-3c19-a962-e97cba191139.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/87863f90-86de-358f-bdec-f52270caf364.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a6e9ed8a-60fb-37bb-af25-eecd23a3483a.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b7b9d1b5-e4d2-311d-ab16-8b6c994b52e4.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6eedc987-a395-3af1-8475-1bd824d53ab4.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a3e96ba4-331b-36fb-8b8f-9f2338f8bf55.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/01a3f178-096e-31de-89c9-ff3a0528851e.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/10ff56f8-7867-3870-9043-c2bf02f93c2e.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ec90a855-ebe9-3ff8-999e-1155c0819b35.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bf5aeb07-59fb-326e-8c1e-dae07a4ecf68.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a713717f-6b3e-34e7-9597-fbdcd35fcc5c.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Common_rust"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e8be8cc7-e299-311e-bb33-c744ee5f58ce.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a8c2adc4-e529-3641-a829-ded61e7b1e54.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d725dd8c-9381-38a9-8014-4102203ab3eb.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/48ecb1d9-a6d1-335f-ba9b-442ed85229d4.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ac9a8115-76e0-38a0-8142-6f2650ed19da.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/674cffd1-b0f3-3c19-bdf3-f87e3935d39c.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ea3805cf-70bd-3819-8889-bce1d8c4369c.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/83112066-97b5-3ed2-a31c-1b0d6fcd52fe.png",
+        "predicted": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Cercospora_leaf_spot_Gray_leaf_spot"
+        },
+        "actual": {
+            "planta": "Corn_(maize)",
+            "enfermedad": "Northern_Leaf_Blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/397896d1-f2d9-3354-adaf-f33888752748.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f2d6dc47-3534-3147-b330-e879b812f39b.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/30a51d85-2f95-3b25-b6af-90c772b3647b.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f3ede1e6-e045-3b28-9caf-1dc045dd6e2b.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/22236f14-f829-3ac1-9430-7e7434b4649b.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4a8f83d0-af45-39ca-b10f-e7d794caf3be.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7b177f62-c91e-3bd8-a62a-a2ec6c78e64a.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bce9002e-23a0-3986-9832-5a6252a76518.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b3d07172-3494-3a6f-b407-3272f57e4343.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4405e342-e8c9-3ae6-8bb2-37b5d4ff1387.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ae7fb969-d789-3d5b-8e6b-d18d64862a5c.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3d5b4505-4b9e-3f99-b77f-0d7ab11bff1c.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/eb894f8c-12dd-3b48-bc4c-3d0bac9d0ed9.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/52132e30-c3b7-30b0-857d-d5fc5f167d71.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6065d1e6-12c8-3a57-a458-f4c03ded2caf.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2a4815c4-6f54-3f79-a839-083150c9cdaa.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cfa1ded7-509f-38e2-9673-0c2e54b1606b.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e75bab85-eeb0-3901-9c29-e7bfff0981fb.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ff1b6589-1ca4-3fa7-ac08-392444a46813.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5651913f-9256-3ff9-9ace-55ba64d9384c.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Leaf_blight_(Isariopsis_Leaf_Spot)"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6b7b2d61-59f0-3971-ab50-b20282ed58f0.png",
+        "predicted": {
+            "planta": "Strawberry",
+            "enfermedad": "Leaf_scorch"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Leaf_blight_(Isariopsis_Leaf_Spot)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a446d9a6-d8bf-384c-bb87-8ffa29c9c792.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Grape",
+            "enfermedad": "Leaf_blight_(Isariopsis_Leaf_Spot)"
+        }
+    },
+    {
+        "filename": "/app/imagenes/11b161f2-5d5b-37b0-87fc-e4c2450bed18.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0c1b2ebc-9d33-3b74-8c41-aea73103c8ce.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/25edfdb1-4c00-3e13-9248-711e0a1f01c5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/52ce164a-88ae-351d-ac52-a84ce5a77737.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0ab71316-ea6a-34f3-98d6-ab6b119e4b38.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/320db6d4-960e-3214-aa00-02fafabf46ea.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d949b48d-ca14-3aad-a1cd-e42cc142f738.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c02dd1cd-b85c-393a-b16d-aea46aae45a1.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/50bb36be-7508-33aa-859b-90a56f8d65a4.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3abfa969-733f-30dd-97e5-29a118ba4826.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d85da5a9-5819-36f4-821f-68e919abb8b0.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/97c97dc2-72c3-3902-b8a7-f78724db8dd7.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f4771d53-8e0d-364c-a2ad-b06418ff81ae.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Black_rot"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ad197d5b-16cc-33a5-a58f-5d3756e35e65.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/43780416-9658-3568-a97c-3a92b485f532.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6da67fca-696c-3b01-a218-52b333ff76df.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/249b0293-1fdf-3729-8641-6dfd53962b64.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/45cbdcfc-006d-3190-8f30-e13782ccb0f1.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/41a0748a-a197-39c8-a387-e595983f845c.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/35dcd52e-53ec-36c4-b03a-002a51c7f325.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/60131a22-2b77-3199-ba5c-f5fa88cdf759.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6462ed60-b92c-30e1-be73-95630a500a81.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b152ad2b-7bb2-3192-aae0-949f5ee444d9.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/68380470-d138-335a-bc55-08a4ae6341d6.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e0f0dcc0-853a-353f-a1e4-3478467ce605.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/db85c0cc-d518-31d2-ac2d-6a49b0da8421.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5054acc5-1375-3e0f-a28b-dc4f863964ee.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/20252ca0-c7ef-34cc-82c0-efc89bca7dac.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4f1bfa54-689c-3ee8-9fa8-93cf0c078f17.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e38689c7-d142-32f6-b169-51ef10e3e421.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7f4e1863-df5d-39fc-9a2f-abf3d12d5fba.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4ed1c397-abe6-3996-8969-0cf460bd4b4b.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/14721e75-bf6a-32e8-922e-aa1ad063b4ed.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/aa6c8d13-56ab-3d70-affa-13e3eeccd6d9.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/60afad37-9ac3-3f75-954c-733a550b23a4.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/25b27f49-00f1-3599-b7aa-6b9380f405aa.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/58a47918-bff8-3fbd-a4c1-3d396e5c0ac2.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d8288070-9c56-39ff-b376-be1af2e2a132.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fed5038a-4df2-360c-93bd-0fcdd23f8427.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9bf35dbf-0ab5-33a0-9c31-1fda71e13c67.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3772e85d-73a9-386f-8041-696cf23aacac.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3929e3b4-7c2c-3c9f-aec2-fc47502357b1.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ecfaf9cd-4f7b-3566-8b61-7d359a602b14.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e061745f-dd40-3aa5-9ac9-caf201d06b45.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/839b3aae-c941-3c13-8677-cd244cf6454a.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1c9aabbc-4af8-3e86-8398-a18b08f35aa3.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fcc6a0d3-3ced-32a6-bd01-1fb8718ca517.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f3a4f6b2-36c3-3b57-9bf7-47868e4234ef.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/27030d94-17ba-3e2e-8fbc-ab61de9d2899.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7c0310d3-5e9d-32d1-b1e2-81112659b86b.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2d9b8d33-ab9e-3226-9a03-276a41d4bec3.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/176766e1-95b0-36f7-8f0a-00dfcec5cc1a.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fc78e215-fee4-3986-8a7f-7cfaa881b436.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1a7f2a9b-b43c-3314-950d-0145e898c0a8.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/050b9a2d-965c-3197-b90c-f6c7ebbc772a.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fa4d9880-e650-376b-9bda-5d12fbdbce3f.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d6faf327-334a-35d4-b188-dd1b97ac30f3.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d6d10ff1-e223-3e9c-8407-9bbc6414c614.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fea3ac43-6fd5-3506-b63d-433d57380a51.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/eecb6ca0-bb34-34b4-8036-443da08d57f1.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/77e27b2e-71ea-3fa1-ac81-da4cb853e28a.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/92f11d1c-7045-3408-ba25-aede04b19823.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3c779259-031c-3283-acd1-e92f20ef84a9.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3ce79665-da84-3dc3-af95-f43ca1158fe0.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/591f3dde-ce78-3d48-becb-4724be86fe63.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/19ee7b7b-b76a-3b6a-8742-074293837753.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4a10a62f-f878-308f-8b1b-bb52a3c3ffed.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1f30d132-ac03-3552-b143-585215f8eb18.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/94390b70-640b-3c77-81af-471194e03217.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e4ce5a70-d4cd-3e2a-8db5-531ec1a50fde.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/066c750d-d656-3e60-8610-1b39d01f0df5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/64f5a4d7-b353-34d8-9291-f8212056c20c.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Strawberry",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/59e4a14a-e275-3b12-804b-805e72033fa4.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "Esca_(Black_Measles)"
+        },
+        "actual": {
+            "planta": "Strawberry",
+            "enfermedad": "Leaf_scorch"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5420c0a0-b8ee-32aa-86cc-8e8286da1e51.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a220ca4f-e518-3806-9b6f-8458d08f32b2.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8eec471c-fb83-3082-ab20-5ae9d0f40105.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c910c198-0155-3a11-b678-83d699e276c5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1acabfb8-b5b4-35f1-b46e-70dcff0d340e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2445c860-d127-35db-b572-4154151ee5a4.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/405a0317-578e-3089-8310-33345dc707a6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/15069f40-097d-375b-9494-1f97839002ec.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/51b584f4-b382-3d4b-bcb0-73b9b1fec7de.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c85d4ad4-c10d-3ed2-a286-966d88334294.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4bc7f627-b5ba-341b-b2ad-85f29b3c0a8a.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/41489d09-e99b-3426-8fc5-b383b9dd2c7b.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/81cdfc74-9394-353d-915a-45f039c9c307.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/33af7fb8-dc6e-3975-8dba-f2a2db128f98.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/eacff2b4-a3bd-3199-9ec3-7f2b9f64c846.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1fc99892-75c6-342c-932e-8a362245931c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b50b6c5a-2cb8-3693-9057-712aeaf4191e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/14e85529-6037-3086-b209-4fb776f642e6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/04b6ff67-f790-3a2a-96d4-5567b8203208.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/97b1d1dd-e49a-3972-9838-c0618e89f00e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3eb5b9f2-db6e-3781-87d7-25fb25efcfce.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b1e8dd7e-fc83-3871-9b1f-651af2831852.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2581253c-c897-3493-b60e-8ab44550e284.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/aa21aa23-a9f2-319b-a243-31773b1ba2bd.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/83a7012a-7009-35ef-bf20-0e2767e74f4b.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b3e94ba1-4b94-338d-8cf6-0897dddbb272.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/28609ad5-d222-3d68-96b7-2a25da5ca9cb.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e2d269f3-5d9e-3af5-9fad-005623c751ec.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a3a6a1bb-168c-32b3-81ea-40150f2c5a18.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5d589954-4751-3e11-976a-d7c5f0402b63.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "Powdery_mildew"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1397c7fc-c6e8-3bed-b222-a02970969e84.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/dcf6020a-fd9a-3335-95eb-2b01db4a4ef1.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0fc43d92-494f-3ba7-b3c7-5d3f8abb488c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3ec6e40c-94f4-35c8-b5a6-861d74cd8667.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d5f834e2-9c6e-3ee2-81cd-f7a037668877.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fa9c6feb-6e90-3702-b80a-df88158f00f0.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e04ff339-e85a-3e02-ba03-47d838fc3450.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9c8b3b9c-e73e-32da-b832-eadf5215f137.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/dfdbaead-adac-37b1-8505-b06a13477e7a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bb277b8a-d30c-37d0-a9b7-dae2330b3e0d.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e076a98f-d94b-3b68-97af-38b66e1c6055.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "Powdery_mildew"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/39a3a2ab-8d59-3f9f-b4ed-409336d2f280.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1fd11dac-35d1-30d7-b3ba-34572bd13679.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5e9e2edb-e2cd-3df7-8585-5f824bd72d93.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9744ce2e-ae58-398b-8a83-b77162b7b8f1.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ead5d092-276e-30f5-a189-8ddc0d2ff129.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0f68e0f2-a894-393f-9775-52eafb46a4ab.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0d557474-0aa7-345f-ae89-af406c996a26.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9c3ec152-a445-3b5d-98f4-95084688976a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d96014e3-d152-31a6-9759-a14a19a0168a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/be74f1c4-9df7-31fe-b730-41f989b595bb.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fa1ac62d-e67d-32d8-97e4-9bc91722e7aa.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/78c4e0b6-0dbe-3dde-9cc5-df24b930c407.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a5e1e9d0-e096-3fa5-afd3-1a92f9db6c42.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1fcf4643-cf96-3672-91bd-8fcea8f1909c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/68a9659b-3e81-3679-b11b-57b0c7a564f7.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7fd36d20-d52d-3ae3-a03c-14ac1ed4f8f8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b3ab635e-f8d9-35f9-85c8-7d7878dedbed.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f3a67ea9-0a64-34ae-b660-33602836297b.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0f6b14bf-c40b-3164-8a24-5f4a3c4691e7.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/85eb09b8-16b7-3740-873f-a41db547f5f8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a0b46e13-53f2-3a92-a91f-3fee9e7309c7.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1f0a2f9b-2fa1-31aa-99a0-baaddf94d0a8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/03786aef-7d84-3815-ba65-c1b41b70cba5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2feed5f1-81eb-3413-8ed6-d28d3a9b18e9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7f2f2e5b-9d3a-3eb4-a7aa-4596e512df76.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/096a8b37-71cf-3714-a5ad-3f8f550d7b04.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8fce955a-a24f-37d6-b18b-082b29e9cc42.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fae111c2-b59f-3544-be6d-970a1cd43f83.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/63b7e610-262f-3610-9c9b-eec01bcff2df.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c303c7bf-7cc4-329d-a368-9573caa179a7.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/82cacd3e-7d98-3090-8472-a82ef8eb6994.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7bc7d097-ae36-3c7b-82d8-a1046c9817cd.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_mosaic_virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/80389b26-db2d-31da-9b7a-073faefacecb.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e5b73780-a9e1-3cf9-9bc1-91fceda603f8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/aa2623e7-de50-32c8-b361-d9b1d8c1b6e9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/eebaac36-cc1a-3b49-b86b-dc8fb4876352.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/03f85ba2-6853-3cfe-837e-6d2ec2546372.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/41bd73fa-8a2a-3775-9420-ff5e533ea484.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/89f7cf20-3d58-3a97-9d69-1a306795f173.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f5bd2f24-1a16-334a-b145-a3e97b1ceade.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f1ea7856-a74c-34df-bb1d-f2bb327d3c18.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d64edea8-31e9-37a8-87ef-914ce94b3b85.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/43f5d6a0-a954-3076-bbf2-c23e4ade5c5f.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/71805692-797a-313e-88e7-a2baab74564e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cb3d0809-c8f1-3fe0-bf4d-6d86d5f2e5a3.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/af207f62-3e6c-3a6d-975f-15d086e902d2.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/dda9eee3-8740-388e-aef3-f7b0a56c61c2.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ee3f8356-304b-3fbf-b9d6-93c13f3c6b24.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/13a7294e-a53c-362d-8f95-d92494ca0acf.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5afa5d93-6741-30ea-983a-59f5730db756.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/69b48b60-055d-32f8-ad2f-53dfbeb49355.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/569dfbd3-87b5-3ba0-8788-b6ecb4c42924.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4b2906bf-d38c-35bb-a486-536eb358a0ab.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4608b68e-2e6f-365c-b6af-017264d8a0ec.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/88b41d4a-6488-36e1-8395-8d8b8dc51a5a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/05590189-9afd-3b1a-aa67-aec96df28335.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/80275100-279f-373d-b807-67ebea05f26a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/18b82ee1-dbda-3a16-8ced-b1b962c0a679.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1c487f83-0c1d-3702-b7f8-966b5c4c4fb8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5e3be27d-affa-3da0-a215-86570ae4c517.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cb65d9bd-2e62-3856-89d4-eb16c939978b.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f9f4cc54-f24c-3fa0-b9fa-c5a3477b880a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/031fc5f1-5d60-3ef9-a2f2-7cad440ebbd2.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f407b339-c632-3173-8796-65de3b66a643.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5b046b70-b277-3bba-9734-2ff90706961e.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fbf3e15f-700c-30bd-87b6-99e6cca98ea0.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fee398f8-a18b-3a48-9c4a-15c0116c57ca.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1dd50481-de29-3e8a-bf45-602a5870b9ce.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/80e8613b-b703-352e-9c49-cd44a3c7708c.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/34cc594f-bb3d-356e-a30c-d8e6697a946d.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d62f5039-43a5-33b1-a1bf-1a49b3616f82.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b9ae4eac-312e-369a-9344-9b3a4cc47ae6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/530bff0f-564c-3472-b797-6b7343fd96fc.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9c731924-ede1-3fcc-ba31-03496b76764a.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6d2067eb-a69e-3575-807e-2aaaf693e81b.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8bad81cc-f8b2-3c67-8f1e-f25fb96d3f04.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/747a310e-05b3-3e0e-a724-ff520c1f88a4.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4deac650-2e31-3857-bd24-4a80922b5dcc.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6b5711b0-ffc7-321f-ac22-d57c8034df70.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0266624c-155a-3175-8e72-e337a944e602.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/55ae5de6-8968-3399-996c-eb7323420839.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/144b5ae4-30c9-38e1-8823-b6c9465134db.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cb70ab17-a1d6-3851-b331-75ee88475aa1.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1836ed6d-67e6-32ea-a935-a70bd3af8451.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1efc0018-b314-357f-a5dd-fcfcdf77f3db.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/97fc52ad-c588-3bf7-ba73-4c3a47c8e853.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/85ea1e34-00ce-3b12-82a5-3efd3257501a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/22a8d2d7-b9be-3437-bff5-ca6cfc3cc3b9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/68b0e713-b4ac-347e-b20e-18bb5cada3cc.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/65b230f2-f103-3f49-bc90-3365eb1952c6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fa40df79-e512-304d-b933-1cb94104a401.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1036d6a9-fbec-3f81-9f31-d4246755a625.png",
+        "predicted": {
+            "planta": "Grape",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/81222539-baac-3b14-8172-a78237079656.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/227eef15-aaf7-3a43-8e1b-22d5420debf8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4efd4672-164f-3a97-8976-3adb1da532c6.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7fd39f9d-0f7b-3071-9fb9-e116efc2bd6a.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3ee6adc3-a484-37eb-94f9-d86eae74921e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/332cac4b-ecbf-3aee-af05-01eb33aed786.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/315b5ba4-9691-3873-b47b-98742e492d2a.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "Powdery_mildew"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8583a7c8-0fbc-300c-8986-1a55e39029ac.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/48705eaa-7ffe-3b6d-88e1-ef7286530bf5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f749d6aa-b327-3a96-b0db-2580c864f94c.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ab6d251e-9f8b-38a0-ad7b-df52518a261f.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/95ae054c-8fa8-3e9a-a283-5f38ac220fc2.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9bae6445-7946-3d9e-94d8-37ee1bc7011d.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/69ad8260-4643-390c-a61e-3d5a5258f1bc.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c75f15bf-b94d-3319-8430-5b0b9acd443e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b808070f-3fce-3270-825a-dab71eaafd50.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/969b3cd0-9bb0-3899-b7c7-27835dad653f.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f61e844f-8a6d-3b0e-8e75-497659d8575f.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/61dcfd07-a9de-3f40-889d-54fdca94025c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/80149634-37b0-37a6-b204-078e6f6dcf88.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3a0b0b78-00e5-3381-8af3-66d1e5b4345e.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4a828175-2028-30cd-bb57-042a0edeba99.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/87756f49-053a-36bf-8d5d-6e320df82864.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1cdcbb98-37cd-3b8f-8663-b6cab2a13137.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/92020e75-a6c0-35df-8720-1f4539304040.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/875bd43f-ea30-31ed-af64-005fc9bb377a.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/127ef78b-ff6f-3057-ac47-24e94b3b445e.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a8458d55-9f96-3cca-a050-030d6854192c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/545aca49-4b45-3f7d-a521-c92eac761657.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f927eea6-db4f-3190-a5f8-13da4dfe9a84.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/db7092c8-5b48-3933-a73c-3ce11b1c3c5f.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "Apple_scab"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2add7ffc-7ef3-3be2-b26e-5786fe541e09.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8b014747-ebb3-355c-8ce4-3a56d05afe04.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/90b33dc2-8cb8-330e-88d2-310cd777e599.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/76de7f60-dcfa-34c5-aca4-404bf3f5638f.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1d980e04-1283-35eb-90c8-eaae798d6378.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8f150d55-ecb4-32ec-b5d2-c6d2e1207121.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bf591c42-3d99-379a-b59e-9eee009cc375.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5a9c08b3-ef57-336a-89b8-195c863f2f63.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3e4a1612-5735-3d3f-857e-3b9cba513a0c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d989d0f5-86cd-38bc-bbbf-aa882b8175d8.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e4439b94-7405-32b2-b464-9d7f227f2584.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/348451b7-e8bb-3354-b104-ff099722b8db.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f99f92a4-c914-333a-84f1-e96cc7332ad8.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cb84383e-4324-3228-972f-14c41c2742fc.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ef7fc2bd-0b28-335d-88ae-3b70cd080b03.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/78710b3d-3347-31a2-a86b-8e4104caaef7.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/10a266a7-fbd3-316e-8e7c-fe47162a0fdc.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fc46f464-4dbe-3efb-b9f3-20683d1072b7.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f83a3e19-374b-374b-9b9f-e18731a4aa26.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/63355390-ef9d-3786-aa2e-facb34c999ff.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        }
+    },
+    {
+        "filename": "/app/imagenes/777c638f-5a35-3bdb-9dbf-2a4a8cd57350.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ccb41e8f-f2fb-3b2c-8780-739f50fca324.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ff6cc345-601e-354f-a721-41edfebcb3dd.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/124978e4-6738-3546-ac73-b1c5933a2f5a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bdec6e11-d2b2-3164-b68b-513a1a2fe58b.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5fde7dd8-f251-35bc-a72b-b0a815fb2796.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/14cf966f-b612-38b0-8dd6-56c0c5c14af8.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fbd00c9b-d131-3cc7-8c57-c55dd2a1897e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/04cc9df2-356d-3e19-8db6-a9525abdcb16.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ef8247f0-3ced-36b5-85f4-e7949495ff00.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/37050ac8-005f-3ac9-be47-3d83d29c43f2.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3f58489a-156f-32a9-a639-df9af6c87984.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/37e1b3f7-0207-38ba-971a-5e25efe2760d.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ca6ef30e-aca8-3c68-9f49-944a8ccd3620.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/392dc1e0-f4b4-38aa-8c4f-b0787fd49266.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c8d04494-ed4a-34c6-b2e5-e64dfa381553.png",
+        "predicted": {
+            "planta": "Strawberry",
+            "enfermedad": "Leaf_scorch"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0c759986-c3e7-3024-b063-c8060d861a39.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/88e02923-789a-32ba-bdd8-db3ae1dbdd4a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_mosaic_virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0ef6f552-ceea-3378-b495-57aab54b99f9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_mosaic_virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7db1de09-7fd3-3e8b-8d7b-72fc3a1531f5.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7c130d86-63f3-3b9a-9899-1f34bb0f531e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/39c34d6a-118d-3d97-85d8-013dc2d3b37f.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Leaf_Mold"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e08ba1f6-ef16-3ae8-b6cd-a67f5a5ef837.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1133611e-b556-3719-8ea7-9097b16fc80d.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f54c2ae2-64a5-3cbb-b8b0-3f950c092136.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/93a24852-414d-309d-a88c-d5edfdd4c8b5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3d003fb6-d86a-3048-b101-eb89b68e8a17.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/34d2d1bd-3f43-3d96-b9c8-5bbdea6e4174.png",
+        "predicted": {
+            "planta": "Strawberry",
+            "enfermedad": "Leaf_scorch"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/752b21a6-f515-3400-9ae7-ba1b4272b76e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/36db6025-5e77-3950-bcd8-6286436c49b6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_mosaic_virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cf9cdce8-5ac3-3c1c-b8c6-3ce414211327.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8db8ad33-547f-3658-9ebd-d7be4eecdab9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f0ab87a4-030a-3a87-85ab-88b9e2b0b00a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/62eaacad-62d7-31e5-8000-517b417725d5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/8a7f150c-bd14-3948-ada2-875d1aed148f.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0e1e72d0-9f82-3103-97b2-e4388366e783.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ac5105b6-fddf-3dd6-bcbe-ceeeaf91cc72.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a8af0042-fcbb-3c60-aa6d-bbaf772a8050.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3fb4ffbb-0c61-3e05-9662-63e211ea9050.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/874e193b-81fa-34a9-9576-1a9d595c2188.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/42bbd3cf-dd49-3e47-9393-622bdb0e1381.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/40a365b7-cc05-3b63-add2-dabff3bcf9f3.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/1f65990f-04ad-3b5b-828d-594f5181db0a.png",
+        "predicted": {
+            "planta": "Potato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/09128390-2992-303b-b199-caf43fe3a324.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3b3c9fef-e57e-391d-bc7e-89c80100e795.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Early_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6d1d3fb0-fb19-374d-8f0c-1176ad09ad5e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/e8dc45ef-2c47-399f-a511-8d48dd7ebe80.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fc4d7eb8-707d-3113-8155-1a2819d63410.png",
+        "predicted": {
+            "planta": "Apple",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/53cd06a7-b662-30f7-9eac-cb18a00afb74.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6f9452eb-1875-345a-887e-833daad66a3c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9f202dfd-2251-300e-8a93-b2867edae762.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d762790a-5771-3388-a319-491b99388b0a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/dcccfad7-6feb-3db8-96ae-55b16399b82c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4be77783-fc18-3aff-94d1-5d7c891c0f2a.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/de1f50d1-d8ab-3c98-b6ce-ca7dfe42ed42.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fe7d06ad-4dc5-39b7-a4dd-98698c79a226.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/b02c8ef2-98f7-34c9-b3c0-0988c9ab47ee.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/190364e0-6cfb-36d9-9dc1-9b49717a5958.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/bf53d999-f85f-3ffd-9f85-207ad9aa8733.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/0fdaae25-c60a-38b9-9a92-3518e1b01f46.png",
+        "predicted": {
+            "planta": "Pepper_bell",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/06397841-dd93-3a0a-8151-8e640f075fc3.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Septoria_leaf_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/fe011ca8-cd1e-3cdc-9f79-0ffd199eff20.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/04f748e9-a57e-3680-bfcd-d88e34e8e460.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        }
+    },
+    {
+        "filename": "/app/imagenes/118cd385-3933-3ecd-a6ad-a53f6a8f2f8d.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3be3de45-fe51-3ed7-976c-6036aa79ee28.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2f5dcdfe-53f6-3d30-9243-d8751f8b1e40.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6d4bc2da-64b6-312a-b0ca-01e736bca8e6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/28b79733-f65c-3d08-afb5-52617b34debd.png",
+        "predicted": {
+            "planta": "Cherry_(including_sour)",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/9c38cfb8-48ac-3bfa-b196-dfb2cf6def46.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/d7224bec-6298-3a83-b926-88f02da47021.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c38ea2eb-ee40-3d13-89d7-7544e1db93b6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/02f2004a-0407-39ec-b8cb-24de589dcd98.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "healthy"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/a32a4f4e-f153-3a36-af2a-5169128941e4.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/95e14433-64cc-36bb-a17d-81c6caec791c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/7d47ed56-2ad2-3658-8994-928bd71621d9.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3a5aaf6e-975d-3caa-b109-0b503a141ab4.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c9362a2a-9564-349f-a499-c2e6690d0de5.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/78d29aae-e0f6-3386-ab91-f2c4e4b3864b.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/33474887-45ce-39de-a520-1e35ab6c41f1.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Target_Spot"
+        }
+    },
+    {
+        "filename": "/app/imagenes/6fc23a33-c734-33a3-ad83-49a467bc4a0d.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_mosaic_virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/35103c9d-8c47-3d67-8471-2e4f49059b00.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_mosaic_virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/247fc347-4af4-3d0b-bd33-ac37bb88b4c3.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5567a4e2-a184-3f62-9c46-02292e5c9c62.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3e8bc313-f8d4-3623-a02b-ab3cf4d4d5f6.png",
+        "predicted": {
+            "planta": "Peach",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/ecdf9aca-f117-356e-8899-5efe523c770d.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f15185c8-0412-31ca-9d4d-8ece43871454.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/17aca59a-50a4-30cb-832b-4af841ff90ee.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5e26a86a-5a57-3804-8cde-c3b0cbabec74.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c276e5cd-df69-3a33-a260-128935a3a71e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/83036082-d2c1-3b1c-82b1-1203657a2bca.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2df86c9a-dbec-36a3-8713-dd822459ede1.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f11411ff-61c2-3f17-b81f-cb8bb9ac41b3.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/85d2b4aa-7218-3b0c-8c19-a33b081db3ba.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4277540e-b882-372b-8dfd-daeb0d73366e.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/5045fb93-12c5-35ef-a7f5-a254e0956746.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/4d21c38b-be20-30a6-8373-a6e5e240ed82.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Late_blight"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/c8026c9a-0447-39d1-bb9a-0a7dfc62299c.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/86b5fcc5-8b42-34fe-801a-518b5a49bc9b.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/629d1d86-c931-365b-a563-3fbc074365a6.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/200d7d5f-1003-3777-969f-8865c85487da.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/2243620e-cf07-3503-a48e-c593eae1a5a4.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/cc6ec1e6-a543-33ff-9f0a-8a9f44d57c42.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/3f4ea715-818a-3002-a446-8345cc2011b2.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Bacterial_spot"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    },
+    {
+        "filename": "/app/imagenes/f7daf8ff-8648-30d1-93c5-266ebca87485.png",
+        "predicted": {
+            "planta": "Tomato",
+            "enfermedad": "Spider_mites_Two-spotted_spider_mite"
+        },
+        "actual": {
+            "planta": "Tomato",
+            "enfermedad": "Tomato_Yellow_Leaf_Curl_Virus"
+        }
+    }
+]
